@@ -1,0 +1,74 @@
+﻿@page "/weather"
+@using EspSpectrum.Core
+@inject IFftStream fftStream
+@inject ILogger<Weather> Logger
+
+<PageTitle>Spectrum</PageTitle>
+
+<h1>Spectrum</h1>
+@if(fftResults is not null)
+{
+    <div class="spectrum">
+        @foreach (var bin in fftResults.Bands)
+        {
+            <div class="bar">@{
+                    bin.ToString();
+                }</div>
+        }
+    </div>
+}
+
+<button class="btn btn-primary" @onclick="() => IncrementCount()">Click me</button>
+
+
+@code {
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; }
+
+    public void ConsoleLog(string message)
+    {
+        JSRuntime.InvokeVoidAsync("console.log", message);
+    }
+
+    public void IncrementCount()
+    {
+        ConsoleLog("Someone has clicked me!"); 
+        Console.WriteLine("My debug output.");
+    }
+    private FftResult? fftResults;
+    private const double scale = 100; // adjust for visual scaling
+    private CancellationTokenSource? _cts;
+
+    private Task? _fftTask;
+    protected override Task OnInitializedAsync()
+    {
+        _cts = new CancellationTokenSource();
+        Logger.LogInformation("OnInitializedAsync");
+        /*
+        // Start streaming in the background
+        _fftTask = Task.Run(async () =>
+        {
+            await foreach (var result in fftStream.NextFft(_cts.Token))
+            {
+                await InvokeAsync(StateHasChanged); // ensure UI thread update
+                if (result is not null)
+                {
+                    fftResults = result;
+                    Logger.LogDebug("{Fft}", string.Join(' ', fftResults.Bands.Take(6)));
+                    await InvokeAsync(StateHasChanged); // ensure UI thread update
+                }
+                await Task.Delay(1000);
+            }
+        });*/
+
+        Logger.LogInformation("OnInitializedAsync done");
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

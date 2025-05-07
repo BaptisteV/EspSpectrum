@@ -1,0 +1,70 @@
+﻿using Microsoft.Extensions.Logging;
+using Websocket.Client;
+
+namespace EspSpectrum.Core;
+
+public sealed class EspWebsocket : IEspWebsocket
+{
+    private readonly WebsocketClient _wsClient;
+    private static readonly Uri EspUri = new("ws://192.168.1.133:81");
+    private readonly ILogger<EspWebsocket> _logger;
+
+    public EspWebsocket(ILogger<EspWebsocket> logger)
+    {
+        _wsClient = GetWebsocketClient();
+        _logger = logger;
+    }
+
+    private WebsocketClient GetWebsocketClient()
+    {
+        var client = new WebsocketClient(EspUri)
+        {
+            ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
+            ReconnectTimeout = null
+        };
+
+        client.DisconnectionHappened.Subscribe(disconnectInfo
+            => _logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType}", disconnectInfo.Type));
+
+        client.ReconnectionHappened.Subscribe(reconnectionInfo =>
+        {
+            if (reconnectionInfo.Type == ReconnectionType.Initial)
+            {
+                _logger.LogInformation("Esp websocket connected successfully");
+            }
+            else
+            {
+                _logger.LogInformation("Esp websocket reconnected. Reason: {ReconnectType}", reconnectionInfo.Type);
+            }
+        });
+
+        return client;
+    }
+
+    private static byte[] PackData(int[] bars)
+    {
+        // Create a new byte array to hold the packed data
+        var packedData = new byte[bars.Length / 2];
+
+        // Pack two 4-bit values into one byte
+        for (var i = 0; i < bars.Length; i += 2)
+        {
+            var firstValue = (byte)(bars[i] & 0x0F); // Mask to get the lower 4 bits
+            var secondValue = (byte)(bars[i + 1] & 0x0F); // Mask to get the lower 4 bits
+            packedData[i / 2] = (byte)(firstValue << 4 | secondValue); // Combine into one byte
+        }
+
+        return packedData;
+    }
+
+    public async Task SendAudio(int[] audio)
+    {
+        if (!_wsClient.IsRunning)
+        {
+            await _wsClient.Start();
+        }
+
+        var packedData = PackData(audio);
+        await _wsClient.SendInstant(packedData);
+    }
+}

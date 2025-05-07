@@ -1,0 +1,10 @@
+namespace EspSpectrum.MAUI.Pages.Controls
+{
+    public partial class CategoryChart
+    {
+        public CategoryChart()
+        {
+            InitializeComponent();
+        }
+    }
+}
