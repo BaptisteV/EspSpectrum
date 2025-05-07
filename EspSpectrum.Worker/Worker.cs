@@ -4,11 +4,13 @@ namespace EspSpectrum.Worker;
 
 public class Worker : BackgroundService
 {
+    private readonly ILogger<Worker> _logger;
     private readonly IFftStream _stream;
     private readonly IEspWebsocket _ws;
 
-    public Worker(IFftStream stream, IEspWebsocket ws)
+    public Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws)
     {
+        _logger = logger;
         _stream = stream;
         _ws = ws;
     }
@@ -21,8 +23,15 @@ public class Worker : BackgroundService
         }
     }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Starting service");
+        await ExecuteAsync(cancellationToken);
+    }
+
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _ws.SendAudio(new int[BandsConfig.NBands]);
+        _logger.LogInformation("Stopping service");
+        await _ws.SendAudio(new int[FftProps.NBands]);
     }
 }

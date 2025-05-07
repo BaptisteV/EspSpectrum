@@ -5,11 +5,7 @@ namespace EspSpectrum.DisplayTests;
 
 public class FrameDecayTests
 {
-    private readonly EspWebsocket _espWebsocket;
-    public FrameDecayTests()
-    {
-        _espWebsocket = new EspWebsocket(new EspSpectrumConfig(), NullLogger<EspWebsocket>.Instance);
-    }
+    private readonly EspWebsocket _espWebsocket = new(new EspSpectrumConfig(), NullLogger<EspWebsocket>.Instance);
 
     [Fact]
     public async Task SingleFrameShouldFadeout()

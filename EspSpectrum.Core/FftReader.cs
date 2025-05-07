@@ -20,26 +20,26 @@ public class FftReader : IFftReader
 
     private static void InitializeBandBoundaries()
     {
-        _frequencyBands = new float[BandsConfig.NBands + 1];
+        _frequencyBands = new float[FftProps.NBands + 1];
 
         for (var i = 0; i < _frequencyBands.Length; i++)
         {
             var t = (float)i / (_frequencyBands.Length - 1);
-            _frequencyBands[i] = BandsConfig.MinFreq * MathF.Pow(BandsConfig.MaxFreq / BandsConfig.MinFreq, t);
+            _frequencyBands[i] = FftProps.MinFreq * MathF.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
         }
     }
 
     private static int FrequencyToBin(float frequency, float binResolution)
     {
-        return Math.Clamp((int)(frequency / binResolution), 0, BandsConfig.FftLength / 2 - 1);
+        return Math.Clamp((int)(frequency / binResolution), 0, FftProps.FftLength / 2 - 1);
     }
 
     public int[] CalculateBands(NAudio.Dsp.Complex[] fftResult)
     {
-        var bandLevels = new float[BandsConfig.NBands];
-        var binFrequencyResolution = (float)_audioRecorder.SampleRate / BandsConfig.FftLength;
+        var bandLevels = new float[FftProps.NBands];
+        var binFrequencyResolution = (float)_audioRecorder.SampleRate / FftProps.FftLength;
 
-        for (var band = 0; band < BandsConfig.NBands; band++)
+        for (var band = 0; band < FftProps.NBands; band++)
         {
             // Find the FFT bins corresponding to this band's frequency range
             var startBin = FrequencyToBin(_frequencyBands[band], binFrequencyResolution);
@@ -57,7 +57,7 @@ public class FftReader : IFftReader
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (float)Math.Log10(bandEnergy + 1) * 20.0f * BandsConfig.ScaleFactor;
+            bandLevels[band] = (float)Math.Log10(bandEnergy + 1) * 20.0f * FftProps.ScaleFactor;
         }
 
         return [.. bandLevels.Select(b => (int)Math.Round(b))];
@@ -67,23 +67,23 @@ public class FftReader : IFftReader
 
     public async Task<FftResult> ReadLastFft()
     {
-        while (_buffer.Count < BandsConfig.FftLength)
+        while (_buffer.Count < FftProps.FftLength)
         {
-            var sample = (await _audioRecorder.ReadN(BandsConfig.ReadLength)).ToList();
+            var sample = (await _audioRecorder.ReadN(FftProps.ReadLength)).ToList();
             sample.ForEach(_buffer.Enqueue);
-            await Task.Delay(BandsConfig.WaitForAudioTightLoop);
+            await Task.Delay(FftProps.WaitForAudioTightLoop);
         }
 
         var result = new List<float>();
         var i = 0;
-        while (i < BandsConfig.ReadLength)
+        while (i < FftProps.ReadLength)
         {
             _buffer.TryDequeue(out var value);
             result.Add(value);
             i++;
         }
         var bCopy = _buffer.ToArray();
-        for (var j = 0; j < BandsConfig.FftLength - BandsConfig.ReadLength; j++)
+        for (var j = 0; j < FftProps.FftLength - FftProps.ReadLength; j++)
         {
             result.Add(bCopy[j]);
         }
@@ -96,10 +96,10 @@ public class FftReader : IFftReader
         for (var i = 0; i < sample.Length; i++)
         {
             var value = sample[i];
-            fftBuffer[i].X = (float)(value * FastFourierTransform.HammingWindow(i, BandsConfig.FftLength));
+            fftBuffer[i].X = (float)(value * FastFourierTransform.HammingWindow(i, FftProps.FftLength));
         }
 
-        FastFourierTransform.FFT(true, (int)Math.Log(BandsConfig.FftLength, 2.0), fftBuffer);
+        FastFourierTransform.FFT(true, (int)Math.Log(FftProps.FftLength, 2.0), fftBuffer);
         var bands = CalculateBands(fftBuffer);
 
         return new FftResult() { Bands = bands };

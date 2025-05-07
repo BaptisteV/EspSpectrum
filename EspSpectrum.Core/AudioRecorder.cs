@@ -7,7 +7,7 @@ namespace EspSpectrum.Core;
 public class AudioRecorder : IAudioRecorder
 {
     public int RecordedSamples => _data.Reader.Count;
-    private readonly Channel<float> _data = Channel.CreateBounded<float>(BandsConfig.FftLength);
+    private readonly Channel<float> _data = Channel.CreateBounded<float>(FftProps.FftLength);
     private readonly WasapiLoopbackCapture _waveIn;
     private readonly ILogger<AudioRecorder> _logger;
 

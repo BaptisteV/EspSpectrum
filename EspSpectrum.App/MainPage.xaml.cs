@@ -4,7 +4,7 @@ namespace EspSpectrum.App
 {
     public partial class MainPage : ContentPage
     {
-        private readonly Button[][] _buttons = new Button[BandsConfig.NBands][];
+        private readonly Button[][] _buttons = new Button[FftProps.NBands][];
 
         private readonly IFftStream _stream;
         private readonly EspSpectrumConfig _config;
@@ -23,13 +23,13 @@ namespace EspSpectrum.App
         public void CreateButtons(HorizontalStackLayout layout)
         {
             const int cellSize = 12;
-            for (int x = 0; x < BandsConfig.NBands; x++)
+            for (int x = 0; x < FftProps.NBands; x++)
             {
-                _buttons[x] = new Button[BandsConfig.BandHeigth];
+                _buttons[x] = new Button[FftProps.BandHeigth];
                 var bar = new VerticalStackLayout();
                 for (int y = 0; y < _buttons[x].Length; y++)
                 {
-                    var top = (BandsConfig.BandHeigth - 1 - y) * cellSize;
+                    var top = (FftProps.BandHeigth - 1 - y) * cellSize;
                     _buttons[x][y] = CreateButton(cellSize, x * cellSize, top);
                     bar.Children.Insert(0, _buttons[x][y]);
                 }
@@ -82,7 +82,7 @@ namespace EspSpectrum.App
 
         private void UpdateLabels()
         {
-            LabelReadLength.Text = $"Read length: {BandsConfig.ReadLength}";
+            LabelReadLength.Text = $"Read length: {FftProps.ReadLength}";
             LabelInterval.Text = $"Interval: {_config.SendInterval.TotalMilliseconds}ms";
         }
 

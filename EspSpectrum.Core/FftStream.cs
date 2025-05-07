@@ -15,7 +15,7 @@ public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<F
         {
             _logger.LogWarning("Getting too slow ({Elapsed}ms elapsed, Target is {TargetRate}). " +
                 "Consider increasing TargetRate or decreasing ReadLength ({ReadLength})",
-                swElapsed.TotalMilliseconds, target.TotalMilliseconds, BandsConfig.ReadLength);
+                swElapsed.TotalMilliseconds, target.TotalMilliseconds, FftProps.ReadLength);
             return;
         }
 
