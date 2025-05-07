@@ -15,15 +15,12 @@ static void ConfigureServices(IServiceCollection services)
     {
         config.AddSimpleConsole(c =>
         {
-            //c.TimestampFormat = "[yyyy-MM-ddTHH:mm:ss] ";
-            c.SingleLine = true; // Only this line is needed for this question
+            c.TimestampFormat = "[yyyy-MM-ddTHH:mm:ss] ";
+            c.SingleLine = true;
         });
-        config.SetMinimumLevel(LogLevel.Debug);
+        config.SetMinimumLevel(LogLevel.Information);
     });
-    services.AddSingleton<IFftReader, FftReader>();
-    services.AddSingleton<IEspWebsocket, EspWebsocket>();
-    services.AddSingleton<IAudioRecorder, AudioRecorder>();
-    services.AddSingleton<IFftStream, FftStream>();
+    services.AddCoreServices();
 }
 
 var sp = Configure();

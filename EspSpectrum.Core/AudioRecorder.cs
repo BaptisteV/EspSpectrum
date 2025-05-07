@@ -27,7 +27,7 @@ public class AudioRecorder : IAudioRecorder
         var bytesRecorded = e.BytesRecorded;
         var bufferIncrement = _waveIn.WaveFormat.BlockAlign;
 
-        List<float> samples = new List<float>();
+        List<float> samples = [];
         for (var index = 0; index < bytesRecorded; index += bufferIncrement)
         {
             var sample32 = BitConverter.ToSingle(buffer, index);

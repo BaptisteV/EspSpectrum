@@ -21,10 +21,7 @@ namespace EspSpectrum.App
 #endif
             builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-            builder.Services.AddTransient<IFftReader, FftReader>();
-            builder.Services.AddTransient<IEspWebsocket, EspWebsocket>();
-            builder.Services.AddTransient<IAudioRecorder, AudioRecorder>();
-            builder.Services.AddTransient<IFftStream, FftStream>();
+            builder.Services.AddCoreServices();
 
             return builder.Build();
         }

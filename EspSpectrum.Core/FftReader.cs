@@ -87,7 +87,7 @@ public class FftReader : IFftReader
         {
             result.Add(bCopy[j]);
         }
-        return ToFft(result.ToArray());
+        return ToFft([.. result]);
     }
 
     private FftResult ToFft(float[] sample)
