@@ -6,18 +6,17 @@ namespace EspSpectrum.Core;
 public sealed class EspWebsocket : IEspWebsocket
 {
     private readonly WebsocketClient _wsClient;
-    private static readonly Uri EspUri = new("ws://192.168.1.133:81");
     private readonly ILogger<EspWebsocket> _logger;
 
-    public EspWebsocket(ILogger<EspWebsocket> logger)
+    public EspWebsocket(EspSpectrumConfig config, ILogger<EspWebsocket> logger)
     {
-        _wsClient = GetWebsocketClient();
+        _wsClient = GetWebsocketClient(config.EspAdress);
         _logger = logger;
     }
 
-    private WebsocketClient GetWebsocketClient()
+    private WebsocketClient GetWebsocketClient(Uri espAdress)
     {
-        var client = new WebsocketClient(EspUri)
+        var client = new WebsocketClient(espAdress)
         {
             ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
             ReconnectTimeout = null

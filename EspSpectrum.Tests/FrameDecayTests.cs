@@ -8,7 +8,7 @@ public class FrameDecayTests
     private readonly EspWebsocket _espWebsocket;
     public FrameDecayTests()
     {
-        _espWebsocket = new EspWebsocket(NullLogger<EspWebsocket>.Instance);
+        _espWebsocket = new EspWebsocket(new EspSpectrumConfig(), NullLogger<EspWebsocket>.Instance);
     }
 
     [Fact]

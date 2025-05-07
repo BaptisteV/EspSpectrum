@@ -21,7 +21,7 @@ namespace EspSpectrum.App
 #endif
             builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-            builder.Services.AddCoreServices();
+            builder.Services.AddCoreServices(builder.Configuration);
 
             return builder.Build();
         }

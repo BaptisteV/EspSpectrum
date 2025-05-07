@@ -1,15 +1,19 @@
 ﻿using EspSpectrum.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-static IServiceProvider Configure()
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), optional: false, reloadOnChange: true)
+    .Build();
+static IServiceProvider Configure(IConfiguration configuration)
 {
     var services = new ServiceCollection();
-    ConfigureServices(services);
+    ConfigureServices(services, configuration);
     return services.BuildServiceProvider();
 }
 
-static void ConfigureServices(IServiceCollection services)
+static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
     services.AddLogging(config =>
     {
@@ -20,10 +24,10 @@ static void ConfigureServices(IServiceCollection services)
         });
         config.SetMinimumLevel(LogLevel.Information);
     });
-    services.AddCoreServices();
+    services.AddCoreServices(configuration);
 }
 
-var sp = Configure();
+var sp = Configure(configuration);
 
 var fftStream = sp.GetRequiredService<IFftStream>();
 var ws = sp.GetRequiredService<IEspWebsocket>();

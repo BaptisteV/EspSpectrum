@@ -25,7 +25,7 @@ public class FftReader : IFftReader
         for (var i = 0; i < _frequencyBands.Length; i++)
         {
             var t = (float)i / (_frequencyBands.Length - 1);
-            _frequencyBands[i] = BandsConfig.minFreq * MathF.Pow(BandsConfig.maxFreq / BandsConfig.minFreq, t);
+            _frequencyBands[i] = BandsConfig.MinFreq * MathF.Pow(BandsConfig.MaxFreq / BandsConfig.MinFreq, t);
         }
     }
 
@@ -57,7 +57,7 @@ public class FftReader : IFftReader
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (float)Math.Log10(bandEnergy + BandsConfig.AddFactor) * 20.0f * BandsConfig.ScaleFactor;
+            bandLevels[band] = (float)Math.Log10(bandEnergy + 1) * 20.0f * BandsConfig.ScaleFactor;
         }
 
         return [.. bandLevels.Select(b => (int)Math.Round(b))];

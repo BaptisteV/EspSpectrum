@@ -2,18 +2,20 @@ using EspSpectrum.Core;
 using EspSpectrum.Worker;
 
 var builder = Host.CreateDefaultBuilder(args);
+
 builder.UseWindowsService(c =>
 {
     c.ServiceName = "EspSpectrum";
 });
 
-builder.ConfigureServices((hostContext, services) =>
+builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
-    services.AddCoreServices();
+    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+}).ConfigureServices((hostContext, services) =>
+{
+    services.AddCoreServices(hostContext.Configuration);
     services.AddHostedService<Worker>();
 });
-// Enables running as a Windows Service
-
 
 var host = builder.Build();
 await host.RunAsync();

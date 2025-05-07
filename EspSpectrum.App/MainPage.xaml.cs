@@ -6,16 +6,18 @@ namespace EspSpectrum.App
     {
         private readonly Button[][] _buttons = new Button[BandsConfig.NBands][];
 
-        private readonly IFftStream stream;
-        private readonly IEspWebsocket ws;
-        private readonly CancellationTokenSource cts = new();
+        private readonly IFftStream _stream;
+        private readonly EspSpectrumConfig _config;
+        private readonly IEspWebsocket _ws;
+        private readonly CancellationTokenSource _cts = new();
 
-        public MainPage(IFftStream stream, IEspWebsocket ws)
+        public MainPage(IFftStream stream, EspSpectrumConfig config, IEspWebsocket ws)
         {
             InitializeComponent();
             CreateButtons(BarsContainer);
-            this.stream = stream;
-            this.ws = ws;
+            _stream = stream;
+            _config = config;
+            _ws = ws;
         }
 
         public void CreateButtons(HorizontalStackLayout layout)
@@ -81,7 +83,7 @@ namespace EspSpectrum.App
         private void UpdateLabels()
         {
             LabelReadLength.Text = $"Read length: {BandsConfig.ReadLength}";
-            LabelInterval.Text = $"Interval: {BandsConfig.TargetRate.TotalMilliseconds}ms";
+            LabelInterval.Text = $"Interval: {_config.SendInterval.TotalMilliseconds}ms";
         }
 
         public void UpdateUI(FftResult fft)
@@ -93,22 +95,22 @@ namespace EspSpectrum.App
 
         private async void ContentPage_Loaded(object sender, EventArgs e)
         {
-            await foreach (var fft in stream.NextFft(cts.Token))
+            await foreach (var fft in _stream.NextFft(_cts.Token))
             {
-                await ws.SendAudio(fft.Bands);
+                await _ws.SendAudio(fft.Bands);
                 Dispatcher.Dispatch(() => UpdateUI(fft));
             }
         }
 
         private void ContentPage_Unloaded(object sender, EventArgs e)
         {
-            cts.Cancel();
-            cts.Dispose();
+            _cts.Cancel();
+            _cts.Dispose();
         }
 
-        private static void Slider_ValueChanged(object sender, ValueChangedEventArgs e)
+        private void Slider_ValueChanged(object sender, ValueChangedEventArgs e)
         {
-            BandsConfig.TargetRate = TimeSpan.FromMilliseconds(e.NewValue);
+            _config.SendInterval = TimeSpan.FromMilliseconds(e.NewValue);
         }
     }
 }

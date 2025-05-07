@@ -1,26 +1,28 @@
 using EspSpectrum.Core;
 
-namespace EspSpectrum.Worker
+namespace EspSpectrum.Worker;
+
+public class Worker : BackgroundService
 {
-    public class Worker : BackgroundService
+    private readonly IFftStream _stream;
+    private readonly IEspWebsocket _ws;
+
+    public Worker(IFftStream stream, IEspWebsocket ws)
     {
-        private readonly ILogger<Worker> _logger;
-        private readonly IFftStream _stream;
-        private readonly IEspWebsocket _ws;
+        _stream = stream;
+        _ws = ws;
+    }
 
-        public Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await foreach (var bands in _stream.NextFft(stoppingToken))
         {
-            _logger = logger;
-            _stream = stream;
-            _ws = ws;
+            await _ws.SendAudio(bands.Bands);
         }
+    }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await foreach (var bands in _stream.NextFft(stoppingToken))
-            {
-                await _ws.SendAudio(bands.Bands);
-            }
-        }
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await _ws.SendAudio(new int[BandsConfig.NBands]);
     }
 }

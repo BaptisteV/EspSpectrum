@@ -3,10 +3,11 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace EspSpectrum.Core;
-public class FftStream(IFftReader fftReader, ILogger<FftStream> logger) : IFftStream
+public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<FftStream> logger) : IFftStream
 {
-    private readonly ILogger<FftStream> _logger = logger;
     private readonly IFftReader _fftReader = fftReader;
+    private readonly EspSpectrumConfig _config = config;
+    private readonly ILogger<FftStream> _logger = logger;
 
     private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
     {
@@ -35,7 +36,7 @@ public class FftStream(IFftReader fftReader, ILogger<FftStream> logger) : IFftSt
             stopwatch.Restart();
             var fft = await _fftReader.ReadLastFft();
 
-            await WaitIfNecessary(stopwatch.Elapsed, BandsConfig.TargetRate);
+            await WaitIfNecessary(stopwatch.Elapsed, _config.SendInterval);
             yield return fft;
         }
     }
