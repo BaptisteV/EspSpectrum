@@ -25,7 +25,7 @@ public class FftReader : IFftReader
 
         for (var i = 0; i < _frequencyBands.Length; i++)
         {
-            var t = (float)i / (_frequencyBands.Length - 1);
+            var t = i / (_frequencyBands.Length - 1);
             _frequencyBands[i] = FftProps.MinFreq * Math.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
         }
     }
