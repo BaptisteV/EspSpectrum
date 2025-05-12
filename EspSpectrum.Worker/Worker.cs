@@ -2,18 +2,11 @@ using EspSpectrum.Core;
 
 namespace EspSpectrum.Worker;
 
-public class Worker : BackgroundService
+public class Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws) : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
-    private readonly IFftStream _stream;
-    private readonly IEspWebsocket _ws;
-
-    public Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws)
-    {
-        _logger = logger;
-        _stream = stream;
-        _ws = ws;
-    }
+    private readonly ILogger<Worker> _logger = logger;
+    private readonly IFftStream _stream = stream;
+    private readonly IEspWebsocket _ws = ws;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

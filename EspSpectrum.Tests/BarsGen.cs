@@ -1,10 +1,12 @@
-﻿namespace EspSpectrum.DisplayTests;
+﻿using EspSpectrum.Core;
+
+namespace EspSpectrum.DisplayTests;
 
 public static class BarsGen
 {
     public static int[] GetLine(int value)
     {
-        var data = new int[32];
+        var data = new int[FftProps.NBands];
         for (int i = 0; i < data.Length; i++)
         {
             data[i] = value;

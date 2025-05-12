@@ -21,10 +21,7 @@ public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<F
 
         var remainingTime = target - swElapsed;
 
-        if (remainingTime > TimeSpan.FromMicroseconds(100))
-        {
-            await Task.Delay(remainingTime);
-        }
+        await Task.Delay(remainingTime);
     }
 
     public async IAsyncEnumerable<FftResult> NextFft([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -34,7 +31,7 @@ public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<F
         while (!cancellationToken.IsCancellationRequested)
         {
             stopwatch.Restart();
-            var fft = await _fftReader.ReadLastFft();
+            var fft = await _fftReader.ReadLastFft(cancellationToken);
 
             await WaitIfNecessary(stopwatch.Elapsed, _config.SendInterval);
             yield return fft;
