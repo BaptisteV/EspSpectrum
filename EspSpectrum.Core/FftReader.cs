@@ -35,7 +35,7 @@ public class FftReader : IFftReader
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
     }
 
-    public int[] CalculateBands(NAudio.Dsp.Complex[] fftResult)
+    private int[] CalculateBands(NAudio.Dsp.Complex[] fftResult)
     {
         var bandLevels = new int[FftProps.NBands];
         var binFrequencyResolution = (double)_audioRecorder.SampleRate / FftProps.FftLength;
@@ -63,8 +63,6 @@ public class FftReader : IFftReader
 
         return bandLevels;
     }
-
-    public int AvailableSamples() => _buffer.Count + _audioRecorder.RecordedSamples;
 
     public async ValueTask<FftResult> ReadLastFft(CancellationToken cancellation = default)
     {
@@ -107,5 +105,11 @@ public class FftReader : IFftReader
         var bands = CalculateBands(fftBuffer);
 
         return new FftResult() { Bands = bands };
+    }
+
+    public void Restart()
+    {
+        while (!_buffer.IsEmpty) { _buffer.TryDequeue(out var _); }
+        _audioRecorder.Restart();
     }
 }

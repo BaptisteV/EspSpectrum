@@ -1,13 +1,33 @@
 ﻿using Microsoft.Extensions.Logging;
+using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace EspSpectrum.Core;
-public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<FftStream> logger) : IFftStream
+
+public class FftStream : IFftStream, IDisposable
 {
-    private readonly IFftReader _fftReader = fftReader;
-    private readonly EspSpectrumConfig _config = config;
-    private readonly ILogger<FftStream> _logger = logger;
+    private readonly IFftReader _fftReader;
+    private readonly EspSpectrumConfig _config;
+    private readonly ILogger<FftStream> _logger;
+
+    private readonly MMDeviceEnumerator _deviceEnumerator;
+    private readonly DeviceChangedNotifier _deviceChangedNotifier;
+
+    public FftStream(
+        IFftReader fftReader,
+        EspSpectrumConfig config,
+        ILogger<FftStream> logger)
+    {
+        _fftReader = fftReader;
+        _config = config;
+        _logger = logger;
+
+        _deviceEnumerator = new MMDeviceEnumerator();
+        _deviceChangedNotifier = new DeviceChangedNotifier(_logger, _fftReader);
+
+        _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
+    }
 
     private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
     {
@@ -36,5 +56,10 @@ public class FftStream(IFftReader fftReader, EspSpectrumConfig config, ILogger<F
             await WaitIfNecessary(stopwatch.Elapsed, _config.SendInterval);
             yield return fft;
         }
+    }
+
+    public void Dispose()
+    {
+        _deviceEnumerator.Dispose();
     }
 }

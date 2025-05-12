@@ -1,10 +1,7 @@
-﻿using NAudio.Dsp;
-
-namespace EspSpectrum.Core;
+﻿namespace EspSpectrum.Core;
 
 public interface IFftReader
 {
-    int[] CalculateBands(Complex[] fftResult);
-    int AvailableSamples();
     ValueTask<FftResult> ReadLastFft(CancellationToken cancellation = default);
+    void Restart();
 }

@@ -6,17 +6,23 @@ namespace EspSpectrum.Core;
 
 public class AudioRecorder : IAudioRecorder
 {
-    public int RecordedSamples => _data.Reader.Count;
     private readonly Channel<float> _data = Channel.CreateBounded<float>(FftProps.FftLength);
-    private readonly WasapiLoopbackCapture _waveIn;
+    private WasapiLoopbackCapture _waveIn;
     private readonly ILogger<AudioRecorder> _logger;
 
     public AudioRecorder(ILogger<AudioRecorder> logger)
     {
         _waveIn = new WasapiLoopbackCapture();
         _waveIn.DataAvailable += OnDataAvailable;
+        _waveIn.RecordingStopped += OnRecordingStopped;
+
         _waveIn.StartRecording();
         _logger = logger;
+    }
+
+    private void OnRecordingStopped(object? sender, StoppedEventArgs e)
+    {
+        _logger.LogError(e.Exception, "Recording stopped. Current state: {State}", _waveIn.CaptureState);
     }
 
     public int SampleRate => _waveIn.WaveFormat.SampleRate;
@@ -60,5 +66,18 @@ public class AudioRecorder : IAudioRecorder
         }
 
         return [.. part];
+    }
+
+    public void Restart()
+    {
+        _logger.LogDebug("Stopping recording");
+        _waveIn.StopRecording();
+        _waveIn.DataAvailable -= OnDataAvailable;
+        _waveIn.RecordingStopped -= OnRecordingStopped;
+        _waveIn = new WasapiLoopbackCapture();
+        _waveIn.DataAvailable += OnDataAvailable;
+        _waveIn.RecordingStopped += OnRecordingStopped;
+        _waveIn.StartRecording();
+        _logger.LogDebug("Started recording");
     }
 }
