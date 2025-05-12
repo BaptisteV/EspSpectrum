@@ -6,5 +6,5 @@ public interface IFftReader
 {
     int[] CalculateBands(Complex[] fftResult);
     int AvailableSamples();
-    Task<FftResult> ReadLastFft();
+    ValueTask<FftResult> ReadLastFft(CancellationToken cancellation = default);
 }

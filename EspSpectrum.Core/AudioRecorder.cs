@@ -44,7 +44,7 @@ public class AudioRecorder : IAudioRecorder
     {
         if (_data.Reader.Count < length)
         {
-            _logger.LogWarning("Not enough recording");
+            _logger.LogDebug("Not enough recording trying to read {ReadLength}", length);
             return [];
         }
 
