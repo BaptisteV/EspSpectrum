@@ -30,7 +30,7 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 var sp = Configure(configuration);
 
 var fftStream = sp.GetRequiredService<IFftStream>();
-var ws = sp.GetRequiredService<IEspWebsocket>();
+var ws = sp.GetRequiredService<IWebsocketBars>();
 
 await foreach (var fft in fftStream.NextFft())
 {

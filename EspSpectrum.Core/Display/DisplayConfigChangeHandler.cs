@@ -7,11 +7,11 @@ public class DisplayConfigChangeHandler : IDisplayConfigChangeHandler
 {
     private readonly ILogger<DisplayConfigChangeHandler> _logger;
     private DisplayConfig _config;
-    private readonly IDisplayConfigWebsocket _ws;
+    private readonly IWebsocketDisplay _ws;
 
     public DisplayConfigChangeHandler(
         IOptionsMonitor<DisplayConfig> optionsMonitor,
-        IDisplayConfigWebsocket ws,
+        IWebsocketDisplay ws,
         ILogger<DisplayConfigChangeHandler> logger)
     {
         _logger = logger;

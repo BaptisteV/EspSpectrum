@@ -1,22 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             xmlns:controls="clr-namespace:Maui.ColorPicker;assembly=Maui.ColorPicker"
              x:Class="EspSpectrum.App.MainPage"
              Loaded="ContentPage_Loaded"
              Unloaded="ContentPage_Unloaded">
 
     <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25" >
-            <Image Source="dotnet_bot.png" HeightRequest="185" Aspect="AspectFit" SemanticProperties.Description="dot net bot in a hovercraft number nine" />
+        <VerticalStackLayout Padding="30,0" Spacing="4" >
+            <Image Source="dotnet_bot.png" HeightRequest="100" Aspect="AspectFit" SemanticProperties.Description="dot net bot in a hovercraft number nine" />
             <Label Text="EspSpectrum" Style="{StaticResource Headline}" SemanticProperties.HeadingLevel="Level1" />
 
             <HorizontalStackLayout x:Name="BarsContainer" Padding="10" HorizontalOptions="Center">
             </HorizontalStackLayout>
 
-            <VerticalStackLayout>
-                    <Label x:Name="LabelInterval" Text="Interval: 33ms"></Label>
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="LabelInterval" Text="Interval: 33ms"></Label>
                 <Slider HorizontalOptions="Fill" Maximum="150" Minimum="1" Value="3" x:Name="IntervalSlider" ValueChanged="Slider_ValueChanged"></Slider>
-                <Label x:Name="LabelReadLength"></Label>
+                
+                <Label x:Name="LabelHistoLength" Text="Histo length: 10 frames"></Label>
+                <Slider HorizontalOptions="Fill" Maximum="50" Minimum="0" Value="10" x:Name="HistoLengthSlider" ValueChanged="HistoLengthSlider_ValueChanged"></Slider>
+
+                <Label x:Name="LabelBrightness" Text="Brightness: 10 frames"></Label>
+                <Slider HorizontalOptions="Fill" Maximum="255" Minimum="0" Value="200" x:Name="BrightnessSlider" ValueChanged="BrightnessSlider_ValueChanged"></Slider>
+                
+                <controls:ColorPicker
+                   x:Name="HighColorPicker"
+                   ColorFlowDirection="Horizontal"
+                   ColorSpectrumStyle="HueOnlyStyle"
+                   PickedColorChanged="HighColorPicker_PickedColorChanged"
+                   PointerRingBorderUnits="1"
+                   PointerRingDiameterUnits="0.2" 
+                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                </controls:ColorPicker>
+                <controls:ColorPicker
+                   x:Name="MidColorPicker"
+                   ColorFlowDirection="Horizontal"
+                   ColorSpectrumStyle="HueOnlyStyle"
+                   PickedColorChanged="MidColorPicker_PickedColorChanged"
+                   PointerRingBorderUnits="1"
+                   PointerRingDiameterUnits="0.2" 
+                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                </controls:ColorPicker>
+                <controls:ColorPicker
+                   x:Name="LowColorPicker"
+                   ColorFlowDirection="Horizontal"
+                   ColorSpectrumStyle="HueOnlyStyle"
+                   PickedColorChanged="LowColorPicker_PickedColorChanged"
+                   PointerRingBorderUnits="1"
+                   PointerRingDiameterUnits="0.2" 
+                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                </controls:ColorPicker>
             </VerticalStackLayout>
         </VerticalStackLayout>
         

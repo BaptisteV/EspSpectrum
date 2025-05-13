@@ -5,7 +5,7 @@ using Websocket.Client;
 
 namespace EspSpectrum.Core.Display;
 
-public class DisplayConfigWebsocket : IDisplayConfigWebsocket
+public class DisplayConfigWebsocket : IWebsocketDisplay
 {
     private readonly ILogger<DisplayConfigWebsocket> _logger;
     private readonly WebsocketClient _wsClient;

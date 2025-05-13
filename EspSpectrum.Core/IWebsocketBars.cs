@@ -1,7 +1,7 @@
 ﻿
 namespace EspSpectrum.Core;
 
-public interface IEspWebsocket
+public interface IWebsocketBars
 {
     Task SendAudio(int[] audio);
 }

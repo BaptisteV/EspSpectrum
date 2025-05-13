@@ -1,6 +1,6 @@
 ﻿namespace EspSpectrum.Core.Display;
 
-public interface IDisplayConfigWebsocket
+public interface IWebsocketDisplay
 {
     Task Send(DisplayConfig displayConfig);
 }

@@ -11,11 +11,12 @@ public static class ServiceCollectionExtensions
         services.Configure<EspConfig>(configuration);
         services.Configure<DisplayConfig>(configuration);
         services.AddTransient<IFftReader, FftReader>();
-        services.AddTransient<IEspWebsocket, EspWebsocket>();
+        services.AddTransient<IWebsocketBars, EspWebsocket>();
         services.AddTransient<IAudioRecorder, AudioRecorder>();
         services.AddTransient<IFftStream, FftStream>();
 
-        services.AddTransient<IDisplayConfigWebsocket, DisplayConfigWebsocket>();
+        services.AddTransient<IWebsocketDisplay, DisplayConfigWebsocket>();
         services.AddSingleton<IDisplayConfigChangeHandler, DisplayConfigChangeHandler>();
+        services.AddTransient<IDisplayConfigWriter, DisplayConfigWriter>();
     }
 }

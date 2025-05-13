@@ -5,7 +5,7 @@ using Websocket.Client;
 
 namespace EspSpectrum.Core;
 
-public sealed class EspWebsocket : IEspWebsocket
+public sealed class EspWebsocket : IWebsocketBars
 {
     private readonly WebsocketClient _wsClient;
     private readonly ILogger<EspWebsocket> _logger;
