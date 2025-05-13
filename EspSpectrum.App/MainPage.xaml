@@ -15,8 +15,8 @@
             </HorizontalStackLayout>
 
             <VerticalStackLayout Spacing="4">
-                <Label x:Name="LabelInterval" Text="Interval: 33ms"></Label>
-                <Slider HorizontalOptions="Fill" Maximum="150" Minimum="1" Value="3" x:Name="IntervalSlider" ValueChanged="Slider_ValueChanged"></Slider>
+                <Label x:Name="LabelInterval" Text="Interval: 10ms"></Label>
+                <Slider HorizontalOptions="Fill" Maximum="150" Minimum="2" Value="10" x:Name="IntervalSlider" ValueChanged="Slider_ValueChanged"></Slider>
                 
                 <Label x:Name="LabelHistoLength" Text="Histo length: 10 frames"></Label>
                 <Slider HorizontalOptions="Fill" Maximum="50" Minimum="0" Value="10" x:Name="HistoLengthSlider" ValueChanged="HistoLengthSlider_ValueChanged"></Slider>
