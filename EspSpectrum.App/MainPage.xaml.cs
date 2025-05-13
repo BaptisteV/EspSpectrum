@@ -71,18 +71,18 @@ namespace EspSpectrum.App
             };
         }
 
-        private static Color GetCellColor(int barValue, int y)
+        private Color GetCellColor(int barValue, int y)
         {
             if (y >= barValue)
                 return Colors.Gray;
 
             if (y <= 4)
-                return Colors.Chartreuse;
+                return FromEspHue(_displayConfig.LowHue);
 
             if (y > 4 && y < 7)
-                return Colors.Orange;
+                return FromEspHue(_displayConfig.MidHue);
 
-            return Colors.Red;
+            return FromEspHue(_displayConfig.HighHue);
         }
 
         public void UpdateBars(FftResult fft)
@@ -110,9 +110,21 @@ namespace EspSpectrum.App
             UpdateLabels();
         }
 
-
+        private static int ToEspHue(Color color) => (int)Math.Round(color.GetHue() * 255.0);
+        private static Color FromEspHue(int hue) => Color.FromHsv(hue, 100, 100);
         private async void ContentPage_Loaded(object sender, EventArgs e)
         {
+            Dispatcher.Dispatch(() =>
+            {
+                IntervalSlider.Value = _displayConfig.SendInterval.TotalMilliseconds;
+                HistoLengthSlider.Value = _displayConfig.HistoLength;
+                BrightnessSlider.Value = _displayConfig.Brightness;
+                UpdateLabels();
+                HighColorPicker.PickedColor = FromEspHue(_displayConfig.HighHue);
+                MidColorPicker.PickedColor = FromEspHue(_displayConfig.MidHue);
+                LowColorPicker.PickedColor = FromEspHue(_displayConfig.LowHue);
+            });
+
             await foreach (var fft in _stream.NextFft(_cts.Token))
             {
                 await _wsBars.SendAudio(fft.Bands);
@@ -141,8 +153,6 @@ namespace EspSpectrum.App
         {
             await _displayWriter.UpdateConfig(c => c.Brightness = (int)Math.Round(e.NewValue));
         }
-
-        private static int ToEspHue(Color color) => (int)Math.Round(color.GetHue() * 255.0);
 
         private async void LowColorPicker_PickedColorChanged(object sender, Maui.ColorPicker.PickedColorChangedEventArgs e)
         {
