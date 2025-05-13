@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core.Display;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-
 namespace EspSpectrum.Core;
 
-public class FftStream : IFftStream, IDisposable
+public sealed class FftStream : IFftStream, IDisposable
 {
     private readonly IFftReader _fftReader;
-    private readonly EspSpectrumConfig _config;
+    private readonly IOptionsMonitor<DisplayConfig> _configMonitor;
     private readonly ILogger<FftStream> _logger;
 
     private readonly MMDeviceEnumerator _deviceEnumerator;
@@ -16,16 +17,15 @@ public class FftStream : IFftStream, IDisposable
 
     public FftStream(
         IFftReader fftReader,
-        EspSpectrumConfig config,
+        IOptionsMonitor<DisplayConfig> configMonitor,
         ILogger<FftStream> logger)
     {
         _fftReader = fftReader;
-        _config = config;
+        _configMonitor = configMonitor;
         _logger = logger;
 
         _deviceEnumerator = new MMDeviceEnumerator();
         _deviceChangedNotifier = new DeviceChangedNotifier(_logger, _fftReader);
-
         _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
     }
 
@@ -52,8 +52,7 @@ public class FftStream : IFftStream, IDisposable
         {
             stopwatch.Restart();
             var fft = await _fftReader.ReadLastFft(cancellationToken);
-
-            await WaitIfNecessary(stopwatch.Elapsed, _config.SendInterval);
+            await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
             yield return fft;
         }
     }

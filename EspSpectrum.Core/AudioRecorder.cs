@@ -27,6 +27,8 @@ public class AudioRecorder : IAudioRecorder
 
     public int SampleRate => _waveIn.WaveFormat.SampleRate;
 
+    public int ChannelCount => _waveIn.WaveFormat.Channels;
+
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
         var buffer = e.Buffer;

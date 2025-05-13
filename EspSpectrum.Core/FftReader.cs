@@ -58,7 +58,7 @@ public class FftReader : IFftReader
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * 20.0 * FftProps.ScaleFactor);
+            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * 20.0 * FftProps.ScaleFactor * _audioRecorder.ChannelCount);
         }
 
         return bandLevels;

@@ -16,4 +16,10 @@
   <ItemGroup>
     <ProjectReference Include="..\EspSpectrum.Core\EspSpectrum.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

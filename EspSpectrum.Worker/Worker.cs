@@ -1,12 +1,14 @@
 using EspSpectrum.Core;
+using EspSpectrum.Core.Display;
 
 namespace EspSpectrum.Worker;
 
-public class Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws) : BackgroundService
+public class Worker(ILogger<Worker> logger, IFftStream stream, IEspWebsocket ws, IDisplayConfigChangeHandler dcch) : BackgroundService
 {
     private readonly ILogger<Worker> _logger = logger;
     private readonly IFftStream _stream = stream;
     private readonly IEspWebsocket _ws = ws;
+    private readonly IDisplayConfigChangeHandler _dcch = dcch;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

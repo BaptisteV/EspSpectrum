@@ -16,6 +16,5 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
     services.AddCoreServices(hostContext.Configuration);
     services.AddHostedService<Worker>();
 });
-
 var host = builder.Build();
 await host.RunAsync();

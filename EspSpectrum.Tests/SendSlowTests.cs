@@ -1,5 +1,6 @@
 ﻿using EspSpectrum.Core;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
 namespace EspSpectrum.DisplayTests;
@@ -7,7 +8,7 @@ namespace EspSpectrum.DisplayTests;
 public class SendSlowTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper _output = output;
-    private readonly EspWebsocket _espWebsocket = new(new EspSpectrumConfig(), NullLogger<EspWebsocket>.Instance);
+    private readonly EspWebsocket _espWebsocket = new(Options.Create(new EspConfig()), NullLogger<EspWebsocket>.Instance);
 
     [Fact]
     public async Task UpDown1Sec()

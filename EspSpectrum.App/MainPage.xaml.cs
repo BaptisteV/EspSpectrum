@@ -1,4 +1,5 @@
 ﻿using EspSpectrum.Core;
+using EspSpectrum.Core.Display;
 
 namespace EspSpectrum.App
 {
@@ -7,11 +8,11 @@ namespace EspSpectrum.App
         private readonly Button[][] _buttons = new Button[FftProps.NBands][];
 
         private readonly IFftStream _stream;
-        private readonly EspSpectrumConfig _config;
+        private readonly DisplayConfig _config;
         private readonly IEspWebsocket _ws;
         private readonly CancellationTokenSource _cts = new();
 
-        public MainPage(IFftStream stream, EspSpectrumConfig config, IEspWebsocket ws)
+        public MainPage(IFftStream stream, DisplayConfig config, IEspWebsocket ws)
         {
             InitializeComponent();
             CreateButtons(BarsContainer);

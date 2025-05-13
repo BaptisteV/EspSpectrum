@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Net.Sockets;
 using Websocket.Client;
 
@@ -10,36 +11,10 @@ public sealed class EspWebsocket : IEspWebsocket
     private readonly ILogger<EspWebsocket> _logger;
     private bool _starting = false;
 
-    public EspWebsocket(EspSpectrumConfig config, ILogger<EspWebsocket> logger)
+    public EspWebsocket(IOptions<EspConfig> config, ILogger<EspWebsocket> logger)
     {
-        _wsClient = GetWebsocketClient(config.EspAdress);
         _logger = logger;
-    }
-
-    private WebsocketClient GetWebsocketClient(Uri espAdress)
-    {
-        var client = new WebsocketClient(espAdress)
-        {
-            ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
-            ReconnectTimeout = null
-        };
-
-        client.DisconnectionHappened.Subscribe(disconnectInfo
-            => _logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType}", disconnectInfo.Type));
-
-        client.ReconnectionHappened.Subscribe(reconnectionInfo =>
-        {
-            if (reconnectionInfo.Type == ReconnectionType.Initial)
-            {
-                _logger.LogInformation("Esp websocket connected successfully");
-            }
-            else
-            {
-                _logger.LogInformation("Esp websocket reconnected. Reason: {ReconnectType}", reconnectionInfo.Type);
-            }
-        });
-
-        return client;
+        _wsClient = EspConfig.GetWebsocketClient(config.Value.EspAdress, _logger);
     }
 
     private static byte[] PackData(int[] bars)
@@ -86,9 +61,7 @@ public sealed class EspWebsocket : IEspWebsocket
         }
         catch (OperationCanceledException ce)
         {
-            _logger.LogError(ce, "Operation cancelled");
-            throw;
+            _logger.LogError(ce, "Operation cancelled, ESP restarting ?");
         }
-
     }
 }
