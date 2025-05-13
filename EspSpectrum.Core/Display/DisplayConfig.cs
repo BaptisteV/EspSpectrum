@@ -1,6 +1,6 @@
 ﻿namespace EspSpectrum.Core.Display;
 
-public class DisplayConfig : IEquatable<DisplayConfig>
+public sealed class DisplayConfig : IEquatable<DisplayConfig>
 {
     public TimeSpan SendInterval { get; set; }
 
@@ -10,7 +10,8 @@ public class DisplayConfig : IEquatable<DisplayConfig>
     public int LowHue { get; set; }
     public int MidHue { get; set; }
     public int HighHue { get; set; }
-    public bool Equals(DisplayConfig other)
+
+    public bool Equals(DisplayConfig? other)
     {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
@@ -23,7 +24,7 @@ public class DisplayConfig : IEquatable<DisplayConfig>
                HighHue == other.HighHue;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is null) return false;
         if (ReferenceEquals(this, obj)) return true;

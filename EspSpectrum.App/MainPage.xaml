@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-             xmlns:controls="clr-namespace:Maui.ColorPicker;assembly=Maui.ColorPicker"
+             xmlns:controls="https://trungnt2910.github.io/schemas/maui/2022/colorpicker"
              x:Class="EspSpectrum.App.MainPage"
              Loaded="ContentPage_Loaded"
              Unloaded="ContentPage_Unloaded">
@@ -31,25 +31,25 @@
                    PickedColorChanged="HighColorPicker_PickedColorChanged"
                    PointerRingBorderUnits="1"
                    PointerRingDiameterUnits="0.2" 
-                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                   MinimumHeightRequest="40"
+                    MinimumWidthRequest="40">
                 </controls:ColorPicker>
                 <controls:ColorPicker
                    x:Name="MidColorPicker"
                    ColorFlowDirection="Horizontal"
                    ColorSpectrumStyle="HueOnlyStyle"
                    PickedColorChanged="MidColorPicker_PickedColorChanged"
-                   PointerRingBorderUnits="1"
+                   PointerRingBorderUnits="0.5"
                    PointerRingDiameterUnits="0.2" 
-                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                   MinimumHeightRequest="40" MinimumWidthRequest="40">
                 </controls:ColorPicker>
                 <controls:ColorPicker
                    x:Name="LowColorPicker"
                    ColorFlowDirection="Horizontal"
                    ColorSpectrumStyle="HueOnlyStyle"
                    PickedColorChanged="LowColorPicker_PickedColorChanged"
-                   PointerRingBorderUnits="1"
-                   PointerRingDiameterUnits="0.2" 
-                   MinimumHeightRequest="60" MinimumWidthRequest="20">
+                    
+                   MinimumHeightRequest="40" MinimumWidthRequest="40">
                 </controls:ColorPicker>
             </VerticalStackLayout>
         </VerticalStackLayout>

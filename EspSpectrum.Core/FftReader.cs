@@ -1,22 +1,19 @@
-﻿using Microsoft.Extensions.Logging;
-using NAudio.Dsp;
+﻿using NAudio.Dsp;
 using System.Collections.Concurrent;
 
 namespace EspSpectrum.Core;
 
 public class FftReader : IFftReader
 {
-    private readonly ILogger<FftReader> _logger;
     private static double[] _frequencyBands = [];
     private readonly IAudioRecorder _audioRecorder;
     private readonly ConcurrentQueue<double> _buffer = [];
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    public FftReader(IAudioRecorder audioRecorder, ILogger<FftReader> logger)
+    public FftReader(IAudioRecorder audioRecorder)
     {
         InitializeBandBoundaries();
         _audioRecorder = audioRecorder;
-        _logger = logger;
     }
 
     private static void InitializeBandBoundaries()
@@ -58,7 +55,7 @@ public class FftReader : IFftReader
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * 20.0 * FftProps.ScaleFactor * _audioRecorder.ChannelCount);
+            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * FftProps.ScaleFactor);
         }
 
         return bandLevels;

@@ -51,11 +51,6 @@ public sealed class EspWebsocket : IWebsocketBars
         }
         catch (SocketException se)
         {
-            // SocketException (10054): An existing connection was forcibly closed by the remote host
-            /*if (se.ErrorCode != (int)SocketError.ConnectionReset)
-            {
-                throw;
-            }*/
             _logger.LogError(se, "Connection error");
             throw;
         }

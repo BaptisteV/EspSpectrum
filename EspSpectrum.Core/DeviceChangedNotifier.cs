@@ -7,13 +7,17 @@ public class DeviceChangedNotifier(ILogger logger, IFftReader reader) : NAudio.C
 {
     private readonly IFftReader _reader = reader;
 
-    public void OnDefaultDeviceChanged(DataFlow dataFlow, Role deviceRole, string defaultDeviceId)
+    public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
     {
         logger.LogInformation("Default output device changed. Restarting");
         _reader.Restart();
     }
 
-    public void OnDeviceAdded(string deviceId)
+    public void OnDeviceStateChanged(string deviceId, DeviceState newState)
+    {
+    }
+
+    public void OnDeviceAdded(string pwstrDeviceId)
     {
     }
 
@@ -21,14 +25,7 @@ public class DeviceChangedNotifier(ILogger logger, IFftReader reader) : NAudio.C
     {
     }
 
-    public void OnDeviceStateChanged(string deviceId, DeviceState newState)
+    public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key)
     {
-        //_logger.LogWarning("OnDeviceStateChanged Device Id -->{DeviceId} : Device State {DeviceState}", deviceId, newState);
     }
-
-    public void OnPropertyValueChanged(string deviceId, PropertyKey propertyKey)
-    {
-        //_logger.LogInformation("OnPropertyValueChanged: propertyId --> {1}", propertyKey.propertyId.ToString());
-    }
-
 }

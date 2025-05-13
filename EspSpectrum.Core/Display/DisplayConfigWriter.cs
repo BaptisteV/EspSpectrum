@@ -3,16 +3,10 @@ using System.Text.Json;
 
 namespace EspSpectrum.Core.Display;
 
-public class DisplayConfigWriter : IDisplayConfigWriter
+public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger) : IDisplayConfigWriter
 {
-    private readonly ILogger<DisplayConfigWriter> _logger;
-    private readonly string _filePath;
-
-    public DisplayConfigWriter(ILogger<DisplayConfigWriter> logger)
-    {
-        _logger = logger;
-        _filePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-    }
+    private readonly ILogger<DisplayConfigWriter> _logger = logger;
+    private readonly string _filePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
 
     /// <summary>
     /// Updates specific properties of DisplayConfig in the JSON file
@@ -20,10 +14,10 @@ public class DisplayConfigWriter : IDisplayConfigWriter
     public async Task UpdateConfig(Action<DisplayConfig> updateAction)
     {
         // Read the entire JSON file
-        string jsonText = await File.ReadAllTextAsync(_filePath);
+        var jsonText = await File.ReadAllTextAsync(_filePath);
 
         // Deserialize the entire JSON to get both DisplayConfig properties and other properties
-        using JsonDocument document = JsonDocument.Parse(jsonText);
+        using var document = JsonDocument.Parse(jsonText);
         var rootElement = document.RootElement;
 
         // Convert the root element to a DisplayConfig object
@@ -34,23 +28,23 @@ public class DisplayConfigWriter : IDisplayConfigWriter
         updateAction(displayConfig);
 
         // Create a new JSON object that merges the updated DisplayConfig with other root properties
-        using MemoryStream ms = new MemoryStream();
-        using Utf8JsonWriter writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = true });
+        using var ms = new MemoryStream();
+        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = false });
 
         writer.WriteStartObject();
 
         // Serialize DisplayConfig properties
         var displayConfigJson = JsonSerializer.Serialize(displayConfig);
-        using JsonDocument displayConfigDoc = JsonDocument.Parse(displayConfigJson);
+        using var displayConfigDoc = JsonDocument.Parse(displayConfigJson);
 
         // First, write all DisplayConfig properties
-        foreach (JsonProperty property in displayConfigDoc.RootElement.EnumerateObject())
+        foreach (var property in displayConfigDoc.RootElement.EnumerateObject())
         {
             property.WriteTo(writer);
         }
 
         // Then, write all other properties from the original document that aren't DisplayConfig properties
-        foreach (JsonProperty property in rootElement.EnumerateObject())
+        foreach (var property in rootElement.EnumerateObject())
         {
             // Skip properties that are part of DisplayConfig (they've already been written with updated values)
             if (IsDisplayConfigProperty(property.Name))
@@ -65,17 +59,16 @@ public class DisplayConfigWriter : IDisplayConfigWriter
 
         // Convert the memory stream to string and write to file
         ms.Seek(0, SeekOrigin.Begin);
-        string updatedJson = System.Text.Encoding.UTF8.GetString(ms.ToArray());
+        var updatedJson = System.Text.Encoding.UTF8.GetString(ms.ToArray());
         await File.WriteAllTextAsync(_filePath, updatedJson);
 
-        _logger.LogInformation($"Successfully updated config in {_filePath}");
-
+        _logger.LogInformation("Successfully updated display config in {FilePath}", _filePath);
     }
 
     /// <summary>
     /// Checks if a property name belongs to DisplayConfig
     /// </summary>
-    private bool IsDisplayConfigProperty(string propertyName)
+    private static bool IsDisplayConfigProperty(string propertyName)
     {
         // Check if the property exists in DisplayConfig
         var property = typeof(DisplayConfig).GetProperty(propertyName,

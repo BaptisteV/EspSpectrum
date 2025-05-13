@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IFftStream, FftStream>();
 
         services.AddTransient<IWebsocketDisplay, DisplayConfigWebsocket>();
-        services.AddSingleton<IDisplayConfigChangeHandler, DisplayConfigChangeHandler>();
+
         services.AddTransient<IDisplayConfigWriter, DisplayConfigWriter>();
     }
 }

@@ -10,9 +10,10 @@ namespace EspSpectrum.App
 
         private readonly IFftStream _stream;
 
+        private DisplayConfig _display;
         private readonly IOptionsMonitor<DisplayConfig> _displayMonitor;
-        private DisplayConfig _displayConfig;
         private readonly IWebsocketBars _wsBars;
+        private readonly IWebsocketDisplay _wsDisplay;
         private readonly IDisplayConfigWriter _displayWriter;
         private readonly CancellationTokenSource _cts = new();
 
@@ -20,21 +21,34 @@ namespace EspSpectrum.App
             IFftStream stream,
             IOptionsMonitor<DisplayConfig> displayMonitor,
             IWebsocketBars wsBars,
-            IDisplayConfigChangeHandler configChangeHandler,
+            IWebsocketDisplay wsDisplay,
             IDisplayConfigWriter displayWriter)
         {
             InitializeComponent();
             CreateButtons(BarsContainer);
             _stream = stream;
             _wsBars = wsBars;
+            _wsDisplay = wsDisplay;
             _displayWriter = displayWriter;
             _displayMonitor = displayMonitor;
-            _displayConfig = _displayMonitor.CurrentValue;
-            _displayMonitor.OnChange((newConf) =>
+            _display = _displayMonitor.CurrentValue;
+            _displayMonitor.OnChange(async (newConf) =>
             {
-                if (newConf != _displayConfig)
-                    _displayConfig = newConf;
+                if (newConf != _display)
+                {
+                    await _wsDisplay.Send(newConf);
+                    _display = newConf;
+                }
             });
+
+            _ = Task.Run(async () =>
+            {
+                await foreach (var fft in _stream.NextFft(_cts.Token))
+                {
+                    await _wsBars.SendAudio(fft.Bands);
+                    Dispatcher.Dispatch(() => UpdateUI(fft));
+                }
+            }, _cts.Token);
         }
 
         public void CreateButtons(HorizontalStackLayout layout)
@@ -77,12 +91,12 @@ namespace EspSpectrum.App
                 return Colors.Gray;
 
             if (y <= 4)
-                return FromEspHue(_displayConfig.LowHue);
+                return FromEspHue(_displayMonitor.CurrentValue.LowHue);
 
             if (y > 4 && y < 7)
-                return FromEspHue(_displayConfig.MidHue);
+                return FromEspHue(_displayMonitor.CurrentValue.MidHue);
 
-            return FromEspHue(_displayConfig.HighHue);
+            return FromEspHue(_displayMonitor.CurrentValue.HighHue);
         }
 
         public void UpdateBars(FftResult fft)
@@ -99,9 +113,9 @@ namespace EspSpectrum.App
 
         private void UpdateLabels()
         {
-            LabelInterval.Text = $"Interval: {_displayConfig.SendInterval.TotalMilliseconds}ms";
-            LabelHistoLength.Text = $"Histo length: {_displayConfig.HistoLength} frames";
-            LabelBrightness.Text = $"Brightness: {_displayConfig.Brightness} ({_displayConfig.Brightness * 100 / 255}%)";
+            LabelInterval.Text = $"Interval: {_displayMonitor.CurrentValue.SendInterval.TotalMilliseconds}ms";
+            LabelHistoLength.Text = $"Histo length: {_displayMonitor.CurrentValue.HistoLength} frames";
+            LabelBrightness.Text = $"Brightness: {_displayMonitor.CurrentValue.Brightness} ({_displayMonitor.CurrentValue.Brightness * 100 / 255}%)";
         }
 
         public void UpdateUI(FftResult fft)
@@ -112,24 +126,18 @@ namespace EspSpectrum.App
 
         private static int ToEspHue(Color color) => (int)Math.Round(color.GetHue() * 255.0);
         private static Color FromEspHue(int hue) => Color.FromHsv(hue, 100, 100);
-        private async void ContentPage_Loaded(object sender, EventArgs e)
+        private void ContentPage_Loaded(object sender, EventArgs e)
         {
             Dispatcher.Dispatch(() =>
             {
-                IntervalSlider.Value = _displayConfig.SendInterval.TotalMilliseconds;
-                HistoLengthSlider.Value = _displayConfig.HistoLength;
-                BrightnessSlider.Value = _displayConfig.Brightness;
+                IntervalSlider.Value = _displayMonitor.CurrentValue.SendInterval.TotalMilliseconds;
+                HistoLengthSlider.Value = _displayMonitor.CurrentValue.HistoLength;
+                BrightnessSlider.Value = _displayMonitor.CurrentValue.Brightness;
                 UpdateLabels();
-                HighColorPicker.PickedColor = FromEspHue(_displayConfig.HighHue);
-                MidColorPicker.PickedColor = FromEspHue(_displayConfig.MidHue);
-                LowColorPicker.PickedColor = FromEspHue(_displayConfig.LowHue);
+                HighColorPicker.PickedColor = FromEspHue(_displayMonitor.CurrentValue.HighHue);
+                MidColorPicker.PickedColor = FromEspHue(_displayMonitor.CurrentValue.MidHue);
+                LowColorPicker.PickedColor = FromEspHue(_displayMonitor.CurrentValue.LowHue);
             });
-
-            await foreach (var fft in _stream.NextFft(_cts.Token))
-            {
-                await _wsBars.SendAudio(fft.Bands);
-                Dispatcher.Dispatch(() => UpdateUI(fft));
-            }
         }
 
         private void ContentPage_Unloaded(object sender, EventArgs e)
@@ -154,17 +162,18 @@ namespace EspSpectrum.App
             await _displayWriter.UpdateConfig(c => c.Brightness = (int)Math.Round(e.NewValue));
         }
 
-        private async void LowColorPicker_PickedColorChanged(object sender, Maui.ColorPicker.PickedColorChangedEventArgs e)
+        private async void LowColorPicker_PickedColorChanged(object sender, ColorPicker.Maui.PickedColorChangedEventArgs e)
         {
-            await _displayWriter.UpdateConfig(c => c.LowHue = ToEspHue(e.NewPickedColorValue));
+            var h = ToEspHue(e.NewPickedColorValue);
+            await _displayWriter.UpdateConfig(c => c.LowHue = h);
         }
 
-        private async void MidColorPicker_PickedColorChanged(object sender, Maui.ColorPicker.PickedColorChangedEventArgs e)
+        private async void MidColorPicker_PickedColorChanged(object sender, ColorPicker.Maui.PickedColorChangedEventArgs e)
         {
             await _displayWriter.UpdateConfig(c => c.MidHue = ToEspHue(e.NewPickedColorValue));
         }
 
-        private async void HighColorPicker_PickedColorChanged(object sender, Maui.ColorPicker.PickedColorChangedEventArgs e)
+        private async void HighColorPicker_PickedColorChanged(object sender, ColorPicker.Maui.PickedColorChangedEventArgs e)
         {
             await _displayWriter.UpdateConfig(c => c.HighHue = ToEspHue(e.NewPickedColorValue));
         }

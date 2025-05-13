@@ -10,7 +10,8 @@ builder.UseWindowsService(c =>
 
 builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
-    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .SetBasePath(AppContext.BaseDirectory);
 }).ConfigureServices((hostContext, services) =>
 {
     services.AddCoreServices(hostContext.Configuration);
