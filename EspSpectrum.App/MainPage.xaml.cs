@@ -177,5 +177,19 @@ namespace EspSpectrum.App
         {
             await _displayWriter.UpdateConfig(c => c.HighHue = ToEspHue(e.NewPickedColorValue));
         }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+        }
+
+        private void Gv_StartInteraction(object sender, TouchEventArgs e)
+        {
+            var t = e.Touches.FirstOrDefault();
+        }
+
+        private void Gv_EndInteraction(object sender, TouchEventArgs e)
+        {
+
+        }
     }
 }

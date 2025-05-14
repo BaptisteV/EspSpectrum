@@ -1,6 +1,7 @@
 ﻿using EspSpectrum.Core.Display;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NAudio.Wave;
 
 namespace EspSpectrum.Core;
 
@@ -12,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.Configure<DisplayConfig>(configuration);
         services.AddTransient<IFftReader, FftReader>();
         services.AddTransient<IWebsocketBars, EspWebsocket>();
+        services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IAudioRecorder, AudioRecorder>();
         services.AddTransient<IFftStream, FftStream>();
 

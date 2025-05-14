@@ -55,7 +55,7 @@ public class FftReader : IFftReader
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * FftProps.ScaleFactor);
+            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * FftProps.ScaleFactor20);
         }
 
         return bandLevels;

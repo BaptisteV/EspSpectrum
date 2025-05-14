@@ -7,12 +7,12 @@ namespace EspSpectrum.Core;
 public class AudioRecorder : IAudioRecorder
 {
     private readonly Channel<float> _data = Channel.CreateBounded<float>(FftProps.FftLength);
-    private WasapiLoopbackCapture _waveIn;
+    private IWaveIn _waveIn;
     private readonly ILogger<AudioRecorder> _logger;
 
-    public AudioRecorder(ILogger<AudioRecorder> logger)
+    public AudioRecorder(ILogger<AudioRecorder> logger, IWaveIn waveIn)
     {
-        _waveIn = new WasapiLoopbackCapture();
+        _waveIn = waveIn;
         _waveIn.DataAvailable += OnDataAvailable;
         _waveIn.RecordingStopped += OnRecordingStopped;
 
@@ -22,7 +22,7 @@ public class AudioRecorder : IAudioRecorder
 
     private void OnRecordingStopped(object? sender, StoppedEventArgs e)
     {
-        _logger.LogError(e.Exception, "Recording stopped. Current state: {State}", _waveIn.CaptureState);
+        _logger.LogError(e.Exception, "Recording stopped");
     }
 
     public int SampleRate => _waveIn.WaveFormat.SampleRate;
@@ -39,7 +39,8 @@ public class AudioRecorder : IAudioRecorder
         for (var index = 0; index < bytesRecorded; index += bufferIncrement)
         {
             var sample32 = BitConverter.ToSingle(buffer, index);
-            samples.Add(sample32);
+
+            samples.Add(sample32 * (float)FftProps.ScaleFactor);
         }
 
         foreach (var sample in samples)
