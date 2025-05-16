@@ -1,7 +1,8 @@
-﻿using NAudio.Dsp;
+﻿using EspSpectrum.Core.Recording;
+using NAudio.Dsp;
 using System.Collections.Concurrent;
 
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Fft;
 
 public class FftReader : IFftReader
 {
@@ -32,7 +33,7 @@ public class FftReader : IFftReader
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
     }
 
-    private int[] CalculateBands(NAudio.Dsp.Complex[] fftResult)
+    private int[] CalculateBands(Complex[] fftResult)
     {
         var bandLevels = new int[FftProps.NBands];
         var binFrequencyResolution = (double)_audioRecorder.SampleRate / FftProps.FftLength;
@@ -77,7 +78,7 @@ public class FftReader : IFftReader
         var fftSamples = new double[FftProps.FftLength];
 
         // Remove ReadLength old samples
-        for (int i = 0; i < FftProps.ReadLength; i++)
+        for (var i = 0; i < FftProps.ReadLength; i++)
         {
             _buffer.TryDequeue(out fftSamples[i]);
         }

@@ -1,4 +1,6 @@
 ﻿using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Fft;
+using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NAudio.Wave;

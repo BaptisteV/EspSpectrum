@@ -1,10 +1,11 @@
 ﻿using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Fft;
 
 public sealed class FftStream : IFftStream, IDisposable
 {

@@ -1,4 +1,4 @@
-﻿using EspSpectrum.Core;
+﻿using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Sounds;
 using Microsoft.Extensions.Logging.Abstractions;
 

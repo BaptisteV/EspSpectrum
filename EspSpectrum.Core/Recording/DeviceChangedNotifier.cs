@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core.Fft;
+using Microsoft.Extensions.Logging;
 using NAudio.CoreAudioApi;
 
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Recording;
 
 public class DeviceChangedNotifier(ILogger logger, IFftReader reader) : NAudio.CoreAudioApi.Interfaces.IMMNotificationClient
 {

@@ -1,5 +1,6 @@
 using EspSpectrum.Core;
 using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Fft;
 using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.Worker;

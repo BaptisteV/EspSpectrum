@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using System.Threading.Channels;
 
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Recording;
 
 public class AudioRecorder : IAudioRecorder
 {
@@ -27,25 +27,26 @@ public class AudioRecorder : IAudioRecorder
 
     public int SampleRate => _waveIn.WaveFormat.SampleRate;
 
-    public int ChannelCount => _waveIn.WaveFormat.Channels;
-
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
         var buffer = e.Buffer;
         var bytesRecorded = e.BytesRecorded;
         var bufferIncrement = _waveIn.WaveFormat.BlockAlign;
 
-        List<float> samples = [];
-        for (var index = 0; index < bytesRecorded; index += bufferIncrement)
-        {
-            var sample32 = BitConverter.ToSingle(buffer, index);
+        var channels = _waveIn.WaveFormat.Channels;
 
-            samples.Add(sample32 * (float)FftProps.ScaleFactor);
-        }
-
-        foreach (var sample in samples)
+        for (var i = 0; i < bytesRecorded; i += bufferIncrement)
         {
-            _ = _data.Writer.TryWrite(sample);
+            var channelsSum = 0f;
+            for (var channel = 0; channel < channels; channel++)
+            {
+                var sampleOffset = i + channel * 4; // 4 bytes per float
+                var sample = BitConverter.ToSingle(buffer, sampleOffset) * (float)FftProps.Amplification;
+
+                channelsSum += sample;
+            }
+
+            _ = _data.Writer.TryWrite(channelsSum);
         }
     }
 
