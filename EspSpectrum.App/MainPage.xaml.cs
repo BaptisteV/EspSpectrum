@@ -15,7 +15,7 @@ namespace EspSpectrum.App
         private readonly IOptionsMonitor<DisplayConfig> _displayMonitor;
         private readonly IWebsocketBars _wsBars;
         private readonly IWebsocketDisplay _wsDisplay;
-        private readonly IDisplayConfigWriter _displayWriter;
+        private readonly IDisplayConfigManager _displayWriter;
         private readonly CancellationTokenSource _cts = new();
 
         public MainPage(
@@ -23,7 +23,7 @@ namespace EspSpectrum.App
             IOptionsMonitor<DisplayConfig> displayMonitor,
             IWebsocketBars wsBars,
             IWebsocketDisplay wsDisplay,
-            IDisplayConfigWriter displayWriter)
+            IDisplayConfigManager displayWriter)
         {
             InitializeComponent();
             CreateButtons(BarsContainer);

@@ -1,0 +1,283 @@
+﻿namespace EspSpectrum.ConfigUI
+{
+    partial class EspSpectrumConfigForm
+    {
+        /// <summary>
+        ///  Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        ///  Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        ///  Required method for Designer support - do not modify
+        ///  the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(EspSpectrumConfigForm));
+            colorDialog1 = new ColorDialog();
+            appsettingsDialog = new OpenFileDialog();
+            panelHighColor = new TableLayoutPanel();
+            panelMidColor = new TableLayoutPanel();
+            panelLowColor = new TableLayoutPanel();
+            slidersPanel = new Panel();
+            brightnessLabel = new Label();
+            brightnessSlider = new TrackBar();
+            fadedFramesLabel = new Label();
+            fadedFramesSlider = new TrackBar();
+            sendIntervalLabel = new Label();
+            sendIntervalSlider = new TrackBar();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            serviceStatusLabel = new ToolStripStatusLabel();
+            toolStripDropDownButton1 = new ToolStripDropDownButton();
+            restartMenuItem = new ToolStripMenuItem();
+            slidersPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)brightnessSlider).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).BeginInit();
+            statusStrip1.SuspendLayout();
+            SuspendLayout();
+            // 
+            // appsettingsDialog
+            // 
+            appsettingsDialog.DefaultExt = "json";
+            appsettingsDialog.FileName = "appsettings.json";
+            appsettingsDialog.Filter = "JSON files (*.json)|*.json";
+            appsettingsDialog.Title = "Select EspSpectrum appsettings.json";
+            // 
+            // panelHighColor
+            // 
+            panelHighColor.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelHighColor.AutoSize = true;
+            panelHighColor.ColumnCount = 6;
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelHighColor.Location = new Point(12, 12);
+            panelHighColor.MinimumSize = new Size(10, 10);
+            panelHighColor.Name = "panelHighColor";
+            panelHighColor.RowCount = 1;
+            panelHighColor.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            panelHighColor.Size = new Size(776, 100);
+            panelHighColor.TabIndex = 3;
+            // 
+            // panelMidColor
+            // 
+            panelMidColor.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelMidColor.AutoSize = true;
+            panelMidColor.ColumnCount = 6;
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelMidColor.Location = new Point(12, 112);
+            panelMidColor.MinimumSize = new Size(10, 10);
+            panelMidColor.Name = "panelMidColor";
+            panelMidColor.RowCount = 1;
+            panelMidColor.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            panelMidColor.Size = new Size(776, 100);
+            panelMidColor.TabIndex = 4;
+            // 
+            // panelLowColor
+            // 
+            panelLowColor.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelLowColor.AutoSize = true;
+            panelLowColor.ColumnCount = 6;
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.666666F));
+            panelLowColor.Location = new Point(12, 212);
+            panelLowColor.MinimumSize = new Size(10, 10);
+            panelLowColor.Name = "panelLowColor";
+            panelLowColor.RowCount = 1;
+            panelLowColor.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            panelLowColor.Size = new Size(776, 100);
+            panelLowColor.TabIndex = 5;
+            // 
+            // slidersPanel
+            // 
+            slidersPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            slidersPanel.Controls.Add(brightnessLabel);
+            slidersPanel.Controls.Add(brightnessSlider);
+            slidersPanel.Controls.Add(fadedFramesLabel);
+            slidersPanel.Controls.Add(fadedFramesSlider);
+            slidersPanel.Controls.Add(sendIntervalLabel);
+            slidersPanel.Controls.Add(sendIntervalSlider);
+            slidersPanel.Location = new Point(12, 318);
+            slidersPanel.Name = "slidersPanel";
+            slidersPanel.Size = new Size(776, 155);
+            slidersPanel.TabIndex = 7;
+            // 
+            // brightnessLabel
+            // 
+            brightnessLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            brightnessLabel.Location = new Point(645, 105);
+            brightnessLabel.Name = "brightnessLabel";
+            brightnessLabel.Size = new Size(128, 33);
+            brightnessLabel.TabIndex = 5;
+            brightnessLabel.Text = "Brightness";
+            brightnessLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // brightnessSlider
+            // 
+            brightnessSlider.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            brightnessSlider.LargeChange = 10;
+            brightnessSlider.Location = new Point(3, 105);
+            brightnessSlider.Maximum = 255;
+            brightnessSlider.Minimum = 1;
+            brightnessSlider.Name = "brightnessSlider";
+            brightnessSlider.Size = new Size(636, 45);
+            brightnessSlider.TabIndex = 2;
+            brightnessSlider.TickFrequency = 5;
+            brightnessSlider.Value = 1;
+            brightnessSlider.ValueChanged += brightnessSlider_ValueChanged;
+            // 
+            // fadedFramesLabel
+            // 
+            fadedFramesLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            fadedFramesLabel.Location = new Point(645, 54);
+            fadedFramesLabel.Name = "fadedFramesLabel";
+            fadedFramesLabel.Size = new Size(128, 35);
+            fadedFramesLabel.TabIndex = 3;
+            fadedFramesLabel.Text = "Faded frames";
+            fadedFramesLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // fadedFramesSlider
+            // 
+            fadedFramesSlider.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            fadedFramesSlider.Location = new Point(3, 54);
+            fadedFramesSlider.Maximum = 50;
+            fadedFramesSlider.Name = "fadedFramesSlider";
+            fadedFramesSlider.Size = new Size(636, 45);
+            fadedFramesSlider.TabIndex = 1;
+            fadedFramesSlider.ValueChanged += fadedFramesSlider_ValueChanged;
+            // 
+            // sendIntervalLabel
+            // 
+            sendIntervalLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            sendIntervalLabel.Location = new Point(645, 3);
+            sendIntervalLabel.Name = "sendIntervalLabel";
+            sendIntervalLabel.Size = new Size(128, 33);
+            sendIntervalLabel.TabIndex = 1;
+            sendIntervalLabel.Text = "Send interval";
+            sendIntervalLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // sendIntervalSlider
+            // 
+            sendIntervalSlider.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sendIntervalSlider.Location = new Point(3, 3);
+            sendIntervalSlider.Maximum = 50;
+            sendIntervalSlider.Minimum = 2;
+            sendIntervalSlider.Name = "sendIntervalSlider";
+            sendIntervalSlider.Size = new Size(636, 45);
+            sendIntervalSlider.TabIndex = 0;
+            sendIntervalSlider.Value = 2;
+            sendIntervalSlider.ValueChanged += sendIntervalSlider_ValueChanged;
+            // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, serviceStatusLabel, toolStripDropDownButton1 });
+            statusStrip1.Location = new Point(0, 473);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(800, 22);
+            statusStrip1.TabIndex = 8;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(149, 17);
+            toolStripStatusLabel1.Text = "EspSpectrum service status";
+            // 
+            // serviceStatusLabel
+            // 
+            serviceStatusLabel.Name = "serviceStatusLabel";
+            serviceStatusLabel.Size = new Size(14, 17);
+            serviceStatusLabel.Text = "●";
+            // 
+            // toolStripDropDownButton1
+            // 
+            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.None;
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { restartMenuItem });
+            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
+            toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            toolStripDropDownButton1.Size = new Size(13, 20);
+            toolStripDropDownButton1.Text = "toolStripDropDownButton1";
+            // 
+            // restartMenuItem
+            // 
+            restartMenuItem.Name = "restartMenuItem";
+            restartMenuItem.Size = new Size(180, 22);
+            restartMenuItem.Text = "Restart service";
+            restartMenuItem.Click += restartMenuItem_Click;
+            // 
+            // EspSpectrumConfigForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 495);
+            Controls.Add(statusStrip1);
+            Controls.Add(slidersPanel);
+            Controls.Add(panelLowColor);
+            Controls.Add(panelMidColor);
+            Controls.Add(panelHighColor);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Name = "EspSpectrumConfigForm";
+            Text = "EspSpectrum - Config";
+            Load += Form1_Load;
+            slidersPanel.ResumeLayout(false);
+            slidersPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)brightnessSlider).EndInit();
+            ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).EndInit();
+            ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).EndInit();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
+        }
+
+        #endregion
+
+        private ColorDialog colorDialog1;
+        private OpenFileDialog appsettingsDialog;
+        private TableLayoutPanel panelHighColor;
+        private TableLayoutPanel panelMidColor;
+        private TableLayoutPanel panelLowColor;
+        private Panel slidersPanel;
+        private Label brightnessLabel;
+        private TrackBar brightnessSlider;
+        private Label fadedFramesLabel;
+        private TrackBar fadedFramesSlider;
+        private Label sendIntervalLabel;
+        private TrackBar sendIntervalSlider;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripStatusLabel serviceStatusLabel;
+        private ToolStripDropDownButton toolStripDropDownButton1;
+        private ToolStripMenuItem restartMenuItem;
+    }
+}

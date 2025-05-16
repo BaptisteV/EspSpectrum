@@ -21,6 +21,6 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IWebsocketDisplay, DisplayConfigWebsocket>();
 
-        services.AddTransient<IDisplayConfigWriter, DisplayConfigWriter>();
+        services.AddTransient<IDisplayConfigManager, DisplayConfigWriter>();
     }
 }

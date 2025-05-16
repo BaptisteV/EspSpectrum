@@ -3,10 +3,45 @@ using System.Text.Json;
 
 namespace EspSpectrum.Core.Display;
 
-public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger) : IDisplayConfigWriter
+public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
+    string? appSetting = null) : IDisplayConfigManager
 {
     private readonly ILogger<DisplayConfigWriter> _logger = logger;
-    private readonly string _filePath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+    private readonly string _filePath = appSetting ?? Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+
+    /// <summary>
+    /// Reads DisplayConfig from the JSON file
+    /// </summary>
+    public async Task<DisplayConfig> ReadConfig()
+    {
+        if (!File.Exists(_filePath))
+        {
+            _logger.LogWarning("Configuration file not found at {FilePath}", _filePath);
+            return new DisplayConfig(); // or throw if preferred
+        }
+
+        var jsonText = await File.ReadAllTextAsync(_filePath);
+
+        // Deserialize entire document
+        using var document = JsonDocument.Parse(jsonText);
+        var root = document.RootElement;
+
+        // Deserialize only the DisplayConfig-relevant properties
+        var displayConfigJson = new Dictionary<string, JsonElement>();
+
+        foreach (var property in root.EnumerateObject())
+        {
+            if (IsDisplayConfigProperty(property.Name))
+            {
+                displayConfigJson[property.Name] = property.Value;
+            }
+        }
+
+        var reducedJson = JsonSerializer.Serialize(displayConfigJson);
+        var displayConfig = JsonSerializer.Deserialize<DisplayConfig>(reducedJson);
+
+        return displayConfig ?? new DisplayConfig();
+    }
 
     /// <summary>
     /// Updates specific properties of DisplayConfig in the JSON file

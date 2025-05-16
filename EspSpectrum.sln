@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EspSpectrum.Worker", "EspSp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EspSpectrum.UnitTests", "EspSpectrum.UnitTests\EspSpectrum.UnitTests.csproj", "{09BFE7E8-312D-46F6-8FC6-97937C056189}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EspSpectrum.ConfigUI", "EspSpectrum.ConfigUI\EspSpectrum.ConfigUI.csproj", "{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -156,6 +158,26 @@ Global
 		{09BFE7E8-312D-46F6-8FC6-97937C056189}.Release|x64.Build.0 = Release|Any CPU
 		{09BFE7E8-312D-46F6-8FC6-97937C056189}.Release|x86.ActiveCfg = Release|Any CPU
 		{09BFE7E8-312D-46F6-8FC6-97937C056189}.Release|x86.Build.0 = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|ARM.Build.0 = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|x64.Build.0 = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Debug|x86.Build.0 = Debug|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|ARM.ActiveCfg = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|ARM.Build.0 = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|ARM64.Build.0 = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|x64.ActiveCfg = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|x64.Build.0 = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|x86.ActiveCfg = Release|Any CPU
+		{8B70D0DE-81A9-4C55-9E32-E0B8C95E544E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
