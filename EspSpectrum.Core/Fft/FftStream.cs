@@ -34,7 +34,7 @@ public sealed class FftStream : IFftStream, IDisposable
     {
         if (swElapsed > target)
         {
-            _logger.LogWarning("Getting too slow ({Elapsed}ms elapsed, Target is {TargetRate}). " +
+            _logger.LogInformation("Getting too slow ({Elapsed}ms elapsed, Target is {TargetRate}). " +
                 "Consider increasing TargetRate or decreasing ReadLength ({ReadLength})",
                 swElapsed.TotalMilliseconds, target.TotalMilliseconds, FftProps.ReadLength);
             return;
@@ -53,8 +53,8 @@ public sealed class FftStream : IFftStream, IDisposable
         {
             stopwatch.Restart();
             var fft = await _fftReader.ReadLastFft(cancellationToken);
-            await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
             yield return fft;
+            await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
         }
     }
 

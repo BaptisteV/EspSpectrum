@@ -57,6 +57,7 @@ public sealed class EspWebsocket : IWebsocketBars
         catch (OperationCanceledException ce)
         {
             _logger.LogError(ce, "Operation cancelled, ESP restarting ?");
+            throw;
         }
     }
 }

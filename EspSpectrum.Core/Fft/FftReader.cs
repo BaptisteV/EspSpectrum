@@ -1,4 +1,5 @@
 ﻿using EspSpectrum.Core.Recording;
+using Microsoft.Extensions.Logging;
 using NAudio.Dsp;
 using System.Collections.Concurrent;
 
@@ -8,13 +9,15 @@ public class FftReader : IFftReader
 {
     private static double[] _frequencyBands = [];
     private readonly IAudioRecorder _audioRecorder;
+    private readonly ILogger<FftReader> _logger;
     private readonly ConcurrentQueue<double> _buffer = [];
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    public FftReader(IAudioRecorder audioRecorder)
+    public FftReader(IAudioRecorder audioRecorder, ILogger<FftReader> logger)
     {
         InitializeBandBoundaries();
         _audioRecorder = audioRecorder;
+        _logger = logger;
     }
 
     private static void InitializeBandBoundaries()
@@ -66,12 +69,12 @@ public class FftReader : IFftReader
     {
         while (_buffer.Count < FftProps.FftLength)
         {
-            await Task.Delay(FftProps.WaitForAudioTightLoop, cancellation);
             var newSamples = await _audioRecorder.ReadN(FftProps.FftLength - _buffer.Count);
             foreach (var sample in newSamples)
             {
                 _buffer.Enqueue(sample);
             }
+            await Task.Delay(FftProps.WaitForAudioTightLoop, cancellation);
         }
 
         // Get samples for FFT processing
@@ -80,7 +83,9 @@ public class FftReader : IFftReader
         // Remove ReadLength old samples
         for (var i = 0; i < FftProps.ReadLength; i++)
         {
-            _buffer.TryDequeue(out fftSamples[i]);
+            var dequeued = _buffer.TryDequeue(out fftSamples[i]);
+            if (!dequeued)
+                _logger.LogWarning("Failed to dequeue");
         }
 
         // Copy remaining required samples from buffer
@@ -96,7 +101,7 @@ public class FftReader : IFftReader
         for (var i = 0; i < sample.Length; i++)
         {
             var value = sample[i];
-            fftBuffer[i].X = (float)(value * FastFourierTransform.HammingWindow(i, FftProps.FftLength));
+            fftBuffer[i].X = (float)(value * FastFourierTransform.HammingWindow(i, sample.Length));
         }
 
         FastFourierTransform.FFT(true, FftPow, fftBuffer);

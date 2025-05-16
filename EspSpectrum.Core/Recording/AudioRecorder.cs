@@ -6,7 +6,11 @@ namespace EspSpectrum.Core.Recording;
 
 public class AudioRecorder : IAudioRecorder
 {
-    private readonly Channel<float> _data = Channel.CreateBounded<float>(FftProps.FftLength);
+    private readonly Channel<float> _data = Channel.CreateBounded<float>(
+        new BoundedChannelOptions(FftProps.FftLength)
+        {
+            FullMode = BoundedChannelFullMode.DropNewest,
+        });
     private IWaveIn _waveIn;
     private readonly ILogger<AudioRecorder> _logger;
 
@@ -46,7 +50,9 @@ public class AudioRecorder : IAudioRecorder
                 channelsSum += sample;
             }
 
-            _ = _data.Writer.TryWrite(channelsSum);
+            var written = _data.Writer.TryWrite(channelsSum);
+            if (!written)
+                _logger.LogWarning("Failed to write data");
         }
     }
 
@@ -66,6 +72,10 @@ public class AudioRecorder : IAudioRecorder
             if (reader.TryRead(out var item))
             {
                 part.Add(item);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to read data");
             }
         }
 
