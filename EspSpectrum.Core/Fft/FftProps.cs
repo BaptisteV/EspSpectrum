@@ -1,4 +1,4 @@
-﻿namespace EspSpectrum.Core;
+﻿namespace EspSpectrum.Core.Fft;
 
 public static class FftProps
 {

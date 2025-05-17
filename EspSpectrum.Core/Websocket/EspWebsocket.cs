@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using System.Net.Sockets;
 using Websocket.Client;
 
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Websocket;
 
 public sealed class EspWebsocket : IWebsocketBars
 {
@@ -14,7 +14,7 @@ public sealed class EspWebsocket : IWebsocketBars
     public EspWebsocket(IOptions<EspConfig> config, ILogger<EspWebsocket> logger)
     {
         _logger = logger;
-        _wsClient = EspConfig.GetWebsocketClient(config.Value.EspAdress, _logger);
+        _wsClient = config.Value.GetWebsocketClient(_logger);
     }
 
     private static byte[] PackData(int[] bars)

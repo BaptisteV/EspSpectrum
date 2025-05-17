@@ -2,14 +2,13 @@
 
 namespace EspSpectrum.UnitTests.Sounds;
 
-internal class FakeLoopbackWaveIn : IWaveIn
+public sealed class FakeLoopbackWaveIn : IWaveIn
 {
-    private WaveFormat wf = new WaveFormat();
-    public WaveFormat WaveFormat { get => wf; set => wf = value; }
+    public WaveFormat WaveFormat { get; set; } = new WaveFormat();
 
     public event EventHandler<WaveInEventArgs> DataAvailable;
     public event EventHandler<StoppedEventArgs> RecordingStopped;
-    private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+    private readonly CancellationTokenSource _cts = new();
 
     public void Dispose()
     {

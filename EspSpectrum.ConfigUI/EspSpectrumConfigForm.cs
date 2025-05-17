@@ -28,9 +28,9 @@ namespace EspSpectrum.ConfigUI
             _logger = logger;
         }
 
-        private async void ColorButtonClicked(object sender, EventArgs e)
+        private async void ColorButtonClicked(object? sender, EventArgs e)
         {
-            var button = (Button)sender;
+            var button = (Button)sender!;
             var buttonColor = button.BackColor.GetInt8Hue();
             var parentPanel = (TableLayoutPanel)button.Parent!;
 

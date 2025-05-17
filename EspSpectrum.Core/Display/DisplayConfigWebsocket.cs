@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core.Websocket;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Websocket.Client;
@@ -17,7 +18,7 @@ public class DisplayConfigWebsocket : IWebsocketDisplay
         )
     {
         _logger = logger;
-        _wsClient = EspConfig.GetWebsocketClient(config.Value.EspAdress, _logger);
+        _wsClient = config.Value.GetWebsocketClient(_logger);
     }
 
     public async Task Send(DisplayConfig displayConfig)

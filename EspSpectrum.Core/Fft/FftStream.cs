@@ -14,7 +14,11 @@ public sealed class FftStream : IFftStream, IDisposable
     private readonly ILogger<FftStream> _logger;
 
     private readonly MMDeviceEnumerator _deviceEnumerator;
+
+    // Required to properly work
+#pragma warning disable S1450
     private readonly DeviceChangedNotifier _deviceChangedNotifier;
+#pragma warning restore S1450
 
     public FftStream(
         IFftRecorder audioRecorder,

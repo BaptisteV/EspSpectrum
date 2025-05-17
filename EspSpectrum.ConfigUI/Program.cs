@@ -7,7 +7,7 @@ namespace EspSpectrum.ConfigUI;
 
 internal static class Program
 {
-    internal static IServiceProvider ServiceProvider { get; private set; }
+    internal static IServiceProvider ServiceProvider { get; private set; } = default!;
 
     [STAThread]
     static void Main()

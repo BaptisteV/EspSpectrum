@@ -2,15 +2,10 @@
 
 namespace EspSpectrum.Core.Fft;
 
-public class PeekableChannel<T>
+public class PeekableChannel<T>(Channel<T> sourceChannel)
 {
-    private readonly Channel<T> _sourceChannel;
+    private readonly Channel<T> _sourceChannel = sourceChannel;
     private readonly Queue<T> _peekBuffer = new();
-
-    public PeekableChannel(Channel<T> sourceChannel)
-    {
-        _sourceChannel = sourceChannel;
-    }
 
     // Expose the underlying channel writer for input
     public ChannelWriter<T> Writer => _sourceChannel.Writer;

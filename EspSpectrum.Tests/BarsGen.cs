@@ -1,4 +1,4 @@
-﻿using EspSpectrum.Core;
+﻿using EspSpectrum.Core.Fft;
 
 namespace EspSpectrum.DisplayTests;
 

@@ -4,11 +4,12 @@ namespace EspSpectrum.ConfigUI;
 
 public class EspSpectrumServiceMonitor : IEspSpectrumServiceMonitor
 {
+    private static readonly string ServiceName = "EspSpectrum";
     private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(500);
 
     public void Restart()
     {
-        var service = new ServiceController("EspSpectrum");
+        var service = new ServiceController(ServiceName);
         if (service.CanStop)
         {
             service.Stop();
@@ -21,7 +22,7 @@ public class EspSpectrumServiceMonitor : IEspSpectrumServiceMonitor
 
     public void Stop()
     {
-        var service = new ServiceController("EspSpectrum");
+        var service = new ServiceController(ServiceName);
         if (service.CanStop)
         {
             service.Stop();
@@ -31,7 +32,7 @@ public class EspSpectrumServiceMonitor : IEspSpectrumServiceMonitor
 
     (ServiceControllerStatus Status, bool IsRunning) IEspSpectrumServiceMonitor.GetStatus()
     {
-        var status = new ServiceController("EspSpectrum").Status;
+        var status = new ServiceController(ServiceName).Status;
         return (Status: status, IsRunning: status == ServiceControllerStatus.Running);
     }
 }

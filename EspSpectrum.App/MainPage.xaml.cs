@@ -1,6 +1,6 @@
-﻿using EspSpectrum.Core;
-using EspSpectrum.Core.Display;
+﻿using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Fft;
+using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.App
@@ -177,20 +177,6 @@ namespace EspSpectrum.App
         private async void HighColorPicker_PickedColorChanged(object sender, ColorPicker.Maui.PickedColorChangedEventArgs e)
         {
             await _displayWriter.UpdateConfig(c => c.HighHue = ToEspHue(e.NewPickedColorValue));
-        }
-
-        private void Button_Clicked(object sender, EventArgs e)
-        {
-        }
-
-        private void Gv_StartInteraction(object sender, TouchEventArgs e)
-        {
-            var t = e.Touches.FirstOrDefault();
-        }
-
-        private void Gv_EndInteraction(object sender, TouchEventArgs e)
-        {
-
         }
     }
 }

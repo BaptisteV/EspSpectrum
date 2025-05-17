@@ -2,11 +2,11 @@
 
 namespace EspSpectrum.Core.Fft;
 
-public class FftProcessor
+public static class FftProcessor
 {
     private static double[] _frequencyBands = [];
 
-    public FftProcessor()
+    static FftProcessor()
     {
         InitializeBandBoundaries();
     }
@@ -27,7 +27,7 @@ public class FftProcessor
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
     }
 
-    private int[] CalculateBands(Complex[] fftResult, int sampleRate)
+    private static int[] CalculateBands(Complex[] fftResult, int sampleRate)
     {
         var bandLevels = new int[FftProps.NBands];
         var binFrequencyResolution = (double)sampleRate / FftProps.FftLength;
@@ -58,7 +58,7 @@ public class FftProcessor
 
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    public FftResult ToFft(float[] sample, int sampleRate)
+    public static FftResult ToFft(float[] sample, int sampleRate)
     {
         var fftBuffer = new Complex[sample.Length];
         for (var i = 0; i < sample.Length; i++)

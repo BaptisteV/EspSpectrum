@@ -24,24 +24,6 @@
                 <Label x:Name="LabelBrightness" Text="Brightness: 10 frames"></Label>
                 <Slider HorizontalOptions="Fill" Maximum="255" Minimum="0" Value="200" x:Name="BrightnessSlider" ValueChanged="BrightnessSlider_ValueChanged"></Slider>
                 
-                <Border Stroke="LightGray"
-                    HorizontalOptions="Fill"
-                    StrokeShape="RoundRectangle 12"
-                    HeightRequest="40">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                            <GradientStop Color="#FF0000" Offset="0.000" />
-                            <GradientStop Color="Yellow"  Offset="0.166" />
-                            <GradientStop Color="#00FF00" Offset="0.333" />
-                            <GradientStop Color="Cyan"    Offset="0.500" />
-                            <GradientStop Color="#0000FF" Offset="0.666" />
-                            <GradientStop Color="Magenta" Offset="0.833" />
-                            <GradientStop Color="#FF0000" Offset="1.000" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <GraphicsView x:Name="Gv" StartInteraction="Gv_StartInteraction" EndInteraction="Gv_EndInteraction"></GraphicsView>
-                </Border>
-                
                 <controls:ColorPicker
                    x:Name="HighColorPicker"
                    ColorFlowDirection="Horizontal"
@@ -66,7 +48,8 @@
                    ColorFlowDirection="Horizontal"
                    ColorSpectrumStyle="HueOnlyStyle"
                    PickedColorChanged="LowColorPicker_PickedColorChanged"
-                    
+                   PointerRingBorderUnits="0.5"
+                   PointerRingDiameterUnits="0.2" 
                    MinimumHeightRequest="40" MinimumWidthRequest="40">
                 </controls:ColorPicker>
             </VerticalStackLayout>

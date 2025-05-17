@@ -10,7 +10,6 @@ public class FftRecorder : IFftRecorder
     private IWaveIn _waveIn;
     private readonly ILogger<FftRecorder> _logger;
 
-    private readonly FftProcessor _fftProcessor = new();
     private readonly Channel<FftResult> _ffts;
     private readonly PeekableChannel<float> _peekableChannel;
 
@@ -29,7 +28,7 @@ public class FftRecorder : IFftRecorder
         {
             _logger.LogInformation("FFT dropped");
         });
-        // Create an unbounded channel for continuous data
+
         var channel = Channel.CreateBounded<float>(new BoundedChannelOptions(FftProps.FftLength * 2)
         {
             FullMode = BoundedChannelFullMode.DropOldest,
@@ -37,6 +36,7 @@ public class FftRecorder : IFftRecorder
         {
             _logger.LogWarning("Dropped sample");
         });
+
         _peekableChannel = new PeekableChannel<float>(channel);
     }
 
@@ -71,7 +71,6 @@ public class FftRecorder : IFftRecorder
 
             if (_peekableChannel.Count >= FftProps.FftLength)
             {
-                //_logger.LogError($"enough for FFT! {_data.Reader.Count}");
                 await ProcesFFT();
             }
         }
@@ -79,14 +78,8 @@ public class FftRecorder : IFftRecorder
 
     private async Task ProcesFFT()
     {
-        /*
-        var data = new float[FftProps.FftLength];
-        for (var i = 0; i < FftProps.FftLength; i++)
-        {
-            data[i] = await _peekableChannel.ReadPartialConsume(FftProps.FftLength, FftProps.ReadLength);
-        }*/
         var data = (await _peekableChannel.ReadPartialConsume(FftProps.FftLength, FftProps.ReadLength)).ToArray();
-        var fft = _fftProcessor.ToFft(data, _waveIn.WaveFormat.SampleRate);
+        var fft = FftProcessor.ToFft(data, _waveIn.WaveFormat.SampleRate);
         await _ffts.Writer.WriteAsync(fft);
     }
 

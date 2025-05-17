@@ -1,4 +1,6 @@
-﻿namespace EspSpectrum.Core.Recording;
+﻿using EspSpectrum.Core.Fft;
+
+namespace EspSpectrum.Core.Recording;
 
 public interface IFftRecorder
 {

@@ -1,4 +1,4 @@
-﻿using EspSpectrum.Core;
+﻿using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;

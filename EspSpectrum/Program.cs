@@ -1,5 +1,6 @@
 ﻿using EspSpectrum.Core;
 using EspSpectrum.Core.Fft;
+using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

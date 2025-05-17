@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Websocket.Client;
 
-namespace EspSpectrum.Core;
+namespace EspSpectrum.Core.Websocket;
 
 public class EspConfig
 {
-    public Uri EspAdress { get; set; } = new Uri("ws://192.168.1.133:81");
+    public string EspIp { get; set; } = "";
 
-    public static WebsocketClient GetWebsocketClient(Uri espAdress, ILogger logger)
+    public WebsocketClient GetWebsocketClient(ILogger logger)
     {
-        var client = new WebsocketClient(espAdress)
+        var client = new WebsocketClient(new Uri(EspIp))
         {
             ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
             ReconnectTimeout = null

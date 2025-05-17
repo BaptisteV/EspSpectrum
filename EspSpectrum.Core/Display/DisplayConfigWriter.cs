@@ -28,13 +28,9 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
 
         // Deserialize only the DisplayConfig-relevant properties
         var displayConfigJson = new Dictionary<string, JsonElement>();
-
-        foreach (var property in root.EnumerateObject())
+        foreach (var property in root.EnumerateObject().Where(property => IsDisplayConfigProperty(property.Name)))
         {
-            if (IsDisplayConfigProperty(property.Name))
-            {
-                displayConfigJson[property.Name] = property.Value;
-            }
+            displayConfigJson[property.Name] = property.Value;
         }
 
         var reducedJson = JsonSerializer.Serialize(displayConfigJson);
@@ -57,7 +53,7 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
 
         // Convert the root element to a DisplayConfig object
         // Note: This will only pick up the DisplayConfig properties
-        var displayConfig = JsonSerializer.Deserialize<DisplayConfig>(jsonText);
+        var displayConfig = JsonSerializer.Deserialize<DisplayConfig>(jsonText)!;
 
         // Apply the updates to DisplayConfig
         updateAction(displayConfig);

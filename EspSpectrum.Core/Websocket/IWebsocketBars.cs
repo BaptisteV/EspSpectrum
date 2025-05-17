@@ -1,5 +1,4 @@
-﻿
-namespace EspSpectrum.Core;
+﻿namespace EspSpectrum.Core.Websocket;
 
 public interface IWebsocketBars
 {
