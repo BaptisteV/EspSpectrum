@@ -155,5 +155,10 @@ namespace EspSpectrum.ConfigUI
         {
             _serviceMonitor.Restart();
         }
+
+        private void stopMenuItem_Click(object sender, EventArgs e)
+        {
+            _serviceMonitor.Stop();
+        }
     }
 }

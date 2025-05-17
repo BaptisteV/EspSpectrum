@@ -46,6 +46,7 @@
             serviceStatusLabel = new ToolStripStatusLabel();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             restartMenuItem = new ToolStripMenuItem();
+            stopMenuItem = new ToolStripMenuItem();
             slidersPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)brightnessSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).BeginInit();
@@ -221,7 +222,7 @@
             // toolStripDropDownButton1
             // 
             toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.None;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { restartMenuItem });
+            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { stopMenuItem, restartMenuItem });
             toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
             toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
@@ -234,6 +235,13 @@
             restartMenuItem.Size = new Size(180, 22);
             restartMenuItem.Text = "Restart service";
             restartMenuItem.Click += restartMenuItem_Click;
+            // 
+            // stopMenuItem
+            // 
+            stopMenuItem.Name = "stopMenuItem";
+            stopMenuItem.Size = new Size(180, 22);
+            stopMenuItem.Text = "Stop service";
+            stopMenuItem.Click += stopMenuItem_Click;
             // 
             // EspSpectrumConfigForm
             // 
@@ -279,5 +287,6 @@
         private ToolStripStatusLabel serviceStatusLabel;
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStripMenuItem restartMenuItem;
+        private ToolStripMenuItem stopMenuItem;
     }
 }

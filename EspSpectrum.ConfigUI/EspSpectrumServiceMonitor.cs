@@ -19,6 +19,16 @@ public class EspSpectrumServiceMonitor : IEspSpectrumServiceMonitor
         service.WaitForStatus(ServiceControllerStatus.Running, Timeout);
     }
 
+    public void Stop()
+    {
+        var service = new ServiceController("EspSpectrum");
+        if (service.CanStop)
+        {
+            service.Stop();
+            service.WaitForStatus(ServiceControllerStatus.Stopped, Timeout);
+        }
+    }
+
     (ServiceControllerStatus Status, bool IsRunning) IEspSpectrumServiceMonitor.GetStatus()
     {
         var status = new ServiceController("EspSpectrum").Status;

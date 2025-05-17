@@ -6,4 +6,5 @@ public interface IEspSpectrumServiceMonitor
 {
     (ServiceControllerStatus Status, bool IsRunning) GetStatus();
     void Restart();
+    void Stop();
 }
