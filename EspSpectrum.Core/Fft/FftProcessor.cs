@@ -4,7 +4,7 @@ namespace EspSpectrum.Core.Fft;
 
 public static class FftProcessor
 {
-    private static double[] _frequencyBands = [];
+    public static IReadOnlyCollection<double> FrequencyBands { get; private set; } = [];
 
     static FftProcessor()
     {
@@ -13,13 +13,13 @@ public static class FftProcessor
 
     private static void InitializeBandBoundaries()
     {
-        _frequencyBands = new double[FftProps.NBands + 1];
-
-        for (var i = 0; i < _frequencyBands.Length; i++)
+        var freq = new double[FftProps.NBands + 1];
+        for (var i = 0; i < freq.Length; i++)
         {
-            var t = (double)i / (_frequencyBands.Length - 1);
-            _frequencyBands[i] = FftProps.MinFreq * Math.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
+            var t = (double)i / (freq.Length - 1);
+            freq[i] = FftProps.MinFreq * Math.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
         }
+        FrequencyBands = freq.AsReadOnly();
     }
 
     private static int FrequencyToBin(double frequency, double binResolution)
@@ -35,8 +35,8 @@ public static class FftProcessor
         for (var band = 0; band < FftProps.NBands; band++)
         {
             // Find the FFT bins corresponding to this band's frequency range
-            var startBin = FrequencyToBin(_frequencyBands[band], binFrequencyResolution);
-            var endBin = FrequencyToBin(_frequencyBands[band + 1], binFrequencyResolution);
+            var startBin = FrequencyToBin(FrequencyBands.ElementAt(band), binFrequencyResolution);
+            var endBin = FrequencyToBin(FrequencyBands.ElementAt(band + 1), binFrequencyResolution);
 
             // Calculate band energy
             var bandEnergy = 0d;

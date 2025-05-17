@@ -53,10 +53,4 @@ public class Worker : BackgroundService
             await _ws.SendAudio(bands.Bands);
         }
     }
-
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Stopping service");
-        await _ws.SendAudio(new int[FftProps.NBands]);
-    }
 }
