@@ -51,24 +51,25 @@ namespace EspSpectrum.ConfigUI
             {
                 if (ctrl is Button btn)
                 {
-                    btn.FlatAppearance.BorderSize = 0;
+                    var baseColor = btn.BackColor;
+                    btn.BackColor = Color.FromArgb(110, baseColor.R, baseColor.G, baseColor.B);
                     btn.Enabled = true;
                 }
             }
             button.Enabled = false;
-            button.FlatAppearance.BorderSize = 4;
-            button.FlatAppearance.BorderColor = Color.FromArgb(128, Color.Black);
+            var backColor = button.BackColor;
+            button.BackColor = Color.FromArgb(255, backColor.R, backColor.G, backColor.B);
         }
 
         private void FillColors(TableLayoutPanel panel, int offset)
         {
             Color[] colors = [
-                Color.FromArgb(255, 255, 0, 0),
-                Color.FromArgb(255, 255, 255, 0),
-                Color.FromArgb(255, 0, 255, 0),
-                Color.FromArgb(255, 0, 255, 255),
-                Color.FromArgb(255, 0, 0, 255),
-                Color.FromArgb(255, 255, 0, 255),
+                Color.FromArgb(110, 255, 0, 0),
+                Color.FromArgb(110, 255, 255, 0),
+                Color.FromArgb(110, 0, 255, 0),
+                Color.FromArgb(110, 0, 255, 255),
+                Color.FromArgb(110, 0, 0, 255),
+                Color.FromArgb(110, 255, 0, 255),
                 ];
 
             // Add buttons to each column
@@ -81,7 +82,12 @@ namespace EspSpectrum.ConfigUI
                     BackColor = color,
                     ForeColor = color,
                     FlatStyle = FlatStyle.Flat,
-                }; btn.Click += ColorButtonClicked; // assign shared click handler
+                    Margin = new Padding(2, 2, 2, 2),
+                };
+
+                btn.FlatAppearance.BorderSize = 0;
+
+                btn.Click += ColorButtonClicked;
 
                 panel.Controls.Add(btn, col, 0);
             }
