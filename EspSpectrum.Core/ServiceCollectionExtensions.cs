@@ -13,10 +13,9 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<EspConfig>(configuration);
         services.Configure<DisplayConfig>(configuration);
-        services.AddTransient<IFftReader, FftReader>();
         services.AddTransient<IWebsocketBars, EspWebsocket>();
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
-        services.AddTransient<IAudioRecorder, AudioRecorder>();
+        services.AddTransient<IFftRecorder, FftRecorder>();
         services.AddTransient<IFftStream, FftStream>();
 
         services.AddTransient<IWebsocketDisplay, DisplayConfigWebsocket>();

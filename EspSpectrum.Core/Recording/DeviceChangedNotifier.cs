@@ -1,17 +1,16 @@
-﻿using EspSpectrum.Core.Fft;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using NAudio.CoreAudioApi;
 
 namespace EspSpectrum.Core.Recording;
 
-public class DeviceChangedNotifier(ILogger logger, IFftReader reader) : NAudio.CoreAudioApi.Interfaces.IMMNotificationClient
+public class DeviceChangedNotifier(ILogger logger, IFftRecorder reader) : NAudio.CoreAudioApi.Interfaces.IMMNotificationClient
 {
-    private readonly IFftReader _reader = reader;
+    private readonly IFftRecorder _recorder = reader;
 
     public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId)
     {
         logger.LogInformation("Default output device changed. Restarting");
-        _reader.Restart();
+        _recorder.Restart();
     }
 
     public void OnDeviceStateChanged(string deviceId, DeviceState newState)

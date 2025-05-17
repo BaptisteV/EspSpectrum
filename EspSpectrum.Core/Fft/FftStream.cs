@@ -9,7 +9,7 @@ namespace EspSpectrum.Core.Fft;
 
 public sealed class FftStream : IFftStream, IDisposable
 {
-    private readonly IFftReader _fftReader;
+    private readonly IFftRecorder _audioRecorder;
     private readonly IOptionsMonitor<DisplayConfig> _configMonitor;
     private readonly ILogger<FftStream> _logger;
 
@@ -17,16 +17,16 @@ public sealed class FftStream : IFftStream, IDisposable
     private readonly DeviceChangedNotifier _deviceChangedNotifier;
 
     public FftStream(
-        IFftReader fftReader,
+        IFftRecorder audioRecorder,
         IOptionsMonitor<DisplayConfig> configMonitor,
         ILogger<FftStream> logger)
     {
-        _fftReader = fftReader;
+        _audioRecorder = audioRecorder;
         _configMonitor = configMonitor;
         _logger = logger;
 
         _deviceEnumerator = new MMDeviceEnumerator();
-        _deviceChangedNotifier = new DeviceChangedNotifier(_logger, _fftReader);
+        _deviceChangedNotifier = new DeviceChangedNotifier(_logger, _audioRecorder);
         _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
     }
 
@@ -52,9 +52,9 @@ public sealed class FftStream : IFftStream, IDisposable
         while (!cancellationToken.IsCancellationRequested)
         {
             stopwatch.Restart();
-            var fft = await _fftReader.ReadLastFft(cancellationToken);
-            yield return fft;
+            var fft = await _audioRecorder.ReadFft(cancellationToken);
             await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
+            yield return fft;
         }
     }
 

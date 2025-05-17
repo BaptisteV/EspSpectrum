@@ -1,23 +1,14 @@
-﻿using EspSpectrum.Core.Recording;
-using Microsoft.Extensions.Logging;
-using NAudio.Dsp;
-using System.Collections.Concurrent;
+﻿using NAudio.Dsp;
 
 namespace EspSpectrum.Core.Fft;
 
-public class FftReader : IFftReader
+public class FftProcessor
 {
     private static double[] _frequencyBands = [];
-    private readonly IAudioRecorder _audioRecorder;
-    private readonly ILogger<FftReader> _logger;
-    private readonly ConcurrentQueue<double> _buffer = [];
-    private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    public FftReader(IAudioRecorder audioRecorder, ILogger<FftReader> logger)
+    public FftProcessor()
     {
         InitializeBandBoundaries();
-        _audioRecorder = audioRecorder;
-        _logger = logger;
     }
 
     private static void InitializeBandBoundaries()
@@ -36,10 +27,10 @@ public class FftReader : IFftReader
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
     }
 
-    private int[] CalculateBands(Complex[] fftResult)
+    private int[] CalculateBands(Complex[] fftResult, int sampleRate)
     {
         var bandLevels = new int[FftProps.NBands];
-        var binFrequencyResolution = (double)_audioRecorder.SampleRate / FftProps.FftLength;
+        var binFrequencyResolution = (double)sampleRate / FftProps.FftLength;
 
         for (var band = 0; band < FftProps.NBands; band++)
         {
@@ -65,37 +56,9 @@ public class FftReader : IFftReader
         return bandLevels;
     }
 
-    public async ValueTask<FftResult> ReadLastFft(CancellationToken cancellation = default)
-    {
-        while (_buffer.Count < FftProps.FftLength)
-        {
-            var newSamples = await _audioRecorder.ReadN(FftProps.FftLength - _buffer.Count);
-            foreach (var sample in newSamples)
-            {
-                _buffer.Enqueue(sample);
-            }
-            await Task.Delay(FftProps.WaitForAudioTightLoop, cancellation);
-        }
+    private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-        // Get samples for FFT processing
-        var fftSamples = new double[FftProps.FftLength];
-
-        // Remove ReadLength old samples
-        for (var i = 0; i < FftProps.ReadLength; i++)
-        {
-            var dequeued = _buffer.TryDequeue(out fftSamples[i]);
-            if (!dequeued)
-                _logger.LogWarning("Failed to dequeue");
-        }
-
-        // Copy remaining required samples from buffer
-        var remainingSamples = _buffer.Take(FftProps.FftLength - FftProps.ReadLength).ToArray();
-        Array.Copy(remainingSamples, 0, fftSamples, FftProps.ReadLength, remainingSamples.Length);
-
-        return ToFft(fftSamples);
-    }
-
-    private FftResult ToFft(double[] sample)
+    public FftResult ToFft(float[] sample, int sampleRate)
     {
         var fftBuffer = new Complex[sample.Length];
         for (var i = 0; i < sample.Length; i++)
@@ -105,14 +68,9 @@ public class FftReader : IFftReader
         }
 
         FastFourierTransform.FFT(true, FftPow, fftBuffer);
-        var bands = CalculateBands(fftBuffer);
+        var bands = CalculateBands(fftBuffer, sampleRate);
 
         return new FftResult() { Bands = bands };
     }
 
-    public void Restart()
-    {
-        while (!_buffer.IsEmpty) { _buffer.TryDequeue(out var _); }
-        _audioRecorder.Restart();
-    }
 }
