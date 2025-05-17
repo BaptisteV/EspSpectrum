@@ -1,6 +1,5 @@
 ﻿using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Websocket.Client;
 
@@ -12,13 +11,10 @@ public class DisplayConfigWebsocket : IWebsocketDisplay
     private readonly WebsocketClient _wsClient;
     private bool _starting = false;
 
-    public DisplayConfigWebsocket(
-        ILogger<DisplayConfigWebsocket> logger,
-        IOptions<EspConfig> config
-        )
+    public DisplayConfigWebsocket(IWebsocketFactory wsFactory, ILogger<DisplayConfigWebsocket> logger)
     {
         _logger = logger;
-        _wsClient = config.Value.GetWebsocketClient(_logger);
+        _wsClient = wsFactory.CreateClient(_logger);
     }
 
     public async Task Send(DisplayConfig displayConfig)

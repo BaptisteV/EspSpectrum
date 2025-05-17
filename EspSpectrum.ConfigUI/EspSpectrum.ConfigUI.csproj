@@ -7,7 +7,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>bars.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="bars.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DarkNet" Version="2.3.0" />

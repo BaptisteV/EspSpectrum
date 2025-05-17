@@ -52,5 +52,6 @@ public class Worker : BackgroundService
         {
             await _ws.SendAudio(bands.Bands);
         }
+        _logger.LogInformation("Service interrupted");
     }
 }

@@ -2,37 +2,18 @@
 using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 namespace EspSpectrum.Core.Fft;
 
-public sealed class FftStream : IFftStream, IDisposable
+public sealed class FftStream(
+    IFftRecorder audioRecorder,
+    IOptionsMonitor<DisplayConfig> configMonitor,
+    ILogger<FftStream> logger) : IFftStream
 {
-    private readonly IFftRecorder _audioRecorder;
-    private readonly IOptionsMonitor<DisplayConfig> _configMonitor;
-    private readonly ILogger<FftStream> _logger;
-
-    private readonly MMDeviceEnumerator _deviceEnumerator;
-
-    // Required to properly work
-#pragma warning disable S1450
-    private readonly DeviceChangedNotifier _deviceChangedNotifier;
-#pragma warning restore S1450
-
-    public FftStream(
-        IFftRecorder audioRecorder,
-        IOptionsMonitor<DisplayConfig> configMonitor,
-        ILogger<FftStream> logger)
-    {
-        _audioRecorder = audioRecorder;
-        _configMonitor = configMonitor;
-        _logger = logger;
-
-        _deviceEnumerator = new MMDeviceEnumerator();
-        _deviceChangedNotifier = new DeviceChangedNotifier(_logger, _audioRecorder);
-        _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
-    }
+    private readonly IFftRecorder _audioRecorder = audioRecorder;
+    private readonly IOptionsMonitor<DisplayConfig> _configMonitor = configMonitor;
+    private readonly ILogger<FftStream> _logger = logger;
 
     private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
     {
@@ -45,7 +26,6 @@ public sealed class FftStream : IFftStream, IDisposable
         }
 
         var remainingTime = target - swElapsed;
-
         await Task.Delay(remainingTime);
     }
 
@@ -60,10 +40,5 @@ public sealed class FftStream : IFftStream, IDisposable
             await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
             yield return fft;
         }
-    }
-
-    public void Dispose()
-    {
-        _deviceEnumerator.Dispose();
     }
 }

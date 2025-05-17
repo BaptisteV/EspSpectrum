@@ -16,8 +16,7 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
     {
         if (!File.Exists(_filePath))
         {
-            _logger.LogWarning("Configuration file not found at {FilePath}", _filePath);
-            return new DisplayConfig(); // or throw if preferred
+            throw new FileNotFoundException($"Can't find appsettings.json", _filePath);
         }
 
         var jsonText = await File.ReadAllTextAsync(_filePath);
@@ -92,8 +91,6 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
         ms.Seek(0, SeekOrigin.Begin);
         var updatedJson = System.Text.Encoding.UTF8.GetString(ms.ToArray());
         await File.WriteAllTextAsync(_filePath, updatedJson);
-
-        _logger.LogInformation("Successfully updated display config in {FilePath}", _filePath);
     }
 
     /// <summary>

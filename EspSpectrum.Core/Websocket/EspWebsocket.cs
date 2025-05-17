@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Net.Sockets;
 using Websocket.Client;
 
@@ -11,10 +10,10 @@ public sealed class EspWebsocket : IWebsocketBars
     private readonly ILogger<EspWebsocket> _logger;
     private bool _starting = false;
 
-    public EspWebsocket(IOptions<EspConfig> config, ILogger<EspWebsocket> logger)
+    public EspWebsocket(IWebsocketFactory wsFactory, ILogger<EspWebsocket> logger)
     {
         _logger = logger;
-        _wsClient = config.Value.GetWebsocketClient(_logger);
+        _wsClient = wsFactory.CreateClient(_logger);
     }
 
     private static byte[] PackData(int[] bars)

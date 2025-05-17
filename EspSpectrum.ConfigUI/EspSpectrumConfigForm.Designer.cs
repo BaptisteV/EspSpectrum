@@ -48,10 +48,10 @@
             restartMenuItem = new ToolStripMenuItem();
             notifyIcon = new NotifyIcon(components);
             notifyIconMenuStrip = new ContextMenuStrip(components);
+            notifyIconStatus = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
             notifyIconRestart = new ToolStripMenuItem();
             notifyIconStop = new ToolStripMenuItem();
-            toolStripSeparator1 = new ToolStripSeparator();
-            notifyIconStatus = new ToolStripMenuItem();
             slidersPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)brightnessSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).BeginInit();
@@ -255,32 +255,32 @@
             // 
             notifyIconMenuStrip.Items.AddRange(new ToolStripItem[] { notifyIconStatus, toolStripSeparator1, notifyIconRestart, notifyIconStop });
             notifyIconMenuStrip.Name = "contextMenuStrip1";
-            notifyIconMenuStrip.Size = new Size(181, 98);
+            notifyIconMenuStrip.Size = new Size(150, 76);
+            // 
+            // notifyIconStatus
+            // 
+            notifyIconStatus.Name = "notifyIconStatus";
+            notifyIconStatus.Size = new Size(149, 22);
+            notifyIconStatus.Text = "●";
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(146, 6);
             // 
             // notifyIconRestart
             // 
             notifyIconRestart.Name = "notifyIconRestart";
-            notifyIconRestart.Size = new Size(180, 22);
+            notifyIconRestart.Size = new Size(149, 22);
             notifyIconRestart.Text = "Restart service";
             notifyIconRestart.Click += notifyIconRestart_Click;
             // 
             // notifyIconStop
             // 
             notifyIconStop.Name = "notifyIconStop";
-            notifyIconStop.Size = new Size(180, 22);
+            notifyIconStop.Size = new Size(149, 22);
             notifyIconStop.Text = "Stop service";
             notifyIconStop.Click += notifyIconStop_Click;
-            // 
-            // toolStripSeparator1
-            // 
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(177, 6);
-            // 
-            // notifyIconStatus
-            // 
-            notifyIconStatus.Name = "notifyIconStatus";
-            notifyIconStatus.Size = new Size(180, 22);
-            notifyIconStatus.Text = "●";
             // 
             // EspSpectrumConfigForm
             // 

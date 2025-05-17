@@ -1,11 +1,12 @@
 ﻿using EspSpectrum.Core.Fft;
 using Microsoft.Extensions.Logging;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System.Threading.Channels;
 
 namespace EspSpectrum.Core.Recording;
 
-public class FftRecorder : IFftRecorder
+public sealed class FftRecorder : IFftRecorder, IDisposable
 {
     private IWaveIn _waveIn;
     private readonly ILogger<FftRecorder> _logger;
@@ -13,20 +14,30 @@ public class FftRecorder : IFftRecorder
     private readonly Channel<FftResult> _ffts;
     private readonly PeekableChannel<float> _peekableChannel;
 
+    private readonly MMDeviceEnumerator _deviceEnumerator;
+
+    // Required to properly work
+#pragma warning disable S1450
+    private readonly DeviceChangedNotifier _deviceChangedNotifier;
+#pragma warning restore S1450
+
     public FftRecorder(ILogger<FftRecorder> logger, IWaveIn waveIn)
     {
+        _logger = logger;
         _waveIn = waveIn;
         _waveIn.DataAvailable += OnDataAvailable;
         _waveIn.RecordingStopped += OnRecordingStopped;
 
+        _deviceEnumerator = new MMDeviceEnumerator();
+        _deviceChangedNotifier = new DeviceChangedNotifier(_logger, this);
+        _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
         _waveIn.StartRecording();
-        _logger = logger;
         _ffts = Channel.CreateBounded<FftResult>(new BoundedChannelOptions(8)
         {
             FullMode = BoundedChannelFullMode.DropOldest,
         }, f =>
         {
-            _logger.LogInformation("FFT dropped");
+            _logger.LogInformation("FFT dropped. If it happens too much (10+/sec), increase ReadLength");
         });
 
         var channel = Channel.CreateBounded<float>(new BoundedChannelOptions(FftProps.FftLength * 2)
@@ -85,7 +96,6 @@ public class FftRecorder : IFftRecorder
 
     public void Restart()
     {
-        _logger.LogDebug("Stopping recording");
         _waveIn.StopRecording();
         _waveIn.DataAvailable -= OnDataAvailable;
         _waveIn.RecordingStopped -= OnRecordingStopped;
@@ -93,12 +103,16 @@ public class FftRecorder : IFftRecorder
         _waveIn.DataAvailable += OnDataAvailable;
         _waveIn.RecordingStopped += OnRecordingStopped;
         _waveIn.StartRecording();
-        _logger.LogDebug("Started recording");
     }
 
     public async Task<FftResult> ReadFft(CancellationToken cancellationToken = default)
     {
         var fft = await _ffts.Reader.ReadAsync(cancellationToken);
         return fft;
+    }
+
+    public void Dispose()
+    {
+        _deviceEnumerator.Dispose();
     }
 }

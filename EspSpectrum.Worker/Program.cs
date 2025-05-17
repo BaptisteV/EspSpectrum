@@ -16,6 +16,15 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
 {
     services.AddCoreServices(hostContext.Configuration);
     services.AddHostedService<Worker>();
+}).ConfigureLogging(logging =>
+{
+    logging.SetMinimumLevel(LogLevel.Debug);
+    logging.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
+        options.IncludeScopes = false;
+    });
 });
 var host = builder.Build();
 await host.RunAsync();
