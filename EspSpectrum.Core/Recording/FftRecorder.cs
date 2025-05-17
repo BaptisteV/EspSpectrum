@@ -103,7 +103,7 @@ public class FftRecorder : IFftRecorder
         _logger.LogDebug("Started recording");
     }
 
-    public async Task<FftResult> ReadFft(CancellationToken cancellationToken)
+    public async Task<FftResult> ReadFft(CancellationToken cancellationToken = default)
     {
         var fft = await _ffts.Reader.ReadAsync(cancellationToken);
         return fft;

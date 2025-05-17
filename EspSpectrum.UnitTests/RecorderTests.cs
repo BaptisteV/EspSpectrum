@@ -1,4 +1,5 @@
-﻿using EspSpectrum.Core.Recording;
+﻿using EspSpectrum.Core;
+using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Sounds;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -6,29 +7,35 @@ namespace EspSpectrum.UnitTests;
 
 public sealed class RecorderTests : IDisposable
 {
-    //private readonly WavePlayer _player = new();
     private readonly FakeLoopbackWaveIn _fakeLoopbackWaveIn = new();
     private readonly FftRecorder recorder;
 
     public RecorderTests()
     {
         recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, _fakeLoopbackWaveIn);
-
-        //_player.Play();
     }
 
     [Fact]
     public async Task Test1()
     {
-        _fakeLoopbackWaveIn.FakeRecord([1, 2, 3, 4]);
-        //var unDeux = await recorder.ReadN(1);
-        //Assert.NotNull(unDeux);
-        //var rien = await recorder.ReadN(1);
-        //Assert.Empty(rien);
+        var channels = _fakeLoopbackWaveIn.WaveFormat.Channels;
+        var saw = new byte[FftProps.FftLength * 4 * channels];
+        for (var i = 0; i < saw.Length; i += channels)
+        {
+            var val = Random.Shared.NextSingle();
+            for (var c = 0; c < _fakeLoopbackWaveIn.WaveFormat.Channels; c++)
+            {
+                saw[i + c] = (byte)(i % 255);
+            }
+        }
+
+        _fakeLoopbackWaveIn.FakeRecord(saw, saw.Length / _fakeLoopbackWaveIn.WaveFormat.Channels);
+        var fft = await recorder.ReadFft();
+        // TODO Why zeros ?
+        Assert.NotNull(fft);
     }
 
     public void Dispose()
     {
-        //_player.Stop();
     }
 }

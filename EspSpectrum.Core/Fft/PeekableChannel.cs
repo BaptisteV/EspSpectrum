@@ -5,7 +5,7 @@ namespace EspSpectrum.Core.Fft;
 public class PeekableChannel<T>
 {
     private readonly Channel<T> _sourceChannel;
-    private readonly Queue<T> _peekBuffer = new Queue<T>();
+    private readonly Queue<T> _peekBuffer = new();
 
     public PeekableChannel(Channel<T> sourceChannel)
     {
@@ -44,10 +44,7 @@ public class PeekableChannel<T>
         // Read remaining items needed from the channel
         while (result.Count < itemsToRead)
         {
-            if (_sourceChannel.Reader.TryRead(out var item))
-            {
-                result.Add(item);
-            }
+            result.Add(await _sourceChannel.Reader.ReadAsync(cancellationToken));
         }
 
         // Now handle the split between consumed and peeked items
@@ -65,36 +62,6 @@ public class PeekableChannel<T>
 
         return result;
     }
-
-    // Basic read method that consumes one item
-    public async ValueTask<T> ReadAsync(CancellationToken cancellationToken = default)
-    {
-        if (_peekBuffer.Count > 0)
-        {
-            return _peekBuffer.Dequeue();
-        }
-
-        return await _sourceChannel.Reader.ReadAsync(cancellationToken);
-    }
-
-    // Basic peek method without consumption
-    public async ValueTask<IReadOnlyList<T>> PeekAsync(int count, CancellationToken cancellationToken = default)
-    {
-        var peekedItems = await ReadPartialConsume(count, 0, cancellationToken);
-        return peekedItems;
-    }
-
-    // Consume a specific number of items
-    public async Task<IReadOnlyList<T>> ReadAsync(int count, CancellationToken cancellationToken = default)
-    {
-        return await ReadPartialConsume(count, count, cancellationToken);
-    }
-
-    // Check if the channel has data available
-    public bool CanRead => _peekBuffer.Count > 0 || _sourceChannel.Reader.CanCount && _sourceChannel.Reader.Count > 0;
-
-    // Get current buffer size
-    public int BufferedCount => _peekBuffer.Count;
 
     public int Count => _sourceChannel.Reader.Count + _peekBuffer.Count;
 }

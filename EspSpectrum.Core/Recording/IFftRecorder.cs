@@ -3,6 +3,6 @@
 public interface IFftRecorder
 {
     int SampleRate { get; }
-    Task<FftResult> ReadFft(CancellationToken cancellationToken);
+    Task<FftResult> ReadFft(CancellationToken cancellationToken = default);
     void Restart();
 }

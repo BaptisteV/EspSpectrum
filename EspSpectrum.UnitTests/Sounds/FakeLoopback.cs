@@ -10,16 +10,15 @@ internal class FakeLoopbackWaveIn : IWaveIn
     public event EventHandler<WaveInEventArgs> DataAvailable;
     public event EventHandler<StoppedEventArgs> RecordingStopped;
     private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-    private readonly PeriodicTimer Timer = new(TimeSpan.FromMilliseconds(2));
 
     public void Dispose()
     {
         _cts.Dispose();
     }
 
-    public void FakeRecord(byte[] data)
+    public void FakeRecord(byte[] data, int bytesRecorded)
     {
-        DataAvailable.Invoke(this, new WaveInEventArgs(data, data.Length));
+        DataAvailable.Invoke(this, new WaveInEventArgs(data, bytesRecorded));
     }
 
     public void StartRecording()

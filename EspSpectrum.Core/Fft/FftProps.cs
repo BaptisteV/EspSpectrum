@@ -2,7 +2,7 @@
 
 public static class FftProps
 {
-    public const int ReadLength = 4096 / 6;
+    public const int ReadLength = 4096 / 7;
 
     public const int FftLength = 4096 * 2;
 
@@ -12,6 +12,4 @@ public static class FftProps
     public const double MaxFreq = 15_000.0;
     public const double Amplification = 1.0;
     public const double ScaleFactor20 = 80.0;
-
-    public static TimeSpan WaitForAudioTightLoop { get; } = TimeSpan.FromMicroseconds(100);
 }
