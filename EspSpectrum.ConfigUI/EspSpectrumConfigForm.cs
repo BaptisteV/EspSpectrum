@@ -15,17 +15,21 @@ namespace EspSpectrum.ConfigUI
             IEspSpectrumServiceMonitor serviceMonitor,
             ILogger<EspSpectrumConfigForm> logger)
         {
+            _writer = writer;
+            _serviceMonitor = serviceMonitor;
+            _logger = logger;
             InitializeComponent();
-            DarkNet.Instance.SetWindowThemeForms(this, Theme.Auto);
+            AdjustColors();
+
+        }
+
+        private void AdjustColors()
+        {
+            DarkNet.Instance.SetWindowThemeForms(this, Theme.Dark);
             this.BackColor = Color.FromArgb(255, 24, 32, 33);
             this.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
             statusStrip1.BackColor = Color.FromArgb(255, 24, 32, 33);
             statusStrip1.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
-
-            appsettingsDialog.FileName = DefaultAppsettings;
-            _writer = writer;
-            _serviceMonitor = serviceMonitor;
-            _logger = logger;
         }
 
         private async void ColorButtonClicked(object? sender, EventArgs e)
@@ -110,8 +114,11 @@ namespace EspSpectrum.ConfigUI
                 while (await timer.WaitForNextTickAsync())
                 {
                     var status = _serviceMonitor.GetStatus();
-                    serviceStatusLabel.ForeColor = status.IsRunning ? Color.Green : Color.Red;
+                    var statusColor = status.IsRunning ? Color.Green : Color.Red;
+                    serviceStatusLabel.ForeColor = statusColor;
                     serviceStatusLabel.ToolTipText = status.ToString();
+                    notifyIcon.BalloonTipText = $"EspSpectrum - Config ({status})";
+                    notifyIconStatus.ForeColor = statusColor;
                 }
             });
         }
@@ -157,6 +164,21 @@ namespace EspSpectrum.ConfigUI
         }
 
         private void stopMenuItem_Click(object sender, EventArgs e)
+        {
+            _serviceMonitor.Stop();
+        }
+
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Activate();
+        }
+
+        private void notifyIconRestart_Click(object sender, EventArgs e)
+        {
+            _serviceMonitor.Restart();
+        }
+
+        private void notifyIconStop_Click(object sender, EventArgs e)
         {
             _serviceMonitor.Stop();
         }

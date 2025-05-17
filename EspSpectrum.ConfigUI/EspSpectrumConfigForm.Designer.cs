@@ -28,9 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             var resources = new System.ComponentModel.ComponentResourceManager(typeof(EspSpectrumConfigForm));
-            colorDialog1 = new ColorDialog();
-            appsettingsDialog = new OpenFileDialog();
             panelHighColor = new TableLayoutPanel();
             panelMidColor = new TableLayoutPanel();
             panelLowColor = new TableLayoutPanel();
@@ -45,21 +44,21 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             serviceStatusLabel = new ToolStripStatusLabel();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
-            restartMenuItem = new ToolStripMenuItem();
             stopMenuItem = new ToolStripMenuItem();
+            restartMenuItem = new ToolStripMenuItem();
+            notifyIcon = new NotifyIcon(components);
+            notifyIconMenuStrip = new ContextMenuStrip(components);
+            notifyIconRestart = new ToolStripMenuItem();
+            notifyIconStop = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            notifyIconStatus = new ToolStripMenuItem();
             slidersPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)brightnessSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).BeginInit();
             statusStrip1.SuspendLayout();
+            notifyIconMenuStrip.SuspendLayout();
             SuspendLayout();
-            // 
-            // appsettingsDialog
-            // 
-            appsettingsDialog.DefaultExt = "json";
-            appsettingsDialog.FileName = "appsettings.json";
-            appsettingsDialog.Filter = "JSON files (*.json)|*.json";
-            appsettingsDialog.Title = "Select EspSpectrum appsettings.json";
             // 
             // panelHighColor
             // 
@@ -229,19 +228,59 @@
             toolStripDropDownButton1.Size = new Size(13, 20);
             toolStripDropDownButton1.Text = "toolStripDropDownButton1";
             // 
-            // restartMenuItem
-            // 
-            restartMenuItem.Name = "restartMenuItem";
-            restartMenuItem.Size = new Size(180, 22);
-            restartMenuItem.Text = "Restart service";
-            restartMenuItem.Click += restartMenuItem_Click;
-            // 
             // stopMenuItem
             // 
             stopMenuItem.Name = "stopMenuItem";
-            stopMenuItem.Size = new Size(180, 22);
+            stopMenuItem.Size = new Size(149, 22);
             stopMenuItem.Text = "Stop service";
             stopMenuItem.Click += stopMenuItem_Click;
+            // 
+            // restartMenuItem
+            // 
+            restartMenuItem.Name = "restartMenuItem";
+            restartMenuItem.Size = new Size(149, 22);
+            restartMenuItem.Text = "Restart service";
+            restartMenuItem.Click += restartMenuItem_Click;
+            // 
+            // notifyIcon
+            // 
+            notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            notifyIcon.ContextMenuStrip = notifyIconMenuStrip;
+            notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
+            notifyIcon.Text = "EspSpectrum - Config";
+            notifyIcon.Visible = true;
+            notifyIcon.MouseDoubleClick += notifyIcon_MouseDoubleClick;
+            // 
+            // notifyIconMenuStrip
+            // 
+            notifyIconMenuStrip.Items.AddRange(new ToolStripItem[] { notifyIconStatus, toolStripSeparator1, notifyIconRestart, notifyIconStop });
+            notifyIconMenuStrip.Name = "contextMenuStrip1";
+            notifyIconMenuStrip.Size = new Size(181, 98);
+            // 
+            // notifyIconRestart
+            // 
+            notifyIconRestart.Name = "notifyIconRestart";
+            notifyIconRestart.Size = new Size(180, 22);
+            notifyIconRestart.Text = "Restart service";
+            notifyIconRestart.Click += notifyIconRestart_Click;
+            // 
+            // notifyIconStop
+            // 
+            notifyIconStop.Name = "notifyIconStop";
+            notifyIconStop.Size = new Size(180, 22);
+            notifyIconStop.Text = "Stop service";
+            notifyIconStop.Click += notifyIconStop_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(177, 6);
+            // 
+            // notifyIconStatus
+            // 
+            notifyIconStatus.Name = "notifyIconStatus";
+            notifyIconStatus.Size = new Size(180, 22);
+            notifyIconStatus.Text = "●";
             // 
             // EspSpectrumConfigForm
             // 
@@ -264,14 +303,12 @@
             ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            notifyIconMenuStrip.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private ColorDialog colorDialog1;
-        private OpenFileDialog appsettingsDialog;
         private TableLayoutPanel panelHighColor;
         private TableLayoutPanel panelMidColor;
         private TableLayoutPanel panelLowColor;
@@ -288,5 +325,11 @@
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStripMenuItem restartMenuItem;
         private ToolStripMenuItem stopMenuItem;
+        private NotifyIcon notifyIcon;
+        private ContextMenuStrip notifyIconMenuStrip;
+        private ToolStripMenuItem notifyIconRestart;
+        private ToolStripMenuItem notifyIconStop;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem notifyIconStatus;
     }
 }
