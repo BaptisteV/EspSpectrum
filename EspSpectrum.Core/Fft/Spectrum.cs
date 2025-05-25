@@ -2,5 +2,5 @@
 
 public class Spectrum
 {
-    public double[] Bands { get; init; } = new double[FftProps.NBands];
+    public double[] Bands { get; set; } = new double[FftProps.NBands];
 }

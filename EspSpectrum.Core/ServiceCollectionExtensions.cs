@@ -14,6 +14,8 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<EspConfig>(configuration);
         services.Configure<DisplayConfig>(configuration);
+        services.Configure<SpectrumConfig>(configuration);
+
         services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IWebsocketFactory, WebsocketFactory>();

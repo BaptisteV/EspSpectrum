@@ -8,11 +8,13 @@ namespace EspSpectrum.Core.Fft;
 
 public sealed class SpectrumStream(
     IFftRecorder audioRecorder,
-    IOptionsMonitor<DisplayConfig> configMonitor,
+    IOptionsMonitor<DisplayConfig> displayConfigMonitor,
+    IOptionsMonitor<SpectrumConfig> spectrumConfigMonitor,
     ILogger<SpectrumStream> logger) : ISpectrumStream
 {
     private readonly IFftRecorder _audioRecorder = audioRecorder;
-    private readonly IOptionsMonitor<DisplayConfig> _configMonitor = configMonitor;
+    private readonly IOptionsMonitor<DisplayConfig> _configMonitor = displayConfigMonitor;
+    private readonly IOptionsMonitor<SpectrumConfig> _spectrumConfigMonitor = spectrumConfigMonitor;
     private readonly ILogger<SpectrumStream> _logger = logger;
 
     private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
@@ -36,7 +38,15 @@ public sealed class SpectrumStream(
         while (!cancellationToken.IsCancellationRequested)
         {
             stopwatch.Restart();
+
             var fft = await _audioRecorder.ReadFft(cancellationToken);
+            var spectrumConfig = _spectrumConfigMonitor.CurrentValue;
+
+            if (spectrumConfig.ApplyCompression)
+            {
+                fft.Bands = SpectrumCompressor.Compress(fft.Bands, spectrumConfig.Compression.Threshold, spectrumConfig.Compression.Ratio);
+            }
+
             await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
             yield return fft;
         }
