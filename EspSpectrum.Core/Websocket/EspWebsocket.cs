@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core.Display;
+using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
+using System.Text.Json;
 using Websocket.Client;
 
 namespace EspSpectrum.Core.Websocket;
 
-public sealed class EspWebsocket : IWebsocketBars
+public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 {
     private readonly WebsocketClient _wsClient;
     private readonly ILogger<EspWebsocket> _logger;
@@ -32,7 +34,7 @@ public sealed class EspWebsocket : IWebsocketBars
         return packedData;
     }
 
-    public async Task SendAudio(int[] audio)
+    private async Task ConnectIfNeeded()
     {
         if (!_wsClient.IsRunning && !_starting)
         {
@@ -42,8 +44,21 @@ public sealed class EspWebsocket : IWebsocketBars
             _logger.LogInformation("Connected");
             _starting = false;
         }
+    }
 
-        var packedData = PackData(audio);
+    public async Task SendDisplayConfig(DisplayConfig displayConfig)
+    {
+        await ConnectIfNeeded();
+        var jsonString = JsonSerializer.Serialize(displayConfig);
+        await _wsClient.SendInstant(jsonString);
+        _logger.LogInformation("Sent {Json}", jsonString);
+    }
+
+    public async Task SendSpectrum(double[] bands)
+    {
+        await ConnectIfNeeded();
+
+        var packedData = PackData([.. bands.Select(b => (int)Math.Round(b))]);
         try
         {
             await _wsClient.SendInstant(packedData);

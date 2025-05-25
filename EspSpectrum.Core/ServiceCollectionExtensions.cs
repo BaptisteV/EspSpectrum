@@ -14,13 +14,13 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<EspConfig>(configuration);
         services.Configure<DisplayConfig>(configuration);
-        services.AddTransient<IWebsocketBars, EspWebsocket>();
+        services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IWebsocketFactory, WebsocketFactory>();
         services.AddTransient<IFftRecorder, FftRecorder>();
-        services.AddTransient<IFftStream, FftStream>();
+        services.AddTransient<ISpectrumStream, SpectrumStream>();
 
-        services.AddTransient<IWebsocketDisplay, DisplayConfigWebsocket>();
+        services.AddTransient<IDisplayConfigWebsocket, EspWebsocket>();
 
         services.AddTransient<IDisplayConfigManager, DisplayConfigWriter>();
     }

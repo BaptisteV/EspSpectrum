@@ -6,14 +6,14 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 namespace EspSpectrum.Core.Fft;
 
-public sealed class FftStream(
+public sealed class SpectrumStream(
     IFftRecorder audioRecorder,
     IOptionsMonitor<DisplayConfig> configMonitor,
-    ILogger<FftStream> logger) : IFftStream
+    ILogger<SpectrumStream> logger) : ISpectrumStream
 {
     private readonly IFftRecorder _audioRecorder = audioRecorder;
     private readonly IOptionsMonitor<DisplayConfig> _configMonitor = configMonitor;
-    private readonly ILogger<FftStream> _logger = logger;
+    private readonly ILogger<SpectrumStream> _logger = logger;
 
     private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
     {
@@ -29,7 +29,7 @@ public sealed class FftStream(
         await Task.Delay(remainingTime);
     }
 
-    public async IAsyncEnumerable<FftResult> NextFft([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Spectrum> NextFft([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
 

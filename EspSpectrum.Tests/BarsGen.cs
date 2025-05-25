@@ -4,9 +4,9 @@ namespace EspSpectrum.DisplayTests;
 
 public static class BarsGen
 {
-    public static int[] GetLine(int value)
+    public static double[] GetLine(int value)
     {
-        var data = new int[FftProps.NBands];
+        var data = new double[FftProps.NBands];
         for (int i = 0; i < data.Length; i++)
         {
             data[i] = value;

@@ -16,7 +16,7 @@ public class SendSlowTests(ITestOutputHelper output)
         for (var i = 0; i <= 8; i++)
         {
             var d = BarsGen.GetLine(i);
-            await _espWebsocket.SendAudio(d);
+            await _espWebsocket.SendSpectrum(d);
             _output.WriteLine($"Sent {i}");
             await Task.Delay(250);
         }
@@ -24,7 +24,7 @@ public class SendSlowTests(ITestOutputHelper output)
         for (var i = 8; i >= 0; i--)
         {
             var d = BarsGen.GetLine(i);
-            await _espWebsocket.SendAudio(d);
+            await _espWebsocket.SendSpectrum(d);
             _output.WriteLine($"Sent {i}");
             await Task.Delay(250);
         }
@@ -40,7 +40,7 @@ public class SendSlowTests(ITestOutputHelper output)
             for (var i = 8; i >= 0; i -= 2)
             {
                 var d = BarsGen.GetLine(i);
-                await _espWebsocket.SendAudio(d);
+                await _espWebsocket.SendSpectrum(d);
                 _output.WriteLine($"Sent {i}");
                 await Task.Delay(ms);
             }
@@ -62,7 +62,7 @@ public class SendSlowTests(ITestOutputHelper output)
             for (var i = 8; i >= 0; i -= 2)
             {
                 var d = BarsGen.GetLine(i);
-                await _espWebsocket.SendAudio(d);
+                await _espWebsocket.SendSpectrum(d);
                 _output.WriteLine($"Sent {i}");
                 await Task.Delay(ms);
             }

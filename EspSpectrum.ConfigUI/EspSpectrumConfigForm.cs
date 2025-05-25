@@ -140,7 +140,7 @@ namespace EspSpectrum.ConfigUI
         private async void sendIntervalSlider_ValueChanged(object sender, EventArgs e)
         {
             var slider = (TrackBar)sender;
-            sendIntervalLabel.Text = $"Send interval {slider.Value}ms";
+            sendIntervalLabel.Text = $"SendDisplayConfig interval {slider.Value}ms";
             await SafeUpdateConfig(c => c.SendInterval = TimeSpan.FromMilliseconds(slider.Value));
         }
 

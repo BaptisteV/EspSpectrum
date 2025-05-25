@@ -31,10 +31,10 @@ static void ConfigureServices(IServiceCollection services, IConfiguration config
 
 var sp = Configure(configuration);
 
-var fftStream = sp.GetRequiredService<IFftStream>();
-var ws = sp.GetRequiredService<IWebsocketBars>();
+var fftStream = sp.GetRequiredService<ISpectrumStream>();
+var ws = sp.GetRequiredService<ISpectrumWebsocket>();
 
 await foreach (var fft in fftStream.NextFft())
 {
-    await ws.SendAudio(fft.Bands);
+    await ws.SendSpectrum(fft.Bands);
 }

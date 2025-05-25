@@ -27,9 +27,9 @@ public static class FftProcessor
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
     }
 
-    private static int[] CalculateBands(Complex[] fftResult, int sampleRate)
+    private static double[] CalculateBands(Complex[] fftResult, int sampleRate)
     {
-        var bandLevels = new int[FftProps.NBands];
+        var bandLevels = new double[FftProps.NBands];
         var binFrequencyResolution = (double)sampleRate / FftProps.FftLength;
 
         for (var band = 0; band < FftProps.NBands; band++)
@@ -50,7 +50,7 @@ public static class FftProcessor
             }
 
             // Apply logarithmic scaling
-            bandLevels[band] = (int)Math.Round(Math.Log10(bandEnergy + 1) * FftProps.ScaleFactor20);
+            bandLevels[band] = Math.Log10(bandEnergy + 1) * FftProps.ScaleFactor20;
         }
 
         return bandLevels;
@@ -58,7 +58,7 @@ public static class FftProcessor
 
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    public static FftResult ToFft(float[] sample, int sampleRate)
+    public static Spectrum ToFft(float[] sample, int sampleRate)
     {
         var fftBuffer = new Complex[sample.Length];
         for (var i = 0; i < sample.Length; i++)
@@ -70,7 +70,7 @@ public static class FftProcessor
         FastFourierTransform.FFT(true, FftPow, fftBuffer);
         var bands = CalculateBands(fftBuffer, sampleRate);
 
-        return new FftResult() { Bands = bands };
+        return new Spectrum() { Bands = bands };
     }
 
 }

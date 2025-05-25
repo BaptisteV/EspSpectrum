@@ -11,7 +11,7 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
     private IWaveIn _waveIn;
     private readonly ILogger<FftRecorder> _logger;
 
-    private readonly Channel<FftResult> _ffts;
+    private readonly Channel<Spectrum> _ffts;
     private readonly PeekableChannel<float> _peekableChannel;
 
     private readonly MMDeviceEnumerator _deviceEnumerator;
@@ -32,7 +32,7 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
         _deviceChangedNotifier = new DeviceChangedNotifier(_logger, this);
         _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
         _waveIn.StartRecording();
-        _ffts = Channel.CreateBounded<FftResult>(new BoundedChannelOptions(8)
+        _ffts = Channel.CreateBounded<Spectrum>(new BoundedChannelOptions(8)
         {
             FullMode = BoundedChannelFullMode.DropOldest,
         }, f =>
@@ -105,7 +105,7 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
         _waveIn.StartRecording();
     }
 
-    public async Task<FftResult> ReadFft(CancellationToken cancellationToken = default)
+    public async Task<Spectrum> ReadFft(CancellationToken cancellationToken = default)
     {
         var fft = await _ffts.Reader.ReadAsync(cancellationToken);
         return fft;

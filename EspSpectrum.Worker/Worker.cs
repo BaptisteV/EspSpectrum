@@ -8,17 +8,17 @@ namespace EspSpectrum.Worker;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly IFftStream _stream;
-    private readonly IWebsocketBars _ws;
-    private readonly IWebsocketDisplay _wsDisplay;
+    private readonly ISpectrumStream _stream;
+    private readonly ISpectrumWebsocket _ws;
+    private readonly IDisplayConfigWebsocket _wsDisplay;
     private DisplayConfig _conf;
     private readonly IOptionsMonitor<DisplayConfig> _confMonitor;
 
     public Worker(
         ILogger<Worker> logger,
-        IFftStream stream,
-        IWebsocketBars ws,
-        IWebsocketDisplay wsDisplay,
+        ISpectrumStream stream,
+        ISpectrumWebsocket ws,
+        IDisplayConfigWebsocket wsDisplay,
         IOptionsMonitor<DisplayConfig> conf)
     {
         _logger = logger;
@@ -32,7 +32,7 @@ public class Worker : BackgroundService
             if (newConf != _conf)
             {
                 _logger.LogInformation("Updating display config");
-                await _wsDisplay.Send(newConf);
+                await _wsDisplay.SendDisplayConfig(newConf);
                 _conf = newConf;
             }
         });
@@ -41,7 +41,7 @@ public class Worker : BackgroundService
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting service");
-        await _wsDisplay.Send(_confMonitor.CurrentValue);
+        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
 
         await ExecuteAsync(cancellationToken);
     }
@@ -50,7 +50,7 @@ public class Worker : BackgroundService
     {
         await foreach (var bands in _stream.NextFft(stoppingToken))
         {
-            await _ws.SendAudio(bands.Bands);
+            await _ws.SendSpectrum(bands.Bands);
         }
         _logger.LogInformation("Service interrupted");
     }

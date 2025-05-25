@@ -9,20 +9,20 @@ namespace EspSpectrum.App
     {
         private readonly Button[][] _buttons = new Button[FftProps.NBands][];
 
-        private readonly IFftStream _stream;
+        private readonly ISpectrumStream _stream;
 
         private DisplayConfig _display;
         private readonly IOptionsMonitor<DisplayConfig> _displayMonitor;
-        private readonly IWebsocketBars _wsBars;
-        private readonly IWebsocketDisplay _wsDisplay;
+        private readonly ISpectrumWebsocket _wsBars;
+        private readonly IDisplayConfigWebsocket _wsDisplay;
         private readonly IDisplayConfigManager _displayWriter;
         private readonly CancellationTokenSource _cts = new();
 
         public MainPage(
-            IFftStream stream,
+            ISpectrumStream stream,
             IOptionsMonitor<DisplayConfig> displayMonitor,
-            IWebsocketBars wsBars,
-            IWebsocketDisplay wsDisplay,
+            ISpectrumWebsocket wsBars,
+            IDisplayConfigWebsocket wsDisplay,
             IDisplayConfigManager displayWriter)
         {
             InitializeComponent();
@@ -37,7 +37,7 @@ namespace EspSpectrum.App
             {
                 if (newConf != _display)
                 {
-                    await _wsDisplay.Send(newConf);
+                    await _wsDisplay.SendDisplayConfig(newConf);
                     _display = newConf;
                 }
             });
@@ -46,7 +46,7 @@ namespace EspSpectrum.App
             {
                 await foreach (var fft in _stream.NextFft(_cts.Token))
                 {
-                    await _wsBars.SendAudio(fft.Bands);
+                    await _wsBars.SendSpectrum(fft.Bands);
                     Dispatcher.Dispatch(() => UpdateUI(fft));
                 }
             }, _cts.Token);
@@ -86,7 +86,7 @@ namespace EspSpectrum.App
             };
         }
 
-        private Color GetCellColor(int barValue, int y)
+        private Color GetCellColor(double barValue, int y)
         {
             if (y >= barValue)
                 return Colors.Gray;
@@ -100,7 +100,7 @@ namespace EspSpectrum.App
             return FromEspHue(_displayMonitor.CurrentValue.HighHue);
         }
 
-        public void UpdateBars(FftResult fft)
+        public void UpdateBars(Spectrum fft)
         {
             for (var x = 0; x < _buttons.Length; x++)
             {
@@ -119,7 +119,7 @@ namespace EspSpectrum.App
             LabelBrightness.Text = $"Brightness: {_displayMonitor.CurrentValue.Brightness} ({_displayMonitor.CurrentValue.Brightness * 100 / 255}%)";
         }
 
-        public void UpdateUI(FftResult fft)
+        public void UpdateUI(Spectrum fft)
         {
             UpdateBars(fft);
             UpdateLabels();

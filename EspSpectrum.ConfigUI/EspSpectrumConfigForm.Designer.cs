@@ -182,7 +182,7 @@
             sendIntervalLabel.Name = "sendIntervalLabel";
             sendIntervalLabel.Size = new Size(128, 33);
             sendIntervalLabel.TabIndex = 1;
-            sendIntervalLabel.Text = "Send interval";
+            sendIntervalLabel.Text = "SendDisplayConfig interval";
             sendIntervalLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // sendIntervalSlider
