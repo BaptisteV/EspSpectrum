@@ -4,7 +4,7 @@ public static class FftProps
 {
     public const int ReadLength = 4096 / 7;
 
-    public const int FftLength = 4096 * 2;
+    public const int FftLength = 4096;
 
     public const int BandHeigth = 8;
     public const int NBands = 32;
