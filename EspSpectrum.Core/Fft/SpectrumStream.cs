@@ -49,4 +49,9 @@ public sealed class SpectrumStream(
             yield return fft;
         }
     }
+
+    public void Start()
+    {
+        _audioRecorder.Start();
+    }
 }

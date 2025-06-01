@@ -10,6 +10,5 @@ public static class FftProps
     public const int NBands = 32;
     public const double MinFreq = 50.0;
     public const double MaxFreq = 15_000.0;
-    public const double Amplification = 1.0;
     public const double ScaleFactor20 = 80.0;
 }

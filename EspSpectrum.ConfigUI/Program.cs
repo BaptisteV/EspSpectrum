@@ -1,7 +1,6 @@
 using EspSpectrum.Core.Display;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace EspSpectrum.ConfigUI;
 
@@ -27,9 +26,10 @@ internal static class Program
         return Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                services.AddTransient<IDisplayConfigManager, DisplayConfigWriter>(
-                    (sp) =>
-                        new DisplayConfigWriter(sp.GetRequiredService<ILogger<DisplayConfigWriter>>(), EspSpectrumConfigForm.DefaultAppsettings));
+                services.AddTransient<IAppsettingsManager, AppsettingsManager>(_ =>
+                {
+                    return new AppsettingsManager(EspSpectrumConfigForm.DefaultAppsettings);
+                });
 
                 services.AddTransient<EspSpectrumConfigForm>();
                 services.AddTransient<IEspSpectrumServiceMonitor, EspSpectrumServiceMonitor>();

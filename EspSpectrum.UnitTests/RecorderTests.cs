@@ -1,22 +1,32 @@
-﻿using EspSpectrum.Core.Fft;
+﻿using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
-using EspSpectrum.UnitTests.Sounds;
-using Microsoft.Extensions.Logging.Abstractions;
+using EspSpectrum.PerformanceTests;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Xunit.Abstractions;
 
 namespace EspSpectrum.UnitTests;
 
-public sealed class RecorderTests : IDisposable
+public sealed class RecorderTests : BaseTests, IDisposable
 {
     private readonly FakeLoopbackWaveIn _fakeLoopbackWaveIn = new();
     private readonly FftRecorder _recorder;
 
-    public RecorderTests()
+    public RecorderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, _fakeLoopbackWaveIn);
+        var services = new ServiceCollection();
+        services.Configure<SpectrumConfig>(c => { });
+        var serviceProvider = services.BuildServiceProvider();
+        var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<DisplayConfig>>();
+
+        _recorder = new FftRecorder(LoggerFactory.CreateLogger<FftRecorder>(), _fakeLoopbackWaveIn, optionsMonitor);
+        _recorder.Start();
     }
 
     [Fact]
-    public async Task RecordSine440()
+    public async Task ReadSine440()
     {
         _fakeLoopbackWaveIn.RecordSingleSine();
 
@@ -32,6 +42,16 @@ public sealed class RecorderTests : IDisposable
             .Index;
         Assert.True(FftProcessor.FrequencyBands.ElementAt(peakIndex) < Sine440.PeakFrequency);
         Assert.True(FftProcessor.FrequencyBands.ElementAt(peakIndex + 1) > Sine440.PeakFrequency);
+    }
+
+    [Fact]
+    public async Task ReadNotEnoughData()
+    {
+        _fakeLoopbackWaveIn.RecordSingleSine();
+
+        _ = await _recorder.ReadFft();
+
+        //_ = await _recorder.ReadFft();
     }
 
     public void Dispose()

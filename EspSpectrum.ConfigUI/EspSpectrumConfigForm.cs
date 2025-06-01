@@ -6,16 +6,16 @@ namespace EspSpectrum.ConfigUI
     public partial class EspSpectrumConfigForm : Form
     {
         public static readonly string DefaultAppsettings = @"C:\Users\Bapt\Desktop\FFT_Publish\EspSpectrum.Worker\appsettings.json";
-        private readonly IDisplayConfigManager _writer;
+        private readonly IAppsettingsManager _displayConfigManager;
         private readonly IEspSpectrumServiceMonitor _serviceMonitor;
         private readonly ILogger<EspSpectrumConfigForm> _logger;
 
         public EspSpectrumConfigForm(
-            IDisplayConfigManager writer,
+            IAppsettingsManager displayConfigManager,
             IEspSpectrumServiceMonitor serviceMonitor,
             ILogger<EspSpectrumConfigForm> logger)
         {
-            _writer = writer;
+            _displayConfigManager = displayConfigManager;
             _serviceMonitor = serviceMonitor;
             _logger = logger;
             InitializeComponent();
@@ -40,15 +40,15 @@ namespace EspSpectrum.ConfigUI
 
             if (parentPanel.Name.Contains("Low"))
             {
-                await _writer.UpdateConfig(c => c.LowHue = buttonColor);
+                await _displayConfigManager.UpdateConfig(c => c.LowHue = buttonColor);
             }
             else if (parentPanel.Name.Contains("Mid"))
             {
-                await _writer.UpdateConfig(c => c.MidHue = buttonColor);
+                await _displayConfigManager.UpdateConfig(c => c.MidHue = buttonColor);
             }
             else if (parentPanel.Name.Contains("High"))
             {
-                await _writer.UpdateConfig(c => c.HighHue = buttonColor);
+                await _displayConfigManager.UpdateConfig(c => c.HighHue = buttonColor);
             }
 
             foreach (Control ctrl in parentPanel.Controls)
@@ -97,16 +97,17 @@ namespace EspSpectrum.ConfigUI
             }
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private async void EspSpectrumConfigForm_Load(object sender, EventArgs e)
         {
             FillColors(panelHighColor, 0);
             FillColors(panelMidColor, 1);
             FillColors(panelLowColor, 2);
 
-            var initialConf = await _writer.ReadConfig();
+            var initialConf = await _displayConfigManager.ReadConfig();
             sendIntervalSlider.Value = (int)initialConf.SendInterval.TotalMilliseconds;
             fadedFramesSlider.Value = initialConf.HistoLength;
             brightnessSlider.Value = initialConf.Brightness;
+            amplificationSlider.Value = (int)(initialConf.Amplification * 100.0);
 
             _ = Task.Run(async () =>
             {
@@ -128,7 +129,7 @@ namespace EspSpectrum.ConfigUI
         {
             try
             {
-                await _writer.UpdateConfig(update);
+                await _displayConfigManager.UpdateConfig(update);
             }
             // Happens when values are changed too quickly
             catch (IOException e)
@@ -140,7 +141,7 @@ namespace EspSpectrum.ConfigUI
         private async void sendIntervalSlider_ValueChanged(object sender, EventArgs e)
         {
             var slider = (TrackBar)sender;
-            sendIntervalLabel.Text = $"SendDisplayConfig interval {slider.Value}ms";
+            sendIntervalLabel.Text = $"Send interval {slider.Value}ms";
             await SafeUpdateConfig(c => c.SendInterval = TimeSpan.FromMilliseconds(slider.Value));
         }
 
@@ -156,6 +157,13 @@ namespace EspSpectrum.ConfigUI
             var slider = (TrackBar)sender;
             brightnessLabel.Text = $"Brightness: {slider.Value}";
             await SafeUpdateConfig(c => c.Brightness = slider.Value);
+        }
+
+        private async void amplificationSlider_ValueChanged(object sender, EventArgs e)
+        {
+            var slider = (TrackBar)sender;
+            amplificationLabel.Text = $"Amplification: {slider.Value / 100.0:n2}";
+            await SafeUpdateConfig(c => c.Amplification = slider.Value / 100.0);
         }
 
         private void restartMenuItem_Click(object sender, EventArgs e)

@@ -8,14 +8,16 @@ namespace EspSpectrum.Core.Websocket;
 
 public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 {
-    private readonly WebsocketClient _wsClient;
+    private readonly WebsocketClient _wsSpectrum;
+    private readonly WebsocketClient _wsDisplayConfig;
     private readonly ILogger<EspWebsocket> _logger;
     private bool _starting = false;
 
     public EspWebsocket(IWebsocketFactory wsFactory, ILogger<EspWebsocket> logger)
     {
         _logger = logger;
-        _wsClient = wsFactory.CreateClient(_logger);
+        _wsSpectrum = wsFactory.CreateClient(_logger);
+        _wsDisplayConfig = wsFactory.CreateClient(_logger);
     }
 
     private static byte[] PackData(int[] bars)
@@ -36,11 +38,11 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     private async Task ConnectIfNeeded()
     {
-        if (!_wsClient.IsRunning && !_starting)
+        if (!_wsSpectrum.IsRunning && !_starting)
         {
             _starting = true;
             _logger.LogInformation("Connecting...");
-            await _wsClient.Start();
+            await _wsSpectrum.Start();
             _logger.LogInformation("Connected");
             _starting = false;
         }
@@ -48,10 +50,10 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     public async Task SendDisplayConfig(DisplayConfig displayConfig)
     {
-        await ConnectIfNeeded();
+        await _wsDisplayConfig.Start();
         var jsonString = JsonSerializer.Serialize(displayConfig);
-        await _wsClient.SendInstant(jsonString);
-        _logger.LogInformation("Sent {Json}", jsonString);
+        await _wsDisplayConfig.SendInstant(jsonString);
+        await _wsDisplayConfig.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closed after sending display config");
     }
 
     public async Task SendSpectrum(double[] bands)
@@ -61,7 +63,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         var packedData = PackData([.. bands.Select(b => (int)Math.Round(b))]);
         try
         {
-            await _wsClient.SendInstant(packedData);
+            await _wsSpectrum.SendInstant(packedData);
         }
         catch (SocketException se)
         {

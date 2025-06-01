@@ -18,7 +18,7 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
     services.AddHostedService<Worker>();
 }).ConfigureLogging(logging =>
 {
-    logging.SetMinimumLevel(LogLevel.Debug);
+    logging.SetMinimumLevel(LogLevel.Warning);
     logging.AddSimpleConsole(options =>
     {
         options.SingleLine = true;

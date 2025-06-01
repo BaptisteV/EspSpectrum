@@ -15,7 +15,7 @@ namespace EspSpectrum.App
         private readonly IOptionsMonitor<DisplayConfig> _displayMonitor;
         private readonly ISpectrumWebsocket _wsBars;
         private readonly IDisplayConfigWebsocket _wsDisplay;
-        private readonly IDisplayConfigManager _displayWriter;
+        private readonly IAppsettingsManager _displayWriter;
         private readonly CancellationTokenSource _cts = new();
 
         public MainPage(
@@ -23,7 +23,7 @@ namespace EspSpectrum.App
             IOptionsMonitor<DisplayConfig> displayMonitor,
             ISpectrumWebsocket wsBars,
             IDisplayConfigWebsocket wsDisplay,
-            IDisplayConfigManager displayWriter)
+            IAppsettingsManager displayWriter)
         {
             InitializeComponent();
             CreateButtons(BarsContainer);
@@ -41,15 +41,6 @@ namespace EspSpectrum.App
                     _display = newConf;
                 }
             });
-
-            _ = Task.Run(async () =>
-            {
-                await foreach (var fft in _stream.NextFft(_cts.Token))
-                {
-                    await _wsBars.SendSpectrum(fft.Bands);
-                    Dispatcher.Dispatch(() => UpdateUI(fft));
-                }
-            }, _cts.Token);
         }
 
         public void CreateButtons(HorizontalStackLayout layout)
@@ -129,6 +120,16 @@ namespace EspSpectrum.App
         private static Color FromEspHue(int hue) => Color.FromHsv(hue, 100, 100);
         private void ContentPage_Loaded(object sender, EventArgs e)
         {
+            _stream.Start();
+            _ = Task.Run(async () =>
+            {
+                await foreach (var fft in _stream.NextFft(_cts.Token))
+                {
+                    await _wsBars.SendSpectrum(fft.Bands);
+                    Dispatcher.Dispatch(() => UpdateUI(fft));
+                }
+            }, _cts.Token);
+
             Dispatcher.Dispatch(() =>
             {
                 IntervalSlider.Value = _displayMonitor.CurrentValue.SendInterval.TotalMilliseconds;

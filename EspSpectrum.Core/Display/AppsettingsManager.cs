@@ -1,13 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace EspSpectrum.Core.Display;
 
-public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
-    string? appSetting = null) : IDisplayConfigManager
+public class AppsettingsManager(string appSetting) : IAppsettingsManager
 {
-    private readonly ILogger<DisplayConfigWriter> _logger = logger;
-    private readonly string _filePath = appSetting ?? Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+    private readonly string _filePath = appSetting;
 
     /// <summary>
     /// Reads DisplayConfig from the JSON file
@@ -39,9 +36,20 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
     }
 
     /// <summary>
-    /// Updates specific properties of DisplayConfig in the JSON file
+    /// Checks if a property name belongs to DisplayConfig
     /// </summary>
-    public async Task UpdateConfig(Action<DisplayConfig> updateAction)
+    private static bool IsDisplayConfigProperty(string propertyName)
+    {
+        // Check if the property exists in DisplayConfig
+        var property = typeof(DisplayConfig).GetProperty(propertyName,
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.IgnoreCase);
+
+        return property != null;
+    }
+
+    public async Task UpdateConfig(Action<DisplayConfig> updateConfig)
     {
         // Read the entire JSON file
         var jsonText = await File.ReadAllTextAsync(_filePath);
@@ -55,7 +63,7 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
         var displayConfig = JsonSerializer.Deserialize<DisplayConfig>(jsonText)!;
 
         // Apply the updates to DisplayConfig
-        updateAction(displayConfig);
+        updateConfig(displayConfig);
 
         // Create a new JSON object that merges the updated DisplayConfig with other root properties
         using var ms = new MemoryStream();
@@ -91,19 +99,5 @@ public class DisplayConfigWriter(ILogger<DisplayConfigWriter> logger,
         ms.Seek(0, SeekOrigin.Begin);
         var updatedJson = System.Text.Encoding.UTF8.GetString(ms.ToArray());
         await File.WriteAllTextAsync(_filePath, updatedJson);
-    }
-
-    /// <summary>
-    /// Checks if a property name belongs to DisplayConfig
-    /// </summary>
-    private static bool IsDisplayConfigProperty(string propertyName)
-    {
-        // Check if the property exists in DisplayConfig
-        var property = typeof(DisplayConfig).GetProperty(propertyName,
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.IgnoreCase);
-
-        return property != null;
     }
 }

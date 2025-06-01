@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EspSpectrum.Core\EspSpectrum.Core.csproj" />
+    <ProjectReference Include="..\EspSpectrum.PerformanceTests\EspSpectrum.PerformanceTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

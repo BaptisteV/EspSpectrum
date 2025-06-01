@@ -34,6 +34,8 @@
             panelMidColor = new TableLayoutPanel();
             panelLowColor = new TableLayoutPanel();
             slidersPanel = new Panel();
+            amplificationLabel = new Label();
+            amplificationSlider = new TrackBar();
             brightnessLabel = new Label();
             brightnessSlider = new TrackBar();
             fadedFramesLabel = new Label();
@@ -53,6 +55,7 @@
             notifyIconRestart = new ToolStripMenuItem();
             notifyIconStop = new ToolStripMenuItem();
             slidersPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)amplificationSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)brightnessSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).BeginInit();
@@ -120,6 +123,8 @@
             // slidersPanel
             // 
             slidersPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            slidersPanel.Controls.Add(amplificationLabel);
+            slidersPanel.Controls.Add(amplificationSlider);
             slidersPanel.Controls.Add(brightnessLabel);
             slidersPanel.Controls.Add(brightnessSlider);
             slidersPanel.Controls.Add(fadedFramesLabel);
@@ -128,8 +133,31 @@
             slidersPanel.Controls.Add(sendIntervalSlider);
             slidersPanel.Location = new Point(12, 318);
             slidersPanel.Name = "slidersPanel";
-            slidersPanel.Size = new Size(776, 155);
+            slidersPanel.Size = new Size(776, 208);
             slidersPanel.TabIndex = 7;
+            // 
+            // amplificationLabel
+            // 
+            amplificationLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            amplificationLabel.Location = new Point(645, 156);
+            amplificationLabel.Name = "amplificationLabel";
+            amplificationLabel.Size = new Size(128, 33);
+            amplificationLabel.TabIndex = 7;
+            amplificationLabel.Text = "Amplification";
+            amplificationLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // amplificationSlider
+            // 
+            amplificationSlider.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            amplificationSlider.LargeChange = 10;
+            amplificationSlider.Location = new Point(3, 156);
+            amplificationSlider.Maximum = 200;
+            amplificationSlider.Name = "amplificationSlider";
+            amplificationSlider.Size = new Size(636, 45);
+            amplificationSlider.TabIndex = 6;
+            amplificationSlider.TickFrequency = 5;
+            amplificationSlider.Value = 1;
+            amplificationSlider.ValueChanged += amplificationSlider_ValueChanged;
             // 
             // brightnessLabel
             // 
@@ -182,7 +210,7 @@
             sendIntervalLabel.Name = "sendIntervalLabel";
             sendIntervalLabel.Size = new Size(128, 33);
             sendIntervalLabel.TabIndex = 1;
-            sendIntervalLabel.Text = "SendDisplayConfig interval";
+            sendIntervalLabel.Text = "Send interval";
             sendIntervalLabel.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // sendIntervalSlider
@@ -200,7 +228,7 @@
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, serviceStatusLabel, toolStripDropDownButton1 });
-            statusStrip1.Location = new Point(0, 473);
+            statusStrip1.Location = new Point(0, 529);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(800, 22);
             statusStrip1.TabIndex = 8;
@@ -286,7 +314,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 495);
+            ClientSize = new Size(800, 551);
             Controls.Add(statusStrip1);
             Controls.Add(slidersPanel);
             Controls.Add(panelLowColor);
@@ -295,9 +323,10 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "EspSpectrumConfigForm";
             Text = "EspSpectrum - Config";
-            Load += Form1_Load;
+            Load += EspSpectrumConfigForm_Load;
             slidersPanel.ResumeLayout(false);
             slidersPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)amplificationSlider).EndInit();
             ((System.ComponentModel.ISupportInitialize)brightnessSlider).EndInit();
             ((System.ComponentModel.ISupportInitialize)fadedFramesSlider).EndInit();
             ((System.ComponentModel.ISupportInitialize)sendIntervalSlider).EndInit();
@@ -331,5 +360,7 @@
         private ToolStripMenuItem notifyIconStop;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem notifyIconStatus;
+        private Label amplificationLabel;
+        private TrackBar amplificationSlider;
     }
 }

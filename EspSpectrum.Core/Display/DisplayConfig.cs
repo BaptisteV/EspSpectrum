@@ -4,6 +4,8 @@ public sealed class DisplayConfig : IEquatable<DisplayConfig>
 {
     public TimeSpan SendInterval { get; set; }
 
+    public double Amplification { get; set; } = 1.0;
+
     // Sent to ESP when appsettings is updated
     public int HistoLength { get; set; }
     public int Brightness { get; set; }

@@ -16,14 +16,11 @@ public static class ServiceCollectionExtensions
         services.Configure<DisplayConfig>(configuration);
         services.Configure<SpectrumConfig>(configuration);
 
-        services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
-        services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IWebsocketFactory, WebsocketFactory>();
+        services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
+        services.AddTransient<IDisplayConfigWebsocket, EspWebsocket>();
+        services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IFftRecorder, FftRecorder>();
         services.AddTransient<ISpectrumStream, SpectrumStream>();
-
-        services.AddTransient<IDisplayConfigWebsocket, EspWebsocket>();
-
-        services.AddTransient<IDisplayConfigManager, DisplayConfigWriter>();
     }
 }

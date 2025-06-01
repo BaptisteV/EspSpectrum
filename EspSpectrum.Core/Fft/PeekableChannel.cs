@@ -5,11 +5,10 @@ namespace EspSpectrum.Core.Fft;
 public class PeekableChannel<T>(Channel<T> sourceChannel)
 {
     private readonly Channel<T> _sourceChannel = sourceChannel;
-    private readonly Queue<T> _peekBuffer = new();
+    private readonly Channel<T> _leftovers = Channel.CreateUnbounded<T>();
 
     // Expose the underlying channel writer for input
     public ChannelWriter<T> Writer => _sourceChannel.Writer;
-
     /// <summary>
     /// Reads a specific number of items and consumes only a portion of them.
     /// </summary>
@@ -31,9 +30,9 @@ public class PeekableChannel<T>(Channel<T> sourceChannel)
         var result = new List<T>(itemsToRead);
 
         // First, use any items already in the peek buffer
-        while (_peekBuffer.Count > 0 && result.Count < itemsToRead)
+        while (_leftovers.Reader.Count > 0 && result.Count < itemsToRead)
         {
-            result.Add(_peekBuffer.Dequeue());
+            result.Add(await _leftovers.Reader.ReadAsync());
         }
 
         // Read remaining items needed from the channel
@@ -51,12 +50,12 @@ public class PeekableChannel<T>(Channel<T> sourceChannel)
         {
             for (int i = consumedCount; i < result.Count; i++)
             {
-                _peekBuffer.Enqueue(result[i]);
+                await _leftovers.Writer.WriteAsync(result[i]);
             }
         }
 
         return result;
     }
 
-    public int Count => _sourceChannel.Reader.Count + _peekBuffer.Count;
+    public int Count() => _sourceChannel.Reader.Count + _leftovers.Reader.Count;
 }

@@ -42,7 +42,7 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation("Starting service");
         await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
-
+        _stream.Start();
         await ExecuteAsync(cancellationToken);
     }
 
