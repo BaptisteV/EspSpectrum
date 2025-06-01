@@ -75,7 +75,6 @@ public class FftProcessor
         for (var i = 0; i < FftProps.FftLength; i++)
         {
             fftBuffer[i].X = (float)(sample[i] * HammingWindow[i]);
-            fftBuffer[i].Y = 0f;
         }
 
         FastFourierTransform.FFT(true, FftPow, fftBuffer);

@@ -16,7 +16,7 @@ public class PeekableChannel<T>(Channel<T> sourceChannel)
     /// <param name="itemsToConsume">Number of items to consume (must be less than or equal to itemsToRead)</param>
     /// <param name="cancellationToken">Optional cancellation token</param>
     /// <returns>All read items (both consumed and peeked)</returns>
-    public async Task<IReadOnlyList<T>> ReadPartialConsume(int itemsToRead, int itemsToConsume, CancellationToken cancellationToken = default)
+    public async ValueTask<IReadOnlyList<T>> ReadPartialConsume(int itemsToRead, int itemsToConsume, CancellationToken cancellationToken = default)
     {
         if (itemsToConsume > itemsToRead)
             throw new ArgumentException("Items to consume cannot exceed items to read", nameof(itemsToConsume));
