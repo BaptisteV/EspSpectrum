@@ -24,7 +24,7 @@ public class PartialBufferReaderTests
 
         Assert.True(read);
         Assert.Equal(frameSize - 1, buffer.ApproximateCount);
-        Assert.Equal(frameSize, buffs.Count());
+        Assert.Equal(frameSize, buffs.Length);
         var result = res.Take(frameSize);
         Assert.True(buffs.SequenceEqual(result));
     }
@@ -73,6 +73,7 @@ public class PartialBufferReaderTests
             buffs.Add(datar.ToArray());
         }
 
+        Assert.Equal(expectedBuffsCount, buffs.Count);
         var firsts = buffs.Select(b => b[0]).ToArray();
         var expectedFirsts = new List<float>();
         for (int i = 0; i < buffs.Count; i += destructieReadLength)
@@ -80,15 +81,5 @@ public class PartialBufferReaderTests
             expectedFirsts.Add(data[i]);
         }
         Assert.True(firsts.SequenceEqual(expectedFirsts));
-    }
-
-    public void MultipleDataIsConsumed()
-    {
-        var frameSize = 2;
-        var buffer = new PartialDataReader(LoggerFactory.Create(o => { }).CreateLogger("PartialDataReader"), sampleSize: frameSize, destructiveReadLength: 1);
-        var res = Enumerable.Range(1, frameSize).Select(a => (float)a).ToArray();
-        buffer.AddData(res);
-        Assert.Equal(frameSize, buffer.ApproximateCount);
-
     }
 }

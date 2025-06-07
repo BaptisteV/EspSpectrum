@@ -36,24 +36,11 @@ public sealed class SpectrumStream(
         var sw = Stopwatch.StartNew();
         while (!cancellationToken.IsCancellationRequested)
         {
-            /*
-            stopwatch.Restart();
-            
-            var fft = await _audioRecorder.ReadFft(cancellationToken);
-
-            if (_spectrumConfig.ApplyCompression)
-            {
-                fft.Bands = SpectrumCompressor.Compress(fft.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
-            }
-
-            await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
-            yield return fft;*/
-
             sw.Restart();
-            var s = _audioRecorder.TryReadFft();
+            var s = _audioRecorder.TryReadFft(cancellationToken);
             if (s is null)
             {
-                //_logger.LogDebug("No FFT available, waiting for next one");
+                _logger.LogDebug("No FFT available, waiting for next one");
             }
             else
             {

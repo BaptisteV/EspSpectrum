@@ -16,18 +16,4 @@ public class FakeLoopbackWaveInTests
         using var waveIn = new FakeLoopbackWaveIn();
         waveIn.RecordSingleSine(NSample);
     }
-
-    [Benchmark(Baseline = true)]
-    public void RecordSpan()
-    {
-        using var waveIn = new FakeLoopbackWaveIn();
-        waveIn.RecordSingleSineSpan(NSample);
-    }
-
-    [Benchmark]
-    public void RecordSpan2()
-    {
-        using var waveIn = new FakeLoopbackWaveIn();
-        waveIn.RecordSingleSineSpan2(NSample);
-    }
 }

@@ -37,7 +37,7 @@ public class ConcurrentPeakableChannelTests : BaseTests
 
         var fft = await _channel.ReadPartialConsume(1000, 1000);
 
-        Assert.True(fft.Count == 1000);
+        Assert.Equal(1000, fft.Count);
         t.Stop();
     }
 }

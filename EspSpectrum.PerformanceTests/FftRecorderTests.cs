@@ -28,37 +28,22 @@ public class FftRecorderTests
     public void ReadSingleSine()
     {
         var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
+        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
+            _ = recorder.TryReadFft();
         }
     }
-
-    [Benchmark]
-    public void ReadSingleSineSpan()
-    {
-        var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
-        audio.RecordSingleSine(FftProps.FftLength);
-        for (var i = 0; i < N; i++)
-        {
-            audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
-        }
-    }
-
 
     //[Benchmark(Baseline = true)]
     public void ReadSingleSineFullBufferBigOverflow()
     {
         var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
+        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
         // This one should overflow and get ignored (PartialDataReader._maxQueueSize = FftProps.FftLength * 2)
@@ -66,24 +51,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
-        }
-    }
-
-    //[Benchmark]
-    public void ReadSingleSineFullBufferBigOverflowSpan()
-    {
-        var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
-        audio.RecordSingleSine(FftProps.FftLength);
-        audio.RecordSingleSine(FftProps.FftLength);
-        // This one should overflow and get ignored (PartialDataReader._maxQueueSize = FftProps.FftLength * 2)
-        audio.RecordSingleSine(FftProps.FftLength);
-        for (var i = 0; i < N; i++)
-        {
-            audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
+            _ = recorder.TryReadFft();
         }
     }
 
@@ -91,8 +59,8 @@ public class FftRecorderTests
     public void ReadSingleSineFullBuffer()
     {
         var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
+        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
         // This one should overflow and get ignored (PartialDataReader._maxQueueSize = FftProps.FftLength * 2)
@@ -100,49 +68,32 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
+            _ = recorder.TryReadFft();
         }
     }
 
     //[Benchmark]
-    public void ReadSingleSineFullBufferSpan()
+    public void ReadTwoHalves()
     {
         var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
-        audio.RecordSingleSine(FftProps.FftLength);
-        audio.RecordSingleSine(FftProps.FftLength);
-        // This one should overflow and get ignored (PartialDataReader._maxQueueSize = FftProps.FftLength * 2)
-        audio.RecordSingleSine(1);
-        for (var i = 0; i < N; i++)
-        {
-            audio.RecordSingleSine(FftProps.ReadLength);
-            _ = _recorder.TryReadFft();
-        }
-    }
-    /*
-    [Benchmark]
-    public async Task ReadTwoHalves()
-    {
-        var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
+        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength / 2);
         audio.RecordSingleSine(FftProps.FftLength / 2);
-        _ = await _recorder.ReadFft();
+        _ = recorder.TryReadFft();
     }
 
-    [Benchmark]
-    public async Task ReadTwice()
+    //[Benchmark]
+    public void ReadTwice()
     {
         var audio = new FakeLoopbackWaveIn();
-        var _recorder = new FftRecorder(NullLogger<FftRecorder>.Instance, audio, GetOptionsMonitor());
-        _recorder.Start();
+        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = await _recorder.ReadFft();
+        _ = recorder.TryReadFft();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = await _recorder.ReadFft();
-    }*/
+        _ = recorder.TryReadFft();
+    }
 }

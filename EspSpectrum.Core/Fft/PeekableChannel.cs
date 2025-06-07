@@ -32,7 +32,7 @@ public class PeekableChannel<T>(Channel<T> sourceChannel)
         // First, use any items already in the peek buffer
         while (_leftovers.Reader.Count > 0 && result.Count < itemsToRead)
         {
-            result.Add(await _leftovers.Reader.ReadAsync());
+            result.Add(await _leftovers.Reader.ReadAsync(cancellationToken));
         }
 
         // Read remaining items needed from the channel
@@ -50,7 +50,7 @@ public class PeekableChannel<T>(Channel<T> sourceChannel)
         {
             for (int i = consumedCount; i < result.Count; i++)
             {
-                await _leftovers.Writer.WriteAsync(result[i]);
+                await _leftovers.Writer.WriteAsync(result[i], cancellationToken);
             }
         }
 

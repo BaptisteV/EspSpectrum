@@ -15,16 +15,10 @@ public sealed class XUnitLoggerProvider(ITestOutputHelper output) : ILoggerProvi
     public void Dispose() { }
 }
 
-public class XUnitLogger : ILogger
+public class XUnitLogger(ITestOutputHelper output, string categoryName) : ILogger
 {
-    private readonly ITestOutputHelper _output;
-    private readonly string _categoryName;
-
-    public XUnitLogger(ITestOutputHelper output, string categoryName)
-    {
-        _output = output;
-        _categoryName = categoryName;
-    }
+    private readonly ITestOutputHelper _output = output;
+    private readonly string _categoryName = categoryName;
 
     public IDisposable BeginScope<TState>(TState? state) => null!;
 

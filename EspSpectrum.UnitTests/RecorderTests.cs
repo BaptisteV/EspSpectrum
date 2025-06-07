@@ -12,7 +12,7 @@ namespace EspSpectrum.UnitTests;
 public sealed class RecorderTests : BaseTests, IDisposable
 {
     private readonly FakeLoopbackWaveIn _fakeLoopbackWaveIn = new();
-    private readonly FftRecorder _recorder;
+    private readonly FftRecorderSpan _recorder;
     private readonly CancellationTokenSource _cts = new();
 
 
@@ -23,7 +23,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
         var serviceProvider = services.BuildServiceProvider();
         var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<DisplayConfig>>();
 
-        _recorder = new FftRecorder(LoggerFactory.CreateLogger<FftRecorder>(), _fakeLoopbackWaveIn, optionsMonitor);
+        _recorder = new FftRecorderSpan(LoggerFactory.CreateLogger<FftRecorderSpan>(), _fakeLoopbackWaveIn, optionsMonitor);
         _recorder.Start();
     }
 

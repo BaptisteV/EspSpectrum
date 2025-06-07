@@ -16,10 +16,10 @@ public class FftProcessor
             HammingWindow[i] = (float)FastFourierTransform.HammingWindow(i, FftProps.FftLength);
         }
 
-        this._sampleRate = sampleRate;
+        _sampleRate = sampleRate;
     }
 
-    private void InitializeBandBoundaries()
+    private static void InitializeBandBoundaries()
     {
         var freq = new double[FftProps.NBands + 1];
         for (var i = 0; i < freq.Length; i++)

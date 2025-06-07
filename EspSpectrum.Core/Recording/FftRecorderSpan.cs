@@ -59,17 +59,14 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
         var sampleCount = bytesRecorded / bufferIncrement;
         var a = new float[sampleCount];
         var ia = 0;
+
         for (var i = 0; i < bytesRecorded; i += bufferIncrement)
         {
             var channelsSum = 0f;
             for (var channel = 0; channel < channels; channel++)
             {
                 var sampleOffset = i + channel * 4; // 4 bytes per float
-                                                    //var s = MemoryMarshal.Read<float>(buffer.Slice(sampleOffset, 4));
                 MemoryMarshal.TryRead<float>(buffer.Slice(sampleOffset, 4), out var sample);
-                // Error : Doesnt compile, need to use a function taking Span<byte>, maybe MemoryMarshal ?
-                //var sample = BitConverter.ToSingle(buffer, sampleOffset);
-
                 channelsSum += sample;
             }
 
@@ -78,53 +75,8 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
         }
 
         return a;
-
     }
-    /*
-    private async ValueTask ProcessAudio(byte[] buffer, int bytesRecorded)
-    {
-        var bufferIncrement = _waveIn.WaveFormat.BlockAlign;
 
-        var channels = _waveIn.WaveFormat.Channels;
-
-        for (var i = 0; i < bytesRecorded; i += bufferIncrement)
-        {
-            var channelsSum = 0f;
-            for (var channel = 0; channel < channels; channel++)
-            {
-                var sampleOffset = i + channel * 4; // 4 bytes per float
-                var sample = BitConverter.ToSingle(buffer, sampleOffset);
-
-                channelsSum += sample;
-            }
-            await _peekableChannel.Writer.WriteAsync(channelsSum * (float)_optionsMonitor.CurrentValue.Amplification);
-
-            while (_peekableChannel.Count() >= FftProps.FftLength)
-            {
-                var audioData = (await _peekableChannel.ReadPartialConsume(FftProps.FftLength, FftProps.ReadLength)).ToArray();
-                var fft = _fftProcessor.ToFft(audioData);
-                await _ffts.Writer.WriteAsync(fft);
-            }
-        }
-    }
-    */
-    /*
-    private async ValueTask ProcesFFT()
-    {
-        var swRead = Stopwatch.StartNew();
-        var audioData = (await _peekableChannel.ReadPartialConsume(FftProps.FftLength, FftProps.ReadLength)).ToArray();
-        swRead.Stop();
-        var swCompute = Stopwatch.StartNew();
-        var fft = _fftProcessor.ToFft(audioData);
-        swCompute.Stop();
-
-        var swWrite = Stopwatch.StartNew();
-        await _ffts.Writer.WriteAsync(fft);
-        swWrite.Stop();
-        _logger.LogInformation("New FFT written. Took {ElapsedRead}ms to read, {ElapsedCompute}ms to process, {ElapsedWrite}ms to write, {FFTCount} available",
-             swRead.Elapsed.TotalMilliseconds, swCompute.Elapsed.TotalMilliseconds, swWrite.Elapsed.TotalMilliseconds, _ffts.Reader.Count);
-    }
-    */
     public void Start()
     {
         _waveIn.DataAvailable += OnDataAvailable;

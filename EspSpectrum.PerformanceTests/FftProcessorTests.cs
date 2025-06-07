@@ -11,7 +11,7 @@ public class FftProcessorTests
     private FftProcessor _fftProcessor => new(Sine440.SampleRate);
 
     [Benchmark]
-    public async Task ProcessSine()
+    public void ProcessSine()
     {
         _ = _fftProcessor.ToFft(Sine440.Buffer);
     }
