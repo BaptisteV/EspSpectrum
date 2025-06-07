@@ -6,9 +6,12 @@ using EspSpectrum.PerformanceTests;
 
 var config = DefaultConfig.Instance
     .AddJob(Job
-         .ShortRun.WithToolchain(InProcessEmitToolchain.Instance));
+         .MediumRun
+         .WithLaunchCount(1)
+         .WithToolchain(InProcessEmitToolchain.Instance));
 
-//BenchmarkRunner.Run<FftTests>(config);
+BenchmarkRunner.Run<FftRecorderTests>(config);
+//BenchmarkRunner.Run<FakeLoopbackWaveInTests>(config);
 //BenchmarkRunner.Run<ThreadedChannelTests>(config);
 //BenchmarkRunner.Run<ReadChannelTests>(config);
-BenchmarkRunner.Run<FftProcessorTests>(config);
+//BenchmarkRunner.Run<FftProcessorTests>(config);

@@ -4,8 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using System.Diagnostics;
-using System.Threading.Channels;
+using System.Runtime.InteropServices;
 
 namespace EspSpectrum.Core.Recording;
 
@@ -14,9 +13,6 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
     private IWaveIn _waveIn;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;
     private readonly ILogger<FftRecorder> _logger;
-
-    private readonly Channel<Spectrum> _ffts;
-    private readonly PeekableChannel<float> _peekableChannel;
 
     private readonly MMDeviceEnumerator _deviceEnumerator;
 
@@ -36,18 +32,7 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
         _deviceEnumerator = new MMDeviceEnumerator();
         _deviceChangedNotifier = new DeviceChangedNotifier(_logger, this);
         _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
-
-        _ffts = Channel.CreateBounded<Spectrum>(new BoundedChannelOptions(4)
-        {
-            FullMode = BoundedChannelFullMode.DropOldest,
-        }, f =>
-        {
-            _logger.LogInformation("FFT dropped. If it happens too much (10+/sec), increase ReadLength");
-        });
-
-        var channel = Channel.CreateUnbounded<float>();
-
-        _peekableChannel = new PeekableChannel<float>(channel);
+        _buffPartialReader = new PartialDataReader(logger, FftProps.FftLength, FftProps.ReadLength);
 
         _fftProcessor = new FftProcessor(_waveIn.WaveFormat.SampleRate);
     }
@@ -57,54 +42,38 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
         _logger.LogError(e.Exception, "Recording stopped");
     }
 
-    public int SampleRate => _waveIn.WaveFormat.SampleRate;
+    private readonly PartialDataReader _buffPartialReader;
 
-    private async void OnDataAvailable(object? sender, WaveInEventArgs e)
+    private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
-        var buffer = e.Buffer;
-        var bytesRecorded = e.BytesRecorded;
-        await ProcessAudio(buffer, bytesRecorded);
+        var newData = ReadAudio(e.Buffer, e.BytesRecorded);
+        _buffPartialReader.AddData(newData);
     }
 
-    private async ValueTask ProcessAudio(byte[] buffer, int bytesRecorded)
+    private float[] ReadAudio(byte[] buffer, int bytesRecorded)
     {
         var bufferIncrement = _waveIn.WaveFormat.BlockAlign;
 
         var channels = _waveIn.WaveFormat.Channels;
 
+        var audioData = new float[bytesRecorded / bufferIncrement];
+        var ia = 0;
+        var bufferSpan = new ReadOnlySpan<byte>(buffer);
         for (var i = 0; i < bytesRecorded; i += bufferIncrement)
         {
             var channelsSum = 0f;
             for (var channel = 0; channel < channels; channel++)
             {
                 var sampleOffset = i + channel * 4; // 4 bytes per float
-                var sample = BitConverter.ToSingle(buffer, sampleOffset);
-
+                MemoryMarshal.TryRead<float>(bufferSpan.Slice(sampleOffset, 4), out var sample);
                 channelsSum += sample;
             }
-            await _peekableChannel.Writer.WriteAsync(channelsSum * (float)_optionsMonitor.CurrentValue.Amplification);
-
-            while (_peekableChannel.Count() >= FftProps.FftLength)
-            {
-                await ProcesFFT();
-            }
+            audioData[ia] = channelsSum * (float)_optionsMonitor.CurrentValue.Amplification;
+            ia++;
+            //audioData.Add(channelsSum * (float)_optionsMonitor.CurrentValue.Amplification);
         }
-    }
 
-    private async ValueTask ProcesFFT()
-    {
-        var swRead = Stopwatch.StartNew();
-        var audioData = (await _peekableChannel.ReadPartialConsume(FftProps.FftLength, FftProps.ReadLength)).ToArray();
-        swRead.Stop();
-        var swCompute = Stopwatch.StartNew();
-        var fft = _fftProcessor.ToFft(audioData);
-        swCompute.Stop();
-
-        var swWrite = Stopwatch.StartNew();
-        await _ffts.Writer.WriteAsync(fft);
-        swWrite.Stop();
-        _logger.LogInformation("New FFT written. Took {ElapsedRead}ms to read, {ElapsedCompute}ms to process, {ElapsedWrite}ms to write, {FFTCount} available",
-             swRead.Elapsed.TotalMilliseconds, swCompute.Elapsed.TotalMilliseconds, swWrite.Elapsed.TotalMilliseconds, _ffts.Reader.Count);
+        return audioData;
     }
 
     public void Start()
@@ -124,9 +93,17 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
         Start();
     }
 
-    public async ValueTask<Spectrum> ReadFft(CancellationToken cancellationToken = default)
+    public Spectrum? TryReadFft(CancellationToken cancellationToken = default)
     {
-        return await _ffts.Reader.ReadAsync(cancellationToken);
+        var didRead = _buffPartialReader.TryRead(out var read);
+        if (!didRead)
+        {
+            _logger.LogDebug("Unable to read from buffer, not enough data ?");
+            return null;
+        }
+
+        var spectrum = _fftProcessor.ToFft(read.ToArray());
+        return spectrum;
     }
 
     public void Dispose()

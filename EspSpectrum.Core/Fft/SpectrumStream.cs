@@ -33,11 +33,12 @@ public sealed class SpectrumStream(
 
     public async IAsyncEnumerable<Spectrum> NextFft([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var stopwatch = Stopwatch.StartNew();
-
+        var sw = Stopwatch.StartNew();
         while (!cancellationToken.IsCancellationRequested)
         {
+            /*
             stopwatch.Restart();
+            
             var fft = await _audioRecorder.ReadFft(cancellationToken);
 
             if (_spectrumConfig.ApplyCompression)
@@ -46,7 +47,24 @@ public sealed class SpectrumStream(
             }
 
             await WaitIfNecessary(stopwatch.Elapsed, _configMonitor.CurrentValue.SendInterval);
-            yield return fft;
+            yield return fft;*/
+
+            sw.Restart();
+            var s = _audioRecorder.TryReadFft();
+            if (s is null)
+            {
+                //_logger.LogDebug("No FFT available, waiting for next one");
+            }
+            else
+            {
+                if (_spectrumConfig.ApplyCompression)
+                {
+                    s.Bands = SpectrumCompressor.Compress(s.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
+                }
+                yield return s;
+            }
+
+            await WaitIfNecessary(sw.Elapsed, _configMonitor.CurrentValue.SendInterval);
         }
     }
 

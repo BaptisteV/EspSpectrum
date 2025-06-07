@@ -13,6 +13,8 @@ public sealed class RecorderTests : BaseTests, IDisposable
 {
     private readonly FakeLoopbackWaveIn _fakeLoopbackWaveIn = new();
     private readonly FftRecorder _recorder;
+    private readonly CancellationTokenSource _cts = new();
+
 
     public RecorderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
@@ -26,11 +28,11 @@ public sealed class RecorderTests : BaseTests, IDisposable
     }
 
     [Fact]
-    public async Task ReadSine440()
+    public void ReadSine440()
     {
         _fakeLoopbackWaveIn.RecordSingleSine();
 
-        var fft = await _recorder.ReadFft();
+        var fft = _recorder.TryReadFft();
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
@@ -45,16 +47,20 @@ public sealed class RecorderTests : BaseTests, IDisposable
     }
 
     [Fact]
-    public async Task ReadNotEnoughData()
+    public void ReadSine440Twice()
     {
         _fakeLoopbackWaveIn.RecordSingleSine();
+        _fakeLoopbackWaveIn.RecordSingleSine();
 
-        _ = await _recorder.ReadFft();
+        var fft = _recorder.TryReadFft();
 
-        //_ = await _recorder.ReadFft();
+        Assert.NotNull(fft);
+        Assert.NotNull(fft.Bands);
+        Assert.False(fft.Bands.All(b => b == 0));
     }
 
     public void Dispose()
     {
+        _cts.Dispose();
     }
 }

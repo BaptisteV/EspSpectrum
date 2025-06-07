@@ -10,10 +10,10 @@ public class FftProcessor
     {
         InitializeBandBoundaries();
         // Pre-calculate Hamming window
-        HammingWindow = new double[FftProps.FftLength];
+        HammingWindow = new float[FftProps.FftLength];
         for (var i = 0; i < FftProps.FftLength; i++)
         {
-            HammingWindow[i] = FastFourierTransform.HammingWindow(i, FftProps.FftLength);
+            HammingWindow[i] = (float)FastFourierTransform.HammingWindow(i, FftProps.FftLength);
         }
 
         this._sampleRate = sampleRate;
@@ -66,17 +66,17 @@ public class FftProcessor
 
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    private readonly double[] HammingWindow;
+    private readonly float[] HammingWindow;
     private readonly int _sampleRate;
 
+    private readonly Complex[] fftBuffer = new Complex[FftProps.FftLength];
     public Spectrum ToFft(ReadOnlySpan<float> sample)
     {
-        Complex[] fftBuffer = new Complex[FftProps.FftLength];
         for (var i = 0; i < FftProps.FftLength; i++)
         {
-            fftBuffer[i].X = (float)(sample[i] * HammingWindow[i]);
+            fftBuffer[i].X = sample[i] * HammingWindow[i];
+            fftBuffer[i].Y = 0f;
         }
-
         FastFourierTransform.FFT(true, FftPow, fftBuffer);
         var bands = CalculateBands(fftBuffer, _sampleRate);
 
