@@ -22,7 +22,7 @@ public class PartialDataReader : IDataReader
         _logger = logger;
         _sampleSize = sampleSize;
         _destructiveReadLength = destructiveReadLength;
-        _maxQueueSize = sampleSize * 2 + destructiveReadLength;
+        _maxQueueSize = sampleSize * 2;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,14 +50,10 @@ public class PartialDataReader : IDataReader
     {
         if (IsFull())
         {
-            Dequeue(newData.Length);
-            //Dequeue(_destructiveReadLength);
-            //_logger.LogDebug("Queue was full. Dropped {DroppedLength}, {QueueLength}", _destructiveReadLength, _queue.Count);
+            var dequeuedCount = _approximateCount - _maxQueueSize + newData.Length;
+            Dequeue(dequeuedCount);
         }
-        else
-        {
-            //_logger.LogDebug("Queue not full, current length: {QueueLength}", _queue.Count);
-        }
+
         EnqueueData(newData);
     }
 

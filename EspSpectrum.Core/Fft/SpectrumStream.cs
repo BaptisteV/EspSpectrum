@@ -47,7 +47,7 @@ public sealed class SpectrumStream(
     [Time]
     private Spectrum ProcessAudio(CancellationToken cancellationToken)
     {
-        Spectrum? s = null;
+        Spectrum? s;
         while (!_audioRecorder.TryReadSpectrum(out s, cancellationToken) && !cancellationToken.IsCancellationRequested)
         {
             PreciseSleep.Wait(TimeSpan.FromMilliseconds(1));

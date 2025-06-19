@@ -11,9 +11,7 @@ public static class PreciseSleep
 
         while (Stopwatch.GetTimestamp() - startTicks < targetTicks)
         {
-            Thread.SpinWait(100);
-            // Should I yield or not ?
-            //Thread.Yield();
+            Thread.SpinWait(10);
         }
     }
 }

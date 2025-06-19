@@ -3,16 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.Core.Fft;
 
-public class SyncSpectrumReader : ISyncSpectrumReader
+public class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> spectrumConfig) : ISyncSpectrumReader
 {
     private readonly TimeSpan TryInterval = TimeSpan.FromMicroseconds(500);
-    private readonly IFftRecorder _recorder;
-    private readonly SpectrumConfig _spectrumConfig;
-    public SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> spectrumConfig)
-    {
-        _recorder = recorder;
-        _spectrumConfig = spectrumConfig.Value;
-    }
+    private readonly IFftRecorder _recorder = recorder;
+    private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
 
     public Spectrum GetLatestBlocking(CancellationToken cancellationToken)
     {
