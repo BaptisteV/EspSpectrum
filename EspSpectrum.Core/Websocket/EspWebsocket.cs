@@ -36,7 +36,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         return packedData;
     }
 
-    private async Task ConnectIfNeeded()
+    private async ValueTask ConnectIfNeeded()
     {
         if (!_wsSpectrum.IsRunning && !_starting)
         {
@@ -48,7 +48,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         }
     }
 
-    public async Task SendDisplayConfig(DisplayConfig displayConfig)
+    public async ValueTask SendDisplayConfig(DisplayConfig displayConfig)
     {
         await _wsDisplayConfig.Start();
         var jsonString = JsonSerializer.Serialize(displayConfig);
@@ -56,7 +56,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         await _wsDisplayConfig.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closed after sending display config");
     }
 
-    public async Task SendSpectrum(double[] bands)
+    public async ValueTask SendSpectrum(double[] bands)
     {
         await ConnectIfNeeded();
 

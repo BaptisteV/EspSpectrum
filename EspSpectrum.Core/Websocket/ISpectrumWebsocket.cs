@@ -2,5 +2,5 @@
 
 public interface ISpectrumWebsocket
 {
-    Task SendSpectrum(double[] bands);
+    ValueTask SendSpectrum(double[] bands);
 }

@@ -1,5 +1,5 @@
 using EspSpectrum.Core.Display;
-using EspSpectrum.Core.Fft;
+using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Options;
 
@@ -8,24 +8,21 @@ namespace EspSpectrum.Worker;
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
-    private readonly ISpectrumStream _stream;
-    private readonly ISpectrumWebsocket _ws;
     private readonly IDisplayConfigWebsocket _wsDisplay;
     private DisplayConfig _conf;
     private readonly IOptionsMonitor<DisplayConfig> _confMonitor;
+    private readonly IStableSpectrumReader _stableSpectrumReader;
 
     public Worker(
         ILogger<Worker> logger,
-        ISpectrumStream stream,
-        ISpectrumWebsocket ws,
+        IStableSpectrumReader stableSpectrumReader,
         IDisplayConfigWebsocket wsDisplay,
         IOptionsMonitor<DisplayConfig> conf)
     {
         _logger = logger;
-        _stream = stream;
-        _ws = ws;
         _wsDisplay = wsDisplay;
         _confMonitor = conf;
+
         _conf = _confMonitor.CurrentValue;
         _confMonitor.OnChange(async (newConf) =>
         {
@@ -36,22 +33,26 @@ public class Worker : BackgroundService
                 _conf = newConf;
             }
         });
+
+        _stableSpectrumReader = stableSpectrumReader;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting service");
+
         await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
-        _stream.Start();
+
+        _stableSpectrumReader.Start();
+
         await ExecuteAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var bands in _stream.NextFft(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await _ws.SendSpectrum(bands.Bands);
+            await _stableSpectrumReader.Tick(stoppingToken);
         }
-        _logger.LogInformation("Service interrupted");
     }
 }

@@ -4,7 +4,7 @@ namespace EspSpectrum.Core.Recording;
 
 public interface IFftRecorder
 {
-    Spectrum? TryReadFft(CancellationToken cancellationToken = default);
+    bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken);
     void Start();
     void Restart();
 }

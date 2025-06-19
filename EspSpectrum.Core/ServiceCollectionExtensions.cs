@@ -21,6 +21,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IDisplayConfigWebsocket, EspWebsocket>();
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IFftRecorder, FftRecorderSpan>();
-        services.AddTransient<ISpectrumStream, SpectrumStream>();
+        //services.AddTransient<ISpectrumStream, SpectrumStream>();
+        services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
+        services.AddTransient<IStableSpectrumReader, StableSpectrumReader>();
     }
 }

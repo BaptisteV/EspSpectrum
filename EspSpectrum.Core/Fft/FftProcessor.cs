@@ -70,6 +70,7 @@ public class FftProcessor
     private readonly int _sampleRate;
 
     private readonly Complex[] fftBuffer = new Complex[FftProps.FftLength];
+
     public Spectrum ToFft(ReadOnlySpan<float> sample)
     {
         for (var i = 0; i < FftProps.FftLength; i++)

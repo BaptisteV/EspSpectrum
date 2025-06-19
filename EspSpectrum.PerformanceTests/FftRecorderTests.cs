@@ -34,7 +34,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadFft();
+            _ = recorder.TryReadSpectrum(out _);
         }
     }
 
@@ -51,7 +51,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadFft();
+            _ = recorder.TryReadSpectrum(out _);
         }
     }
 
@@ -68,7 +68,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadFft();
+            _ = recorder.TryReadSpectrum(out _);
         }
     }
 
@@ -80,7 +80,7 @@ public class FftRecorderTests
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength / 2);
         audio.RecordSingleSine(FftProps.FftLength / 2);
-        _ = recorder.TryReadFft();
+        _ = recorder.TryReadSpectrum(out _);
     }
 
     //[Benchmark]
@@ -91,9 +91,9 @@ public class FftRecorderTests
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = recorder.TryReadFft();
+        _ = recorder.TryReadSpectrum(out _);
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = recorder.TryReadFft();
+        _ = recorder.TryReadSpectrum(out _);
     }
 }

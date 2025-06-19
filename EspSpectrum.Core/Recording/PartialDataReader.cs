@@ -22,7 +22,7 @@ public class PartialDataReader : IDataReader
         _logger = logger;
         _sampleSize = sampleSize;
         _destructiveReadLength = destructiveReadLength;
-        _maxQueueSize = sampleSize * 2;
+        _maxQueueSize = sampleSize * 2 + destructiveReadLength;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,8 +51,18 @@ public class PartialDataReader : IDataReader
         if (IsFull())
         {
             Dequeue(newData.Length);
-            _logger.LogDebug("Queue was full. Dropped {DroppedLength}, {QueueLength}", newData.Length, _queue.Count);
+            //Dequeue(_destructiveReadLength);
+            //_logger.LogDebug("Queue was full. Dropped {DroppedLength}, {QueueLength}", _destructiveReadLength, _queue.Count);
         }
+        else
+        {
+            //_logger.LogDebug("Queue not full, current length: {QueueLength}", _queue.Count);
+        }
+        EnqueueData(newData);
+    }
+
+    private void EnqueueData(ReadOnlySpan<float> newData)
+    {
         var count = 0;
         foreach (var d in newData)
         {
@@ -75,16 +85,6 @@ public class PartialDataReader : IDataReader
 
         Dequeue(_destructiveReadLength);
         return true;
-    }
-
-    public List<float[]> ReadAll()
-    {
-        var buffs = new List<float[]>();
-        while (TryRead(out var data))
-        {
-            buffs.Add(data);
-        }
-        return buffs;
     }
 
     public int ApproximateCount => _approximateCount;

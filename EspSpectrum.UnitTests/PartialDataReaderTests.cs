@@ -1,36 +1,34 @@
-﻿using EspSpectrum.Core.Fft;
-using System.Threading.Channels;
+﻿using EspSpectrum.Core.Recording;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
 namespace EspSpectrum.UnitTests;
 
-public class PeekableChannelTests : BaseTests
+public class PartialDataReaderTests : BaseTests
 {
-    private Channel<int> _dataChannel;
-    private PeekableChannel<int> _channel;
-
-    public PeekableChannelTests(ITestOutputHelper output) : base(output)
+    public PartialDataReaderTests(ITestOutputHelper output) : base(output)
     {
-        _dataChannel = Channel.CreateUnbounded<int>();
-        _channel = new PeekableChannel<int>(_dataChannel);
     }
 
     [Fact]
     public async Task ReadFull()
     {
+        var dr = new PartialDataReader(NullLogger.Instance, 1000, 1000);
         var count = 1000;
-        for (int i = 0; i < count; i++)
+        var data = new float[count];
+        for (var i = 0; i < count; i++)
         {
-            await _dataChannel.Writer.WriteAsync(i);
+            data[i] = i;
         }
+        dr.AddData(data);
 
-        var result = await _channel.ReadPartialConsume(count, count);
-
-        var expectedResult = Enumerable.Range(0, count);
+        dr.TryRead(out var result);
+        var expectedResult = Enumerable.Range(0, count).Select(d => (float)d).ToList();
         Assert.True(expectedResult.SequenceEqual(result));
-        Assert.Equal(0, _channel.Count());
+        dr.TryRead(out var emptyResult);
+        Assert.Empty(emptyResult);
     }
-
+    /*
     [Theory]
     [InlineData(2)]
     [InlineData(10)]
@@ -71,5 +69,5 @@ public class PeekableChannelTests : BaseTests
         Assert.Equal(totalCount - consumeCount, _channel.Count());
         var expectedSecondResult = Enumerable.Range(consumeCount, totalCount);
         Assert.True(expectedSecondResult.SequenceEqual(secondResult));
-    }
+    }*/
 }

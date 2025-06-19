@@ -1,5 +1,6 @@
 ﻿using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Recording;
+using MethodTimer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ public sealed class SpectrumStream(
     private readonly SpectrumConfig _spectrumConfig = spectrumConfigMonitor.Value;
     private readonly ILogger<SpectrumStream> _logger = logger;
 
-    private async Task WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
+    private void WaitIfNecessary(TimeSpan swElapsed, TimeSpan target)
     {
         if (swElapsed > target)
         {
@@ -28,7 +29,8 @@ public sealed class SpectrumStream(
         }
 
         var remainingTime = target - swElapsed;
-        await Task.Delay(remainingTime);
+
+        PreciseSleep.Wait(remainingTime);
     }
 
     public async IAsyncEnumerable<Spectrum> NextFft([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -37,22 +39,25 @@ public sealed class SpectrumStream(
         while (!cancellationToken.IsCancellationRequested)
         {
             sw.Restart();
-            var s = _audioRecorder.TryReadFft(cancellationToken);
-            if (s is null)
-            {
-                _logger.LogDebug("No FFT available, waiting for next one");
-            }
-            else
-            {
-                if (_spectrumConfig.ApplyCompression)
-                {
-                    s.Bands = SpectrumCompressor.Compress(s.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
-                }
-                yield return s;
-            }
-
-            await WaitIfNecessary(sw.Elapsed, _configMonitor.CurrentValue.SendInterval);
+            yield return ProcessAudio(cancellationToken);
+            WaitIfNecessary(sw.Elapsed, _configMonitor.CurrentValue.SendInterval);
         }
+    }
+
+    [Time]
+    private Spectrum ProcessAudio(CancellationToken cancellationToken)
+    {
+        Spectrum? s = null;
+        while (!_audioRecorder.TryReadSpectrum(out s, cancellationToken) && !cancellationToken.IsCancellationRequested)
+        {
+            PreciseSleep.Wait(TimeSpan.FromMilliseconds(1));
+        }
+
+        if (_spectrumConfig.ApplyCompression)
+        {
+            s.Bands = SpectrumCompressor.Compress(s.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
+        }
+        return s;
     }
 
     public void Start()

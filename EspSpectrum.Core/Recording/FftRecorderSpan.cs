@@ -94,17 +94,25 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
         Start();
     }
 
-    public Spectrum? TryReadFft(CancellationToken cancellationToken = default)
+    public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken = default)
     {
-        var didRead = _buffPartialReader.TryRead(out var read);
-        if (!didRead)
+        if (_buffPartialReader.ApproximateCount < FftProps.FftLength)
         {
-            _logger.LogDebug("Unable to read from buffer, not enough data ?");
-            return null;
+            _logger.LogDebug("Not enough data for a new Spectrum");
+            spectrum = default;
+            return false;
         }
 
-        var spectrum = _fftProcessor.ToFft(read);
-        return spectrum;
+        var didRead = _buffPartialReader.TryRead(out var audioData);
+        if (!didRead)
+        {
+            _logger.LogDebug("No spectrum available");
+            spectrum = default;
+            return false;
+        }
+
+        spectrum = _fftProcessor.ToFft(audioData);
+        return didRead;
     }
 
     public void Dispose()

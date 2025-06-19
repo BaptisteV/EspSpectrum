@@ -32,7 +32,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
     {
         _fakeLoopbackWaveIn.RecordSingleSine();
 
-        var fft = _recorder.TryReadFft();
+        _ = _recorder.TryReadSpectrum(out var fft);
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
@@ -52,7 +52,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
         _fakeLoopbackWaveIn.RecordSingleSine();
         _fakeLoopbackWaveIn.RecordSingleSine();
 
-        var fft = _recorder.TryReadFft();
+        _ = _recorder.TryReadSpectrum(out var fft);
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
