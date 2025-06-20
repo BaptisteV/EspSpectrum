@@ -2,7 +2,6 @@
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Threading.Channels;
 
 namespace EspSpectrum.PerformanceTests;
 
@@ -12,13 +11,31 @@ namespace EspSpectrum.PerformanceTests;
 [ExceptionDiagnoser]
 public class PartialDataReaderTests
 {
-    [Benchmark]
-    public async Task ChannelTest()
+    private PartialDataReader _dr;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
-        var dataChannel = Channel.CreateUnbounded<float>();
-        await FeederThread.FeedData(dataChannel, FftProps.FftLength);
-        var dr = new PartialDataReader(NullLogger.Instance, FftProps.FftLength, FftProps.ReadLength);
-        dr.AddData(Sine440.Buffer);
-        dr.TryRead(out _);
+        _dr = new PartialDataReader(NullLogger<PartialDataReader>.Instance, FftProps.FftLength, FftProps.ReadLength);
+    }
+
+    [Benchmark(Baseline = true)]
+    public void PartialDataReaderTestArray()
+    {
+        //var dataChannel = Channel.CreateUnbounded<float>();
+        //await FeederThread.FeedData(dataChannel, FftProps.FftLength);
+        _dr.AddData(Sine440.Buffer);
+        while (_dr.TryReadAudioFrame(out _))
+        { }
+    }
+    [Benchmark]
+
+    public void PartialDataReaderTestSpan()
+    {
+        //var dataChannel = Channel.CreateUnbounded<float>();
+        //await FeederThread.FeedData(dataChannel, FftProps.FftLength);
+        _dr.AddData(Sine440.Buffer);
+        Span<float> buffer = stackalloc float[FftProps.FftLength];
+        while (_dr.TryReadAudioFrame(buffer)) { }
     }
 }

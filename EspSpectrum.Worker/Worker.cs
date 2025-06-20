@@ -11,11 +11,11 @@ public class Worker : BackgroundService
     private readonly IDisplayConfigWebsocket _wsDisplay;
     private DisplayConfig _conf;
     private readonly IOptionsMonitor<DisplayConfig> _confMonitor;
-    private readonly IStableSpectrumReader _stableSpectrumReader;
+    private readonly IEspSpectrumRunner _stableSpectrumReader;
 
     public Worker(
         ILogger<Worker> logger,
-        IStableSpectrumReader stableSpectrumReader,
+        IEspSpectrumRunner stableSpectrumReader,
         IDisplayConfigWebsocket wsDisplay,
         IOptionsMonitor<DisplayConfig> conf)
     {

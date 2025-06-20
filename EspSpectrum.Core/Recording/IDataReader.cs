@@ -1,6 +1,8 @@
 ﻿namespace EspSpectrum.Core.Recording;
+
 public interface IDataReader
 {
+    int Count();
     void AddData(ReadOnlySpan<float> newData);
-    bool TryRead(out float[] data);
+    bool TryReadAudioFrame(Span<float> data);
 }

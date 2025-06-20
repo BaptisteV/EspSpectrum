@@ -11,7 +11,7 @@ public static class PreciseSleep
 
         while (Stopwatch.GetTimestamp() - startTicks < targetTicks)
         {
-            Thread.SpinWait(10);
+            Thread.SpinWait(100);
         }
     }
 }

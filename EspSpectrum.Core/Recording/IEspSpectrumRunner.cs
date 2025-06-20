@@ -1,7 +1,7 @@
 ﻿
 namespace EspSpectrum.Core.Recording
 {
-    public interface IStableSpectrumReader
+    public interface IEspSpectrumRunner
     {
         void Start();
         ValueTask Tick(CancellationToken cancellationToken);

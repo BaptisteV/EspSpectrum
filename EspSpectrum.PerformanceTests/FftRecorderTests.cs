@@ -1,10 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
-using EspSpectrum.Core.Display;
+using EspSpectrum.Core;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.PerformanceTests;
 
@@ -13,12 +12,25 @@ namespace EspSpectrum.PerformanceTests;
 [ExceptionDiagnoser]
 public class FftRecorderTests
 {
-    private static IOptionsMonitor<DisplayConfig> GetOptionsMonitor()
+    IServiceProvider _serviceProvider;
+
+    [GlobalSetup]
+    public void GlobalSetup()
     {
         var services = new ServiceCollection();
-        services.Configure<SpectrumConfig>(c => { });
-        var serviceProvider = services.BuildServiceProvider();
-        return serviceProvider.GetRequiredService<IOptionsMonitor<DisplayConfig>>();
+        services.AddLogging();
+        services.AddOptions();
+
+        var myConfiguration = new Dictionary<string, string?>
+        {
+            {"Key1", "Value1"},
+            {"Nested:Key1", "NestedValue1"},
+            {"Nested:Key2", "NestedValue2"}
+        };
+
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(myConfiguration).Build();
+        services.AddCoreServices(configuration);
+        _serviceProvider = services.BuildServiceProvider();
     }
 
     [Params(1, 4)]
@@ -28,13 +40,13 @@ public class FftRecorderTests
     public void ReadSingleSine()
     {
         var audio = new FakeLoopbackWaveIn();
-        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        var recorder = _serviceProvider.GetRequiredService<IFftRecorder>();
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadSpectrum(out _);
+            _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
         }
     }
 
@@ -42,7 +54,7 @@ public class FftRecorderTests
     public void ReadSingleSineFullBufferBigOverflow()
     {
         var audio = new FakeLoopbackWaveIn();
-        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        var recorder = _serviceProvider.GetRequiredService<IFftRecorder>();
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
@@ -51,7 +63,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadSpectrum(out _);
+            _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
         }
     }
 
@@ -59,7 +71,7 @@ public class FftRecorderTests
     public void ReadSingleSineFullBuffer()
     {
         var audio = new FakeLoopbackWaveIn();
-        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        var recorder = _serviceProvider.GetRequiredService<IFftRecorder>();
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
@@ -68,7 +80,7 @@ public class FftRecorderTests
         for (var i = 0; i < N; i++)
         {
             audio.RecordSingleSine(FftProps.ReadLength);
-            _ = recorder.TryReadSpectrum(out _);
+            _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
         }
     }
 
@@ -76,24 +88,24 @@ public class FftRecorderTests
     public void ReadTwoHalves()
     {
         var audio = new FakeLoopbackWaveIn();
-        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        var recorder = _serviceProvider.GetRequiredService<IFftRecorder>();
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength / 2);
         audio.RecordSingleSine(FftProps.FftLength / 2);
-        _ = recorder.TryReadSpectrum(out _);
+        _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
     }
 
     //[Benchmark]
     public void ReadTwice()
     {
         var audio = new FakeLoopbackWaveIn();
-        var recorder = new FftRecorderSpan(NullLogger<FftRecorderSpan>.Instance, audio, GetOptionsMonitor());
+        var recorder = _serviceProvider.GetRequiredService<IFftRecorder>();
         recorder.Start();
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = recorder.TryReadSpectrum(out _);
+        _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
         audio.RecordSingleSine(FftProps.FftLength);
         audio.RecordSingleSine(FftProps.FftLength);
-        _ = recorder.TryReadSpectrum(out _);
+        _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
     }
 }

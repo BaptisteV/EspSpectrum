@@ -1,5 +1,6 @@
 ﻿using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Fft;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NAudio.CoreAudioApi;
@@ -8,12 +9,12 @@ using System.Runtime.InteropServices;
 
 namespace EspSpectrum.Core.Recording;
 
-public sealed class FftRecorderSpan : IFftRecorder, IDisposable
+public sealed class FftRecorder : IFftRecorder, IDisposable
 {
     private IWaveIn _waveIn;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;
-    private readonly ILogger<FftRecorderSpan> _logger;
-
+    private readonly ILogger<FftRecorder> _logger;
+    private readonly IServiceProvider _serviceProvider;
     private readonly MMDeviceEnumerator _deviceEnumerator;
 
     // Required to properly work
@@ -22,17 +23,24 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
 #pragma warning restore S1450
 
     private readonly FftProcessor _fftProcessor;
+    private readonly IDataReader _buffReader;
 
-    public FftRecorderSpan(ILogger<FftRecorderSpan> logger, IWaveIn waveIn, IOptionsMonitor<DisplayConfig> optionsMonitor)
+    public FftRecorder(
+        ILogger<FftRecorder> logger,
+        IServiceProvider serviceProvider,
+        IWaveIn waveIn,
+        IOptionsMonitor<DisplayConfig> optionsMonitor,
+        IDataReader dataReader)
     {
         _logger = logger;
+        _serviceProvider = serviceProvider;
         _waveIn = waveIn;
         _optionsMonitor = optionsMonitor;
 
         _deviceEnumerator = new MMDeviceEnumerator();
         _deviceChangedNotifier = new DeviceChangedNotifier(_logger, this);
         _deviceEnumerator.RegisterEndpointNotificationCallback(_deviceChangedNotifier);
-        _buffPartialReader = new PartialDataReader(logger, FftProps.FftLength, FftProps.ReadLength);
+        _buffReader = dataReader;
 
         _fftProcessor = new FftProcessor(_waveIn.WaveFormat.SampleRate);
     }
@@ -42,12 +50,11 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
         _logger.LogError(e.Exception, "Recording stopped");
     }
 
-    private readonly PartialDataReader _buffPartialReader;
 
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
         ReadOnlySpan<float> newData = ReadAudioSpan(e.Buffer, e.BytesRecorded);
-        _buffPartialReader.AddData(newData);
+        _buffReader.AddData(newData);
     }
 
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<byte> buffer, int bytesRecorded)
@@ -89,21 +96,22 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
         _waveIn.StopRecording();
         _waveIn.DataAvailable -= OnDataAvailable;
         _waveIn.RecordingStopped -= OnRecordingStopped;
-        // TODO Use service provider
-        _waveIn = new WasapiLoopbackCapture();
+
+        _waveIn = _serviceProvider.GetRequiredService<IWaveIn>();
         Start();
     }
 
-    public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken = default)
+    public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken)
     {
-        if (_buffPartialReader.ApproximateCount < FftProps.FftLength)
+        if (_buffReader.Count() < FftProps.FftLength)
         {
             _logger.LogDebug("Not enough data for a new Spectrum");
             spectrum = default;
             return false;
         }
 
-        var didRead = _buffPartialReader.TryRead(out var audioData);
+        Span<float> buffer = stackalloc float[FftProps.FftLength];
+        var didRead = _buffReader.TryReadAudioFrame(buffer);
         if (!didRead)
         {
             _logger.LogDebug("No spectrum available");
@@ -111,8 +119,9 @@ public sealed class FftRecorderSpan : IFftRecorder, IDisposable
             return false;
         }
 
-        spectrum = _fftProcessor.ToFft(audioData);
+        spectrum = _fftProcessor.ToFft(buffer);
         return didRead;
+
     }
 
     public void Dispose()

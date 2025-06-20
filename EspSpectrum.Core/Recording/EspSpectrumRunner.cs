@@ -7,18 +7,18 @@ using System.Diagnostics;
 
 namespace EspSpectrum.Core.Recording;
 
-public class StableSpectrumReader(
+public class EspSpectrumRunner(
     IOptionsMonitor<DisplayConfig> displayConfigMonitor,
     ISyncSpectrumReader spectrumReader,
     ISpectrumWebsocket ws,
-    ILogger<StableSpectrumReader> logger) : IStableSpectrumReader
+    ILogger<EspSpectrumRunner> logger) : IEspSpectrumRunner
 {
     private readonly Stopwatch _sw = new();
 
     private async ValueTask CalculateAndSend(CancellationToken cancellationToken)
     {
         var spectrum = spectrumReader.GetLatestBlocking(cancellationToken);
-        await ws.SendSpectrum(spectrum.Bands);
+        await ws.SendSpectrum(spectrum);
     }
 
     public async ValueTask Tick(CancellationToken cancellationToken)

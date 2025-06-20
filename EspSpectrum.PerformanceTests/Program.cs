@@ -10,8 +10,7 @@ var config = DefaultConfig.Instance
          .WithLaunchCount(1)
          .WithToolchain(InProcessEmitToolchain.Instance));
 
-//BenchmarkRunner.Run<FftRecorderTests>(config);
+BenchmarkRunner.Run<FftRecorderTests>(config);
 //BenchmarkRunner.Run<FakeLoopbackWaveInTests>(config);
-//BenchmarkRunner.Run<ThreadedChannelTests>(config);
-BenchmarkRunner.Run<PartialDataReaderTests>(config);
+//BenchmarkRunner.Run<PartialDataReaderTests>(config);
 //BenchmarkRunner.Run<FftProcessorTests>(config);

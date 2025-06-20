@@ -4,6 +4,7 @@ using EspSpectrum.Core.Recording;
 using EspSpectrum.PerformanceTests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
@@ -12,9 +13,8 @@ namespace EspSpectrum.UnitTests;
 public sealed class RecorderTests : BaseTests, IDisposable
 {
     private readonly FakeLoopbackWaveIn _fakeLoopbackWaveIn = new();
-    private readonly FftRecorderSpan _recorder;
+    private readonly FftRecorder _recorder;
     private readonly CancellationTokenSource _cts = new();
-
 
     public RecorderTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
@@ -23,7 +23,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
         var serviceProvider = services.BuildServiceProvider();
         var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<DisplayConfig>>();
 
-        _recorder = new FftRecorderSpan(LoggerFactory.CreateLogger<FftRecorderSpan>(), _fakeLoopbackWaveIn, optionsMonitor);
+        _recorder = new FftRecorder(LoggerFactory.CreateLogger<FftRecorder>(), serviceProvider, _fakeLoopbackWaveIn, optionsMonitor, new PartialDataReader(NullLogger<PartialDataReader>.Instance));
         _recorder.Start();
     }
 
@@ -32,7 +32,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
     {
         _fakeLoopbackWaveIn.RecordSingleSine();
 
-        _ = _recorder.TryReadSpectrum(out var fft);
+        _ = _recorder.TryReadSpectrum(out var fft, CancellationToken.None);
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
@@ -42,8 +42,8 @@ public sealed class RecorderTests : BaseTests, IDisposable
             .Select((value, index) => new { Value = value, Index = index })
             .MaxBy(g => g.Value)!
             .Index;
-        Assert.True(FftProcessor.FrequencyBands.ElementAt(peakIndex) < Sine440.PeakFrequency);
-        Assert.True(FftProcessor.FrequencyBands.ElementAt(peakIndex + 1) > Sine440.PeakFrequency);
+        Assert.True(Bands.FrequencyBands.ElementAt(peakIndex) < Sine440.PeakFrequency);
+        Assert.True(Bands.FrequencyBands.ElementAt(peakIndex + 1) > Sine440.PeakFrequency);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
         _fakeLoopbackWaveIn.RecordSingleSine();
         _fakeLoopbackWaveIn.RecordSingleSine();
 
-        _ = _recorder.TryReadSpectrum(out var fft);
+        _ = _recorder.TryReadSpectrum(out var fft, CancellationToken.None);
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);

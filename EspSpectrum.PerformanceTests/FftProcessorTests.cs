@@ -8,11 +8,10 @@ namespace EspSpectrum.PerformanceTests;
 [ExceptionDiagnoser]
 public class FftProcessorTests
 {
-    private FftProcessor _fftProcessor => new(Sine440.SampleRate);
-
     [Benchmark]
     public void ProcessSine()
     {
-        _ = _fftProcessor.ToFft(Sine440.Buffer);
+        var fftProcessor = new FftProcessor(Sine440.SampleRate);
+        _ = fftProcessor.ToFft(Sine440.Buffer);
     }
 }

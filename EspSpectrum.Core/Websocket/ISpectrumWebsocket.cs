@@ -1,6 +1,8 @@
-﻿namespace EspSpectrum.Core.Websocket;
+﻿using EspSpectrum.Core.Fft;
+
+namespace EspSpectrum.Core.Websocket;
 
 public interface ISpectrumWebsocket
 {
-    ValueTask SendSpectrum(double[] bands);
+    ValueTask SendSpectrum(Spectrum spectrum);
 }

@@ -2,34 +2,8 @@
 
 namespace EspSpectrum.Core.Fft;
 
-public class FftProcessor
+public class FftProcessor(int sampleRate)
 {
-    public static IReadOnlyCollection<double> FrequencyBands { get; private set; } = [];
-
-    public FftProcessor(int sampleRate)
-    {
-        InitializeBandBoundaries();
-        // Pre-calculate Hamming window
-        HammingWindow = new float[FftProps.FftLength];
-        for (var i = 0; i < FftProps.FftLength; i++)
-        {
-            HammingWindow[i] = (float)FastFourierTransform.HammingWindow(i, FftProps.FftLength);
-        }
-
-        _sampleRate = sampleRate;
-    }
-
-    private static void InitializeBandBoundaries()
-    {
-        var freq = new double[FftProps.NBands + 1];
-        for (var i = 0; i < freq.Length; i++)
-        {
-            var t = (double)i / (freq.Length - 1);
-            freq[i] = FftProps.MinFreq * Math.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
-        }
-        FrequencyBands = freq.AsReadOnly();
-    }
-
     private static int FrequencyToBin(double frequency, double binResolution)
     {
         return (int)Math.Round(Math.Clamp(frequency / binResolution, 0.0, FftProps.FftLength / 2.0 - 1.0));
@@ -43,8 +17,8 @@ public class FftProcessor
         for (var band = 0; band < FftProps.NBands; band++)
         {
             // Find the FFT bins corresponding to this band's frequency range
-            var startBin = FrequencyToBin(FrequencyBands.ElementAt(band), binFrequencyResolution);
-            var endBin = FrequencyToBin(FrequencyBands.ElementAt(band + 1), binFrequencyResolution);
+            var startBin = FrequencyToBin(Bands.FrequencyBands.ElementAt(band), binFrequencyResolution);
+            var endBin = FrequencyToBin(Bands.FrequencyBands.ElementAt(band + 1), binFrequencyResolution);
 
             // Calculate band energy
             var bandEnergy = 0d;
@@ -66,8 +40,7 @@ public class FftProcessor
 
     private static readonly int FftPow = (int)Math.Log(FftProps.FftLength, 2.0);
 
-    private readonly float[] HammingWindow;
-    private readonly int _sampleRate;
+    private readonly int _sampleRate = sampleRate;
 
     private readonly Complex[] fftBuffer = new Complex[FftProps.FftLength];
 
@@ -75,7 +48,7 @@ public class FftProcessor
     {
         for (var i = 0; i < FftProps.FftLength; i++)
         {
-            fftBuffer[i].X = sample[i] * HammingWindow[i];
+            fftBuffer[i].X = sample[i] * Bands.HammingWindow[i];
             fftBuffer[i].Y = 0f;
         }
         FastFourierTransform.FFT(true, FftPow, fftBuffer);

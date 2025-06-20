@@ -1,4 +1,5 @@
 ﻿using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Fft;
 using Microsoft.Extensions.Logging;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -56,11 +57,11 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         await _wsDisplayConfig.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closed after sending display config");
     }
 
-    public async ValueTask SendSpectrum(double[] bands)
+    public async ValueTask SendSpectrum(Spectrum spectrum)
     {
         await ConnectIfNeeded();
 
-        var packedData = PackData([.. bands.Select(b => (int)Math.Round(b))]);
+        var packedData = PackData([.. spectrum.Bands.Select(b => (int)Math.Round(b))]);
         try
         {
             await _wsSpectrum.SendInstant(packedData);

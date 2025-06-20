@@ -1,29 +1,21 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core.Fft;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace EspSpectrum.Core.Recording;
 
-public class PartialDataReader : IDataReader
+public class PartialDataReader(
+    ILogger<PartialDataReader> logger,
+    int sampleSize = FftProps.FftLength,
+    int destructiveReadLength = FftProps.ReadLength) : IDataReader
 {
     private readonly ConcurrentQueue<float> _queue = new();
-    private readonly ILogger _logger;
-    private readonly int _sampleSize;
-    private readonly int _destructiveReadLength;
-    private readonly int _maxQueueSize;
+    private readonly ILogger<PartialDataReader> _logger = logger;
+    private readonly int _sampleSize = sampleSize;
+    private readonly int _destructiveReadLength = destructiveReadLength;
+    private readonly int _maxQueueSize = sampleSize * 2;
     private volatile int _approximateCount;
-
-    public PartialDataReader(ILogger logger, int sampleSize, int destructiveReadLength)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleSize, nameof(sampleSize));
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(destructiveReadLength, nameof(destructiveReadLength));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(destructiveReadLength, sampleSize, nameof(destructiveReadLength));
-
-        _logger = logger;
-        _sampleSize = sampleSize;
-        _destructiveReadLength = destructiveReadLength;
-        _maxQueueSize = sampleSize * 2;
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsFull() => _approximateCount >= _maxQueueSize;
@@ -69,7 +61,24 @@ public class PartialDataReader : IDataReader
         Interlocked.Add(ref _approximateCount, count);
     }
 
-    public bool TryRead(out float[] data)
+    public bool TryReadAudioFrame(Span<float> data)
+    {
+        if (_queue.Count < _sampleSize)
+        {
+            return false;
+        }
+
+        var copied = 0;
+        foreach (var value in _queue.Take(_sampleSize))
+        {
+            data[copied++] = value;
+        }
+
+        Dequeue(_destructiveReadLength);
+        return true;
+    }
+
+    public bool TryReadAudioFrame(out float[] data)
     {
         if (_queue.Count < _sampleSize)
         {
@@ -83,5 +92,5 @@ public class PartialDataReader : IDataReader
         return true;
     }
 
-    public int ApproximateCount => _approximateCount;
+    public int Count() => _approximateCount;
 }
