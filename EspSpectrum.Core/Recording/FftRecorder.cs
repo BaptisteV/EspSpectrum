@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace EspSpectrum.Core.Recording;
 
-public sealed class FftRecorder : IFftRecorder, IDisposable
+public sealed class FftRecorder : IFftRecorder
 {
     private IWaveIn _waveIn;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;
@@ -60,28 +60,37 @@ public sealed class FftRecorder : IFftRecorder, IDisposable
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<byte> buffer, int bytesRecorded)
     {
         var bufferIncrement = _waveIn.WaveFormat.BlockAlign;
-
         var channels = _waveIn.WaveFormat.Channels;
-
         var sampleCount = bytesRecorded / bufferIncrement;
-        var a = new float[sampleCount];
-        var ia = 0;
+        var amplification = (float)_optionsMonitor.CurrentValue.Amplification;
+
+        // Use Span<float> to avoid array allocation if this is a temporary buffer
+        // Or consider using ArrayPool<float> for frequently called methods
+        var samples = new float[sampleCount];
+        var samplesSpan = samples.AsSpan();
+
+        // Cast buffer to ReadOnlySpan<float> for direct float access
+        var floatBuffer = MemoryMarshal.Cast<byte, float>(buffer);
+
+        var sampleIndex = 0;
 
         for (var i = 0; i < bytesRecorded; i += bufferIncrement)
         {
             var channelsSum = 0f;
+            var floatOffset = i / 4; // Convert byte offset to float offset
+
+            // Generic case for other channel counts
             for (var channel = 0; channel < channels; channel++)
             {
-                var sampleOffset = i + channel * 4; // 4 bytes per float
-                MemoryMarshal.TryRead<float>(buffer.Slice(sampleOffset, 4), out var sample);
-                channelsSum += sample;
+                channelsSum += floatBuffer[floatOffset + channel];
             }
 
-            a[ia] = channelsSum * (float)_optionsMonitor.CurrentValue.Amplification;
-            ia++;
+
+            samplesSpan[sampleIndex] = channelsSum * amplification;
+            sampleIndex++;
         }
 
-        return a;
+        return samplesSpan;
     }
 
     public void Start()

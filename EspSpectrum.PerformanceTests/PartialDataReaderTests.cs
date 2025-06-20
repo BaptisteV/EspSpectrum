@@ -12,7 +12,7 @@ namespace EspSpectrum.PerformanceTests;
 [ExceptionDiagnoser]
 public class PartialDataReaderTests
 {
-    private PartialDataReader _dr;
+    private PartialDataReader _dr = null!;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -24,8 +24,10 @@ public class PartialDataReaderTests
     public void PartialDataReaderTestArray()
     {
         _dr.AddData(Sine440.Buffer);
-        float[] data;
-        while (_dr.TryReadAudioFrame(out data)) { }
+        var datar = new float[FftProps.FftLength];
+#pragma warning disable S108 // Nested blocks of code should not be left empty
+        while (_dr.TryReadAudioFrame(datar)) { }
+#pragma warning restore S108 // Nested blocks of code should not be left empty
     }
 
     [Benchmark]
@@ -33,7 +35,9 @@ public class PartialDataReaderTests
     public void PartialDataReaderTestSpan()
     {
         _dr.AddData(Sine440.Buffer);
-        Span<float> buffer = stackalloc float[FftProps.FftLength];
+        var buffer = new float[FftProps.FftLength];
+#pragma warning disable S108 // Nested blocks of code should not be left empty
         while (_dr.TryReadAudioFrame(buffer)) { }
+#pragma warning restore S108 // Nested blocks of code should not be left empty
     }
 }

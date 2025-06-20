@@ -5,6 +5,7 @@ using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NAudio.Wave;
 
 namespace EspSpectrum.PerformanceTests;
 
@@ -13,7 +14,7 @@ namespace EspSpectrum.PerformanceTests;
 [ExceptionDiagnoser]
 public class FftRecorderTests
 {
-    IServiceProvider _serviceProvider;
+    IServiceProvider _serviceProvider = null!;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -22,15 +23,9 @@ public class FftRecorderTests
         services.AddLogging();
         services.AddOptions();
 
-        var myConfiguration = new Dictionary<string, string?>
-        {
-            {"Key1", "Value1"},
-            {"Nested:Key1", "NestedValue1"},
-            {"Nested:Key2", "NestedValue2"}
-        };
-
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(myConfiguration).Build();
+        var configuration = new ConfigurationBuilder().Build();
         services.AddCoreServices(configuration);
+        services.AddTransient<IWaveIn, FakeLoopbackWaveIn>();
         _serviceProvider = services.BuildServiceProvider();
     }
 

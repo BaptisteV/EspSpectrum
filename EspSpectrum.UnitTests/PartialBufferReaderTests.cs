@@ -18,15 +18,17 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
             data[i] = i;
         }
         dr.AddData(data);
-
-        dr.TryReadAudioFrame(out var result);
+        var result = new float[count];
+        var firstRead = dr.TryReadAudioFrame(result);
+        Assert.True(firstRead);
         var expectedResult = Enumerable.Range(0, count).Select(d => (float)d).ToList();
         Assert.True(expectedResult.SequenceEqual(result.ToArray()));
-        dr.TryReadAudioFrame(out var emptyResult);
-        Assert.Empty(emptyResult.ToArray());
+        var emptyResult = new float[count];
+        var secondRead = dr.TryReadAudioFrame(emptyResult);
+        Assert.False(secondRead);
     }
 
-    [Theory(DisplayName = "Consume single read")]
+    [Theory(DisplayName = "Consume single secondRead")]
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(10)]
@@ -41,13 +43,14 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
         buffer.AddData(res);
         Assert.Equal(frameSize, buffer.Count());
 
-        var read = buffer.TryReadAudioFrame(out var buffs);
+        var buffs = new float[frameSize];
+        var read = buffer.TryReadAudioFrame(buffs);
 
         Assert.True(read);
         Assert.Equal(frameSize - 1, buffer.Count());
         Assert.Equal(frameSize, buffs.Length);
         var result = res.Take(frameSize);
-        Assert.True(buffs.ToArray().SequenceEqual(result));
+        Assert.True(buffs.SequenceEqual(result));
     }
 
     [Theory(DisplayName = "Multiple buffs, number of buffers")]
@@ -64,7 +67,8 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
         var buffs = new List<float[]>();
 
         var dataLeft = buffer.Count();
-        while (buffer.TryReadAudioFrame(out var datar))
+        var datar = new float[frameSize];
+        while (buffer.TryReadAudioFrame(datar))
         {
             buffs.Add(datar.ToArray());
             dataLeft -= destructieReadLength;
@@ -89,7 +93,8 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
         buffer.AddData(data);
 
         var buffs = new List<float[]>();
-        while (buffer.TryReadAudioFrame(out var datar))
+        var datar = new float[frameSize];
+        while (buffer.TryReadAudioFrame(datar))
         {
             buffs.Add(datar.ToArray());
         }

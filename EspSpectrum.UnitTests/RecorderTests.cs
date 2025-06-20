@@ -36,7 +36,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
-        Assert.False(fft.Bands.All(b => b == 0));
+        Assert.False(fft.Bands.All(b => b.Equals(0)));
 
         var peakIndex = fft.Bands
             .Select((value, index) => new { Value = value, Index = index })
@@ -56,7 +56,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
 
         Assert.NotNull(fft);
         Assert.NotNull(fft.Bands);
-        Assert.False(fft.Bands.All(b => b == 0));
+        Assert.False(fft.Bands.All(b => b.Equals(0)));
     }
 
     public void Dispose()

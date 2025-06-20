@@ -51,10 +51,11 @@ public class FftProcessor(int sampleRate)
             fftBuffer[i].X = sample[i] * Bands.HammingWindow[i];
             fftBuffer[i].Y = 0f;
         }
+
         FastFourierTransform.FFT(true, FftPow, fftBuffer);
+
         var bands = CalculateBands(fftBuffer, _sampleRate);
 
         return new Spectrum() { Bands = bands };
     }
-
 }

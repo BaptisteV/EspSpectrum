@@ -8,8 +8,16 @@ using NAudio.Wave;
 
 namespace EspSpectrum.Core;
 
+/// <summary>
+/// Extension methods for IServiceCollection to register core services for the EspSpectrum application.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers core services for the EspSpectrum application.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
     public static void AddCoreServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<EspConfig>(configuration);

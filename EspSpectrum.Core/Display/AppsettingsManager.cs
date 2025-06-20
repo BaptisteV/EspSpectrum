@@ -6,9 +6,6 @@ public class AppsettingsManager(string appSetting) : IAppsettingsManager
 {
     private readonly string _filePath = appSetting;
 
-    /// <summary>
-    /// Reads DisplayConfig from the JSON file
-    /// </summary>
     public async Task<DisplayConfig> ReadConfig()
     {
         if (!File.Exists(_filePath))
@@ -35,9 +32,6 @@ public class AppsettingsManager(string appSetting) : IAppsettingsManager
         return displayConfig ?? new DisplayConfig();
     }
 
-    /// <summary>
-    /// Checks if a property name belongs to DisplayConfig
-    /// </summary>
     private static bool IsDisplayConfigProperty(string propertyName)
     {
         // Check if the property exists in DisplayConfig

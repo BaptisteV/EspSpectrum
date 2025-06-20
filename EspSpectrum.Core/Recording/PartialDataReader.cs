@@ -15,10 +15,10 @@ public class PartialDataReader(
     private readonly int _sampleSize = sampleSize;
     private readonly int _destructiveReadLength = destructiveReadLength;
     private readonly int _maxQueueSize = sampleSize * 2;
-    private volatile int _approximateCount;
+    private volatile int _queueSize;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool IsFull() => _approximateCount >= _maxQueueSize;
+    private bool IsFull() => _queueSize >= _maxQueueSize;
 
     private void Dequeue(int nDequeue)
     {
@@ -35,14 +35,14 @@ public class PartialDataReader(
             }
         }
 
-        Interlocked.Add(ref _approximateCount, -dequeuedCount);
+        Interlocked.Add(ref _queueSize, -dequeuedCount);
     }
 
     public void AddData(ReadOnlySpan<float> newData)
     {
         if (IsFull())
         {
-            var dequeuedCount = _approximateCount - _maxQueueSize + newData.Length;
+            var dequeuedCount = _queueSize - _maxQueueSize + newData.Length;
             Dequeue(dequeuedCount);
         }
 
@@ -58,9 +58,14 @@ public class PartialDataReader(
             count++;
         }
 
-        Interlocked.Add(ref _approximateCount, count);
+        Interlocked.Add(ref _queueSize, count);
     }
 
+    /// <summary>
+    /// Attempts to read an audio frame of the specified size from the queue.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns>True if we successfully read audio data</returns>
     public bool TryReadAudioFrame(Span<float> data)
     {
         if (_queue.Count < _sampleSize)
@@ -78,19 +83,5 @@ public class PartialDataReader(
         return true;
     }
 
-    public bool TryReadAudioFrame(out float[] data)
-    {
-        if (_queue.Count < _sampleSize)
-        {
-            data = [];
-            return false;
-        }
-
-        data = _queue.Take(_sampleSize).ToArray();
-
-        Dequeue(_destructiveReadLength);
-        return true;
-    }
-
-    public int Count() => _approximateCount;
+    public int Count() => _queueSize;
 }

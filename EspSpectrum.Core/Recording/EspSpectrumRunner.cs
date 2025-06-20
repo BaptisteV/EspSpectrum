@@ -33,12 +33,11 @@ public class EspSpectrumRunner(
         var late = remaining < TimeSpan.Zero;
         if (late)
         {
-            logger.LogWarning("{Elapsed}ms late",
-                remaining.TotalMilliseconds);
+            logger.LogWarning("{Elapsed}ms late", remaining.TotalMilliseconds);
             return;
         }
 
-        if (remaining.TotalMilliseconds < 0.5)
+        if (remaining.TotalMilliseconds <= 0.5)
             return;
 
         PreciseSleep.Wait(remaining);

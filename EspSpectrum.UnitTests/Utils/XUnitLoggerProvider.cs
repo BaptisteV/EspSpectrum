@@ -20,7 +20,7 @@ public class XUnitLogger(ITestOutputHelper output, string categoryName) : ILogge
     private readonly ITestOutputHelper _output = output;
     private readonly string _categoryName = categoryName;
 
-    public IDisposable BeginScope<TState>(TState? state) => null!;
+    IDisposable ILogger.BeginScope<TState>(TState state) => null!;
 
     public bool IsEnabled(LogLevel logLevel) => true;
 

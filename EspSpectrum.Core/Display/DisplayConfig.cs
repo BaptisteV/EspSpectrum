@@ -19,6 +19,7 @@ public sealed class DisplayConfig : IEquatable<DisplayConfig>
         if (ReferenceEquals(this, other)) return true;
 
         return SendInterval.Equals(other.SendInterval) &&
+               Amplification.Equals(other.Amplification) &&
                HistoLength == other.HistoLength &&
                Brightness == other.Brightness &&
                LowHue == other.LowHue &&
@@ -39,6 +40,7 @@ public sealed class DisplayConfig : IEquatable<DisplayConfig>
     {
         return HashCode.Combine(
             SendInterval,
+            Amplification,
             HistoLength,
             Brightness,
             LowHue,

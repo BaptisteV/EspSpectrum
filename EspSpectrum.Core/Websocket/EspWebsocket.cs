@@ -69,12 +69,18 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         catch (SocketException se)
         {
             _logger.LogError(se, "Connection error");
-            throw;
+            throw new SocketException(se.ErrorCode, se.Message);
         }
         catch (OperationCanceledException ce)
         {
             _logger.LogError(ce, "Operation cancelled, ESP restarting ?");
-            throw;
+            throw new OperationCanceledException("Operation cancelled, ESP restarting ?", ce);
         }
+    }
+
+    public void Dispose()
+    {
+        _wsDisplayConfig.Dispose();
+        _wsSpectrum.Dispose();
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.Core.Fft;
 
-public class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> spectrumConfig) : ISyncSpectrumReader
+public sealed class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> spectrumConfig) : ISyncSpectrumReader, IDisposable
 {
     private readonly TimeSpan TryInterval = TimeSpan.FromMicroseconds(500);
     private readonly IFftRecorder _recorder = recorder;
@@ -29,5 +29,10 @@ public class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> 
     public void Start()
     {
         _recorder.Start();
+    }
+
+    public void Dispose()
+    {
+        _recorder.Dispose();
     }
 }
