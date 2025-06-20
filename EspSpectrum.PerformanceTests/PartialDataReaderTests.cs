@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
+using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EspSpectrum.PerformanceTests;
@@ -22,18 +23,15 @@ public class PartialDataReaderTests
     [Benchmark(Baseline = true)]
     public void PartialDataReaderTestArray()
     {
-        //var dataChannel = Channel.CreateUnbounded<float>();
-        //await FeederThread.FeedData(dataChannel, FftProps.FftLength);
         _dr.AddData(Sine440.Buffer);
-        while (_dr.TryReadAudioFrame(out _))
-        { }
+        float[] data;
+        while (_dr.TryReadAudioFrame(out data)) { }
     }
+
     [Benchmark]
 
     public void PartialDataReaderTestSpan()
     {
-        //var dataChannel = Channel.CreateUnbounded<float>();
-        //await FeederThread.FeedData(dataChannel, FftProps.FftLength);
         _dr.AddData(Sine440.Buffer);
         Span<float> buffer = stackalloc float[FftProps.FftLength];
         while (_dr.TryReadAudioFrame(buffer)) { }

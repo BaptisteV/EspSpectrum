@@ -2,6 +2,7 @@
 using EspSpectrum.Core;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
+using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

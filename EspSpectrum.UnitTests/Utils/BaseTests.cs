@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace EspSpectrum.UnitTests;
+namespace EspSpectrum.UnitTests.Utils;
 
 public class BaseTests(ITestOutputHelper testOutputHelper)
 {

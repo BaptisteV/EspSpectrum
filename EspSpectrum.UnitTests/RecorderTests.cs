@@ -1,7 +1,7 @@
 ﻿using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
-using EspSpectrum.PerformanceTests;
+using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

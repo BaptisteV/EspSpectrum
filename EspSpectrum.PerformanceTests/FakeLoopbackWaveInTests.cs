@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using EspSpectrum.UnitTests.Utils;
 
 namespace EspSpectrum.PerformanceTests;
 

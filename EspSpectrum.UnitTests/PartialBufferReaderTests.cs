@@ -1,4 +1,5 @@
 ﻿using EspSpectrum.Core.Recording;
+using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 

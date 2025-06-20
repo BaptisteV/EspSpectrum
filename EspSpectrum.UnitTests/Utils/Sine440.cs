@@ -1,4 +1,4 @@
-﻿namespace EspSpectrum.PerformanceTests;
+﻿namespace EspSpectrum.UnitTests.Utils;
 
 public static class Sine440
 {

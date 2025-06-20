@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using EspSpectrum.Core.Fft;
+using EspSpectrum.UnitTests.Utils;
 
 namespace EspSpectrum.PerformanceTests;
 

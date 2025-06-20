@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using System.Runtime.InteropServices;
 
-namespace EspSpectrum.PerformanceTests;
+namespace EspSpectrum.UnitTests.Utils;
 
 public sealed class FakeLoopbackWaveIn : IWaveIn
 {
@@ -20,19 +20,19 @@ public sealed class FakeLoopbackWaveIn : IWaveIn
     public void RecordSingleSine(int nSample = FftProps.FftLength)
     {
         ReadOnlySpan<float> sineSamples = Sine440.Buffer.AsSpan(0, nSample);
-        int frameSize = 4 * WaveFormat.Channels;
+        var frameSize = 4 * WaveFormat.Channels;
 
         Span<byte> bufferSpan = stackalloc byte[sineSamples.Length * frameSize];
         Span<byte> sampleBytes = stackalloc byte[4];
-        for (int i = 0; i < sineSamples.Length; i++)
+        for (var i = 0; i < sineSamples.Length; i++)
         {
             var sample = sineSamples[i];
             MemoryMarshal.Write(sampleBytes, in sample);
 
             // Write same sample to each channel
-            for (int ch = 0; ch < WaveFormat.Channels; ch++)
+            for (var ch = 0; ch < WaveFormat.Channels; ch++)
             {
-                int offset = i * frameSize + ch * 4;
+                var offset = i * frameSize + ch * 4;
                 sampleBytes.CopyTo(bufferSpan.Slice(offset, 4));
             }
         }
