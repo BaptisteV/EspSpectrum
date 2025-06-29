@@ -64,12 +64,8 @@ public sealed class FftRecorder : IFftRecorder
         var sampleCount = bytesRecorded / bufferIncrement;
         var amplification = (float)_optionsMonitor.CurrentValue.Amplification;
 
-        // Use Span<float> to avoid array allocation if this is a temporary buffer
-        // Or consider using ArrayPool<float> for frequently called methods
-        var samples = new float[sampleCount];
-        var samplesSpan = samples.AsSpan();
+        var samplesSpan = new float[sampleCount];
 
-        // Cast buffer to ReadOnlySpan<float> for direct float access
         var floatBuffer = MemoryMarshal.Cast<byte, float>(buffer);
 
         var sampleIndex = 0;
@@ -79,7 +75,6 @@ public sealed class FftRecorder : IFftRecorder
             var channelsSum = 0f;
             var floatOffset = i / 4; // Convert byte offset to float offset
 
-            // Generic case for other channel counts
             for (var channel = 0; channel < channels; channel++)
             {
                 channelsSum += floatBuffer[floatOffset + channel];

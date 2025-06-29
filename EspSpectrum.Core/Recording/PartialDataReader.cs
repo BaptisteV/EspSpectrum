@@ -72,12 +72,12 @@ public class PartialDataReader(
         {
             return false;
         }
-
-        var copied = 0;
-        foreach (var value in _queue.Take(_sampleSize))
+        if (_queue.Count > _sampleSize * 2)
         {
-            data[copied++] = value;
+            _logger.LogWarning("Queue size is larger than expected: {QueueSize}", _queue.Count);
         }
+
+        _queue.Take(_sampleSize).ToArray().AsSpan().CopyTo(data);
 
         Dequeue(_destructiveReadLength);
         return true;

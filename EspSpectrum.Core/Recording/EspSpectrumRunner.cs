@@ -30,17 +30,14 @@ public class EspSpectrumRunner(
 
         var remaining = targetRate - _sw.Elapsed;
 
-        var late = remaining < TimeSpan.Zero;
-        if (late)
+        if (remaining.TotalMilliseconds <= 0.5)
         {
-            logger.LogWarning("{Elapsed}ms late", remaining.TotalMilliseconds);
+            if (remaining < TimeSpan.Zero)
+                logger.LogWarning("{Elapsed}ms late", remaining.TotalMilliseconds);
             return;
         }
 
-        if (remaining.TotalMilliseconds <= 0.5)
-            return;
-
-        PreciseSleep.Wait(remaining);
+        PreciseSleep.Wait(remaining, cancellationToken);
     }
 
     public void Start()

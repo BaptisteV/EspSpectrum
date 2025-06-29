@@ -4,7 +4,7 @@ namespace EspSpectrum.Core.Fft;
 
 public static class Bands
 {
-    public static IReadOnlyCollection<float> FrequencyBands { get; private set; } = [];
+    public static IReadOnlyCollection<double> FrequencyBands { get; private set; } = [];
     public static float[] HammingWindow { get; } = new float[FftProps.FftLength];
 
     static Bands()
@@ -15,11 +15,11 @@ public static class Bands
 
     private static void InitializeBandBoundaries()
     {
-        var freq = new float[FftProps.NBands + 1];
+        var freq = new double[FftProps.NBands + 1];
         for (var i = 0; i < freq.Length; i++)
         {
-            var t = i / (freq.Length - 1);
-            freq[i] = FftProps.MinFreq * MathF.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
+            var t = (double)i / (freq.Length - 1);
+            freq[i] = FftProps.MinFreq * Math.Pow(FftProps.MaxFreq / FftProps.MinFreq, t);
         }
         FrequencyBands = freq.AsReadOnly();
     }

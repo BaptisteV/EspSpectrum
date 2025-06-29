@@ -14,7 +14,7 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumC
         Spectrum? nullableSpectrum;
         while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken) && !cancellationToken.IsCancellationRequested)
         {
-            PreciseSleep.Wait(TryInterval);
+            PreciseSleep.Wait(TryInterval, cancellationToken);
         }
 
         Spectrum foundSpectrum = nullableSpectrum ?? throw new InvalidOperationException($"{nameof(nullableSpectrum)} should never be null here");
