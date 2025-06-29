@@ -4,7 +4,6 @@ using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
@@ -23,7 +22,7 @@ public sealed class RecorderTests : BaseTests, IDisposable
         var serviceProvider = services.BuildServiceProvider();
         var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<DisplayConfig>>();
 
-        _recorder = new FftRecorder(LoggerFactory.CreateLogger<FftRecorder>(), serviceProvider, _fakeLoopbackWaveIn, optionsMonitor, new PartialDataReader(NullLogger<PartialDataReader>.Instance));
+        _recorder = new FftRecorder(LoggerFactory.CreateLogger<FftRecorder>(), serviceProvider, _fakeLoopbackWaveIn, optionsMonitor, new PartialDataReader());
         _recorder.Start();
     }
 

@@ -104,6 +104,7 @@ namespace EspSpectrum.ConfigUI
             FillColors(panelLowColor, 2);
 
             var initialConf = await _displayConfigManager.ReadConfig();
+            sendIntervalSlider.Minimum = DisplayConfig.MinimumSendInterval.Milliseconds;
             sendIntervalSlider.Value = (int)initialConf.SendInterval.TotalMilliseconds;
             fadedFramesSlider.Value = initialConf.HistoLength;
             brightnessSlider.Value = initialConf.Brightness;

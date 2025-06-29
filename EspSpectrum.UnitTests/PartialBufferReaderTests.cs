@@ -1,6 +1,5 @@
 ﻿using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Utils;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
 namespace EspSpectrum.UnitTests;
@@ -10,7 +9,7 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
     [Fact]
     public void ReadFull()
     {
-        var dr = new PartialDataReader(NullLogger<PartialDataReader>.Instance, 1000, 1000);
+        var dr = new PartialDataReader(1000, 1000);
         var count = 1000;
         var data = new float[count];
         for (var i = 0; i < count; i++)
@@ -36,7 +35,6 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
     public void MovingProcessingOne(int frameSize)
     {
         var buffer = new PartialDataReader(
-            NullLogger<PartialDataReader>.Instance,
             sampleSize: frameSize,
             destructiveReadLength: 1);
         var res = Enumerable.Range(1, frameSize).Select(a => (float)a).ToArray();
@@ -61,7 +59,7 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
     [InlineData(new float[] { 1f, 2f, 3f, 4f }, 3, 1, 2)]
     public void MovingMultipleBuffs_ExpectedCounts(float[] data, int frameSize, int destructieReadLength, int expectedBuffsCount)
     {
-        var buffer = new PartialDataReader(NullLogger<PartialDataReader>.Instance, frameSize, destructieReadLength);
+        var buffer = new PartialDataReader(frameSize, destructieReadLength);
         buffer.AddData(data);
 
         var buffs = new List<float[]>();
@@ -89,7 +87,7 @@ public class PartialBufferReaderTests(ITestOutputHelper testOutputHelper) : Base
     [InlineData(new float[] { 1f, 2f, 3f, 4f }, 3, 1, 2)]
     public void MovingMultipleBuffs_ExpectedData(float[] data, int frameSize, int destructieReadLength, int expectedBuffsCount)
     {
-        var buffer = new PartialDataReader(NullLogger<PartialDataReader>.Instance, frameSize, destructieReadLength);
+        var buffer = new PartialDataReader(frameSize, destructieReadLength);
         buffer.AddData(data);
 
         var buffs = new List<float[]>();

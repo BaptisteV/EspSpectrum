@@ -2,7 +2,6 @@
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
 using EspSpectrum.UnitTests.Utils;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EspSpectrum.PerformanceTests;
 
@@ -17,7 +16,7 @@ public class PartialDataReaderTests
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _dr = new PartialDataReader(NullLogger<PartialDataReader>.Instance, FftProps.FftLength, FftProps.ReadLength);
+        _dr = new PartialDataReader(FftProps.FftLength, FftProps.ReadLength);
     }
 
     [Benchmark(Baseline = true)]

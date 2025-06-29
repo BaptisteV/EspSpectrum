@@ -50,9 +50,9 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (_stableSpectrumReader.WaitForNextTick(stoppingToken))
         {
-            await _stableSpectrumReader.Tick(stoppingToken);
+            await _stableSpectrumReader.DoFftAndSend(stoppingToken);
         }
     }
 }

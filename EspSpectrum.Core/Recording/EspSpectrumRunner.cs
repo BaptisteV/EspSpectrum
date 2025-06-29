@@ -7,37 +7,66 @@ using System.Diagnostics;
 
 namespace EspSpectrum.Core.Recording;
 
-public class EspSpectrumRunner(
-    IOptionsMonitor<DisplayConfig> displayConfigMonitor,
-    ISyncSpectrumReader spectrumReader,
-    ISpectrumWebsocket ws,
-    ILogger<EspSpectrumRunner> logger) : IEspSpectrumRunner
+public class EspSpectrumRunner : IEspSpectrumRunner
 {
-    private readonly Stopwatch _sw = new();
+    private readonly TimeSpan _interval;
+    private readonly Stopwatch _stopwatch;
+    private readonly ISyncSpectrumReader spectrumReader;
+    private readonly ISpectrumWebsocket ws;
+    private readonly ILogger<EspSpectrumRunner> logger;
+    private TimeSpan _nextTickMilliseconds = TimeSpan.Zero;
+    private bool _started = false;
 
-    private async ValueTask CalculateAndSend(CancellationToken cancellationToken)
+    public EspSpectrumRunner(
+        IOptionsMonitor<DisplayConfig> displayConfigMonitor,
+        ISyncSpectrumReader spectrumReader,
+        ISpectrumWebsocket ws,
+        ILogger<EspSpectrumRunner> logger)
+    {
+        this.spectrumReader = spectrumReader;
+        this.ws = ws;
+        this.logger = logger;
+        _interval = displayConfigMonitor.CurrentValue.SendInterval;
+        _stopwatch = Stopwatch.StartNew();
+    }
+
+    public async ValueTask DoFftAndSend(CancellationToken cancellationToken)
     {
         var spectrum = spectrumReader.GetLatestBlocking(cancellationToken);
         await ws.SendSpectrum(spectrum);
     }
 
-    public async ValueTask Tick(CancellationToken cancellationToken)
+    public bool WaitForNextTick(CancellationToken cancellationToken)
     {
-        _sw.Restart();
-        var targetRate = displayConfigMonitor.CurrentValue.SendInterval;
-
-        await CalculateAndSend(cancellationToken);
-
-        var remaining = targetRate - _sw.Elapsed;
-
-        if (remaining.TotalMilliseconds <= 0.5)
+        if (!_started)
         {
-            if (remaining < TimeSpan.Zero)
-                logger.LogWarning("{Elapsed}ms late", remaining.TotalMilliseconds);
-            return;
+            _nextTickMilliseconds = _stopwatch.Elapsed + _interval;
+            _started = true;
+            return true; // immediate first tick
         }
 
-        PreciseSleep.Wait(remaining, cancellationToken);
+        var elapsed = _stopwatch.Elapsed;
+        var delay = _nextTickMilliseconds - elapsed;
+        _nextTickMilliseconds += _interval;
+        if (delay > TimeSpan.FromMilliseconds(0.1))
+        {
+            try
+            {
+                logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
+                PreciseSleep.Wait(delay, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            logger.LogWarning("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
+            // Overrun: we are already late
+            // Optionally log or handle
+        }
+        return !cancellationToken.IsCancellationRequested;
     }
 
     public void Start()

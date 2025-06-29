@@ -3,7 +3,7 @@ namespace EspSpectrum.Core.Recording;
 
 /// <summary>
 /// Main runner of the ESP spectrum application.
-/// Call Tick on a tight loop.
+/// Call WaitForNextTick on a tight loop.
 /// </summary>
 public interface IEspSpectrumRunner
 {
@@ -17,5 +17,7 @@ public interface IEspSpectrumRunner
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    ValueTask Tick(CancellationToken cancellationToken);
+    bool WaitForNextTick(CancellationToken cancellationToken);
+
+    ValueTask DoFftAndSend(CancellationToken cancellationToken);
 }

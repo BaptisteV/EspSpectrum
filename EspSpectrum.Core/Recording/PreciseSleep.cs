@@ -9,10 +9,14 @@ public static class PreciseSleep
         var targetTicks = Stopwatch.Frequency * waitFor.TotalSeconds;
         var startTicks = Stopwatch.GetTimestamp();
 
-        bool shouldWait() => Stopwatch.GetTimestamp() - startTicks < targetTicks;
-        while (shouldWait() && !cancellationToken.IsCancellationRequested)
+        double getRemainingMs() => (targetTicks - (Stopwatch.GetTimestamp() - startTicks)) * 1000.0 / Stopwatch.Frequency;
+
+        while (Stopwatch.GetTimestamp() - startTicks < targetTicks && !cancellationToken.IsCancellationRequested)
         {
-            Thread.SpinWait(100);
+            // Alternance entre SpinWait et Yield pour éviter la monopolisation du CPU
+            Thread.SpinWait(10);
+            if (getRemainingMs() > 0.1) // Yield seulement si il reste un peu de temps
+                Thread.Yield();
         }
     }
 }

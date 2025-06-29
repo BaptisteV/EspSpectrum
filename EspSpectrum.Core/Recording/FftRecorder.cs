@@ -109,7 +109,7 @@ public sealed class FftRecorder : IFftRecorder
     {
         if (_buffReader.Count() < FftProps.FftLength)
         {
-            _logger.LogDebug("Not enough data for a new Spectrum");
+            _logger.LogTrace("Not enough data for a new Spectrum");
             spectrum = default;
             return false;
         }

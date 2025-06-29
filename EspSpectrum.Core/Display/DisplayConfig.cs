@@ -2,7 +2,19 @@
 
 public sealed class DisplayConfig : IEquatable<DisplayConfig>
 {
-    public TimeSpan SendInterval { get; set; }
+    public static TimeSpan MinimumSendInterval { get; } = TimeSpan.FromMilliseconds(14);
+    public TimeSpan SendInterval
+    {
+        get;
+        set
+        {
+            if (value < MinimumSendInterval)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), $"SendInterval must be at least {MinimumSendInterval.Milliseconds}ms.");
+            }
+            field = value;
+        }
+    }
 
     public double Amplification { get; set; } = 1.0;
 

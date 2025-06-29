@@ -5,14 +5,14 @@ namespace EspSpectrum.Core.Fft;
 
 public sealed class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumConfig> spectrumConfig) : ISyncSpectrumReader, IDisposable
 {
-    private readonly TimeSpan TryInterval = TimeSpan.FromMicroseconds(500);
+    private readonly TimeSpan TryInterval = TimeSpan.FromMilliseconds(0.5);
     private readonly IFftRecorder _recorder = recorder;
     private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
 
     public Spectrum GetLatestBlocking(CancellationToken cancellationToken)
     {
         Spectrum? nullableSpectrum;
-        while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken) && !cancellationToken.IsCancellationRequested)
+        while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
         {
             PreciseSleep.Wait(TryInterval, cancellationToken);
         }

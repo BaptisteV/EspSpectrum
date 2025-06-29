@@ -1,17 +1,14 @@
 ﻿using EspSpectrum.Core.Fft;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 
 namespace EspSpectrum.Core.Recording;
 
 public class PartialDataReader(
-    ILogger<PartialDataReader> logger,
     int sampleSize = FftProps.FftLength,
     int destructiveReadLength = FftProps.ReadLength) : IDataReader
 {
     private readonly ConcurrentQueue<float> _queue = new();
-    private readonly ILogger<PartialDataReader> _logger = logger;
     private readonly int _sampleSize = sampleSize;
     private readonly int _destructiveReadLength = destructiveReadLength;
     private readonly int _maxQueueSize = sampleSize * 2;
@@ -71,10 +68,6 @@ public class PartialDataReader(
         if (_queue.Count < _sampleSize)
         {
             return false;
-        }
-        if (_queue.Count > _sampleSize * 2)
-        {
-            _logger.LogWarning("Queue size is larger than expected: {QueueSize}", _queue.Count);
         }
 
         _queue.Take(_sampleSize).ToArray().AsSpan().CopyTo(data);
