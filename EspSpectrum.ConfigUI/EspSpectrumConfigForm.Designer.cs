@@ -218,7 +218,7 @@
             sendIntervalSlider.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             sendIntervalSlider.Location = new Point(3, 3);
             sendIntervalSlider.Maximum = 50;
-            sendIntervalSlider.Minimum = 14;
+            sendIntervalSlider.Minimum = 2;
             sendIntervalSlider.Name = "sendIntervalSlider";
             sendIntervalSlider.Size = new Size(636, 45);
             sendIntervalSlider.TabIndex = 0;

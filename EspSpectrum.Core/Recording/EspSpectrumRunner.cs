@@ -13,6 +13,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
     private readonly Stopwatch _stopwatch;
     private readonly ISyncSpectrumReader spectrumReader;
     private readonly ISpectrumWebsocket ws;
+    private readonly ITickTimingMonitor timingMonitor;
     private readonly ILogger<EspSpectrumRunner> logger;
     private TimeSpan _nextTickMilliseconds = TimeSpan.Zero;
     private bool _started = false;
@@ -21,12 +22,14 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         IOptionsMonitor<DisplayConfig> displayConfigMonitor,
         ISyncSpectrumReader spectrumReader,
         ISpectrumWebsocket ws,
+        ITickTimingMonitor timingMonitor,
         ILogger<EspSpectrumRunner> logger)
     {
         this.spectrumReader = spectrumReader;
         this.ws = ws;
+        this.timingMonitor = timingMonitor;
+        this._interval = displayConfigMonitor.CurrentValue.SendInterval;
         this.logger = logger;
-        _interval = displayConfigMonitor.CurrentValue.SendInterval;
         _stopwatch = Stopwatch.StartNew();
     }
 
@@ -38,16 +41,23 @@ public class EspSpectrumRunner : IEspSpectrumRunner
 
     public bool WaitForNextTick(CancellationToken cancellationToken)
     {
-        if (!_started)
+        if (_started)
         {
             _nextTickMilliseconds = _stopwatch.Elapsed + _interval;
-            _started = true;
+            _started = false;
             return true; // immediate first tick
         }
 
-        var elapsed = _stopwatch.Elapsed;
-        var delay = _nextTickMilliseconds - elapsed;
+        var delay = _nextTickMilliseconds - _stopwatch.Elapsed;
         _nextTickMilliseconds += _interval;
+
+        timingMonitor.NotifyTickDiff(delay);
+
+        return WaitIfNecessary(delay, cancellationToken);
+    }
+
+    private bool WaitIfNecessary(TimeSpan delay, CancellationToken cancellationToken)
+    {
         if (delay > TimeSpan.FromMilliseconds(0.1))
         {
             try
@@ -72,6 +82,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
     public void Start()
     {
         spectrumReader.Start();
+        timingMonitor.StartInBg();
     }
 }
 

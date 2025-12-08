@@ -23,7 +23,7 @@ public class EspSpectrumServiceMonitor : IEspSpectrumServiceMonitor
     public void Stop()
     {
         var service = new ServiceController(ServiceName);
-        if (service.CanStop)
+        if (service.CanShutdown)
         {
             service.Stop();
             service.WaitForStatus(ServiceControllerStatus.Stopped, Timeout);

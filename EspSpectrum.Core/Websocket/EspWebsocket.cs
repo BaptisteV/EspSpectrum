@@ -39,6 +39,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     private async ValueTask ConnectIfNeeded()
     {
+        _logger.LogInformation("ConnectIfNeeded");
         if (!_wsSpectrum.IsRunning && !_starting)
         {
             _starting = true;
@@ -51,6 +52,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     public async ValueTask SendDisplayConfig(DisplayConfig displayConfig)
     {
+        _logger.LogInformation("SendDisplayConfig");
         await _wsDisplayConfig.Start();
         var jsonString = JsonSerializer.Serialize(displayConfig);
         await _wsDisplayConfig.SendInstant(jsonString);
@@ -59,6 +61,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     public async ValueTask SendSpectrum(Spectrum spectrum)
     {
+        _logger.LogInformation("SendSpectrum");
         await ConnectIfNeeded();
 
         var packedData = PackData([.. spectrum.Bands.Select(b => (int)Math.Round(b))]);

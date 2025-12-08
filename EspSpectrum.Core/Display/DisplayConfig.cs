@@ -2,7 +2,8 @@
 
 public sealed class DisplayConfig : IEquatable<DisplayConfig>
 {
-    public static TimeSpan MinimumSendInterval { get; } = TimeSpan.FromMilliseconds(14);
+    public static TimeSpan MinimumSendInterval { get; set; }
+
     public TimeSpan SendInterval
     {
         get;
@@ -10,7 +11,7 @@ public sealed class DisplayConfig : IEquatable<DisplayConfig>
         {
             if (value < MinimumSendInterval)
             {
-                throw new ArgumentOutOfRangeException(nameof(value), $"SendInterval must be at least {MinimumSendInterval.Milliseconds}ms.");
+                throw new InvalidConfigException($"Send interval must be at least {MinimumSendInterval.TotalMilliseconds}ms.");
             }
             field = value;
         }
@@ -30,8 +31,7 @@ public sealed class DisplayConfig : IEquatable<DisplayConfig>
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
 
-        return SendInterval.Equals(other.SendInterval) &&
-               Amplification.Equals(other.Amplification) &&
+        return Amplification.Equals(other.Amplification) &&
                HistoLength == other.HistoLength &&
                Brightness == other.Brightness &&
                LowHue == other.LowHue &&

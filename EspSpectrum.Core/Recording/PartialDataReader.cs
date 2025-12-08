@@ -11,7 +11,7 @@ public class PartialDataReader(
     private readonly ConcurrentQueue<float> _queue = new();
     private readonly int _sampleSize = sampleSize;
     private readonly int _destructiveReadLength = destructiveReadLength;
-    private readonly int _maxQueueSize = sampleSize * 2;
+    private readonly int _maxQueueSize = sampleSize * 3;
     private volatile int _queueSize;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

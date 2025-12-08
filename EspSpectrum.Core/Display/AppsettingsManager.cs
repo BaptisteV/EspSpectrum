@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.Serialization;
+using System.Text.Json;
 
 namespace EspSpectrum.Core.Display;
 
@@ -29,7 +30,9 @@ public class AppsettingsManager(string appSetting) : IAppsettingsManager
         var reducedJson = JsonSerializer.Serialize(displayConfigJson);
         var displayConfig = JsonSerializer.Deserialize<DisplayConfig>(reducedJson);
 
-        return displayConfig ?? new DisplayConfig();
+        return displayConfig is null
+            ? throw new SerializationException($"Failed to deserialize ${nameof(DisplayConfig)} from appsettings.json")
+            : displayConfig;
     }
 
     private static bool IsDisplayConfigProperty(string propertyName)

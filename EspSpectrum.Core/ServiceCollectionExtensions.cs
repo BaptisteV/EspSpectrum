@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IDataReader, PartialDataReader>();
         services.AddTransient<IFftRecorder, FftRecorder>();
         services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
+        services.AddTransient<ITickTimingMonitor, TimingMonitor>();
         services.AddTransient<IEspSpectrumRunner, EspSpectrumRunner>();
     }
 }

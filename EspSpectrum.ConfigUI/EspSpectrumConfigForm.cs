@@ -5,7 +5,7 @@ namespace EspSpectrum.ConfigUI
 {
     public partial class EspSpectrumConfigForm : Form
     {
-        public static readonly string DefaultAppsettings = @"C:\Users\Bapt\Desktop\FFT_Publish\EspSpectrum.Worker\appsettings.json";
+        public static readonly string DefaultAppsettings = @"C:\Users\Bapt\Desktop\FFT_Publish\bin\appsettings.json";
         private readonly IAppsettingsManager _displayConfigManager;
         private readonly IEspSpectrumServiceMonitor _serviceMonitor;
         private readonly ILogger<EspSpectrumConfigForm> _logger;
@@ -104,7 +104,7 @@ namespace EspSpectrum.ConfigUI
             FillColors(panelLowColor, 2);
 
             var initialConf = await _displayConfigManager.ReadConfig();
-            sendIntervalSlider.Minimum = DisplayConfig.MinimumSendInterval.Milliseconds;
+            DisplayConfig.MinimumSendInterval = TimeSpan.FromMilliseconds(sendIntervalSlider.Minimum);
             sendIntervalSlider.Value = (int)initialConf.SendInterval.TotalMilliseconds;
             fadedFramesSlider.Value = initialConf.HistoLength;
             brightnessSlider.Value = initialConf.Brightness;
@@ -125,7 +125,6 @@ namespace EspSpectrum.ConfigUI
             });
         }
 
-
         private async Task SafeUpdateConfig(Action<DisplayConfig> update)
         {
             try
@@ -136,6 +135,10 @@ namespace EspSpectrum.ConfigUI
             catch (IOException e)
             {
                 _logger.LogError(e, $"Error updating configuration");
+            }
+            catch (InvalidConfigException e)
+            {
+                _logger.LogError(e, $"Invalid configuration");
             }
         }
 
