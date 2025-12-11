@@ -63,7 +63,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         {
             try
             {
-                logger.LogInformation("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
+                logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
                 PreciseSleep.Wait(delay, cancellationToken);
             }
             catch (TaskCanceledException)
@@ -73,7 +73,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         }
         else
         {
-            logger.LogWarning("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
+            logger.LogInformation("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
             // Overrun: we are already late
             // Optionally log or handle
         }
