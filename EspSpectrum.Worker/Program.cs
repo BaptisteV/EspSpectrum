@@ -3,6 +3,12 @@ using EspSpectrum.Worker;
 
 var builder = Host.CreateDefaultBuilder(args);
 
+builder.ConfigureHostOptions(options =>
+{
+    options.ServicesStartConcurrently = true;
+    options.ServicesStopConcurrently = true;
+});
+
 builder.UseWindowsService(c =>
 {
     c.ServiceName = "EspSpectrum";
@@ -26,5 +32,6 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
         options.IncludeScopes = false;
     });
 });
+
 var host = builder.Build();
 await host.RunAsync();

@@ -2,8 +2,9 @@
 
 namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
-public sealed class TimingMonitor : ITickTimingMonitor, IDisposable
+public sealed class TimingMonitor(ILogger<TimingMonitor> logger) : ITickTimingMonitor, IDisposable
 {
+    private readonly ILogger<TimingMonitor> _logger = logger;
     private readonly TimeSpan DeleteAfter = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan LogInterval = TimeSpan.FromSeconds(2);
 
@@ -19,8 +20,6 @@ public sealed class TimingMonitor : ITickTimingMonitor, IDisposable
     {
         AutoReset = true
     };
-
-    private readonly ILogger<TimingMonitor> _logger;
 
     private void CleanupOldMeasurements()
     {

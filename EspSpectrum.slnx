@@ -9,6 +9,7 @@
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
   </Folder>
+  <Project Path="AndroidMic/AndroidMic.csproj" />
   <Project Path="EspSpectrum.ConfigUI/EspSpectrum.ConfigUI.csproj" />
   <Project Path="EspSpectrum.Core/EspSpectrum.Core.csproj" />
   <Project Path="EspSpectrum.PerformanceTests/EspSpectrum.PerformanceTests.csproj" />
