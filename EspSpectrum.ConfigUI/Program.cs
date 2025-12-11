@@ -1,6 +1,7 @@
 using EspSpectrum.Core.Display;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 namespace EspSpectrum.ConfigUI;
 
@@ -28,7 +29,8 @@ internal static class Program
             {
                 services.AddTransient<IAppsettingsManager, AppsettingsManager>(_ =>
                 {
-                    return new AppsettingsManager(EspSpectrumConfigForm.DefaultAppsettings);
+                    const string DefaultAppsettings = @"C:\Users\Bapt\Desktop\FFT_Publish\bin\appsettings.json";
+                    return new AppsettingsManager(DefaultAppsettings);
                 });
 
                 services.AddTransient<EspSpectrumConfigForm>();

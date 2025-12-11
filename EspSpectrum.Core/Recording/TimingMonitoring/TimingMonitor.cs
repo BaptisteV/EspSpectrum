@@ -1,32 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace EspSpectrum.Core.Recording;
-
-public interface ITickTimingMonitor
-{
-    void StartInBg();
-    void NotifyTickDiff(TimeSpan diff);
-    TimingSummary Summary();
-}
-
-public class Timing
-{
-    public TimeSpan Average { get; set; }
-    public TimeSpan Min { get; set; }
-    public TimeSpan Max { get; set; }
-    public int Count { get; set; }
-
-    public override string ToString()
-    {
-        return $"Average: {Average.TotalMilliseconds:n2}\tMin: {Min.TotalMilliseconds:n2}\tMax: {Max.TotalMilliseconds}\tCount: {Count}";
-    }
-}
-public class TimingSummary
-{
-    public Timing OnTime { get; set; } = new();
-
-    public Timing Late { get; set; } = new();
-}
+namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
 public sealed class TimingMonitor : ITickTimingMonitor, IDisposable
 {
@@ -47,18 +21,6 @@ public sealed class TimingMonitor : ITickTimingMonitor, IDisposable
     };
 
     private readonly ILogger<TimingMonitor> _logger;
-
-    public TimingMonitor(ILogger<TimingMonitor> logger)
-    {
-        _logger = logger;
-
-        LogTimer.Elapsed += (sender, args) =>
-        {
-            var summary = Summary();
-            _logger.LogInformation("Late   : {LateSummary}", summary.Late);
-            _logger.LogInformation("On time: {OnTimeSummary}", summary.OnTime);
-        };
-    }
 
     private void CleanupOldMeasurements()
     {

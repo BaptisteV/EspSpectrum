@@ -1,198 +1,195 @@
 ﻿using Dark.Net;
 using EspSpectrum.Core.Display;
 using Microsoft.Extensions.Logging;
-namespace EspSpectrum.ConfigUI
+
+namespace EspSpectrum.ConfigUI;
+
+public partial class EspSpectrumConfigForm : Form
 {
-    public partial class EspSpectrumConfigForm : Form
+    private readonly IAppsettingsManager _displayConfigManager;
+    private readonly IEspSpectrumServiceMonitor _serviceMonitor;
+    private readonly ILogger<EspSpectrumConfigForm> _logger;
+
+    public EspSpectrumConfigForm(
+        IAppsettingsManager displayConfigManager,
+        IEspSpectrumServiceMonitor serviceMonitor,
+        ILogger<EspSpectrumConfigForm> logger)
     {
-        public static readonly string DefaultAppsettings = @"C:\Users\Bapt\Desktop\FFT_Publish\bin\appsettings.json";
-        private readonly IAppsettingsManager _displayConfigManager;
-        private readonly IEspSpectrumServiceMonitor _serviceMonitor;
-        private readonly ILogger<EspSpectrumConfigForm> _logger;
+        _displayConfigManager = displayConfigManager;
+        _serviceMonitor = serviceMonitor;
+        _logger = logger;
+        InitializeComponent();
+        AdjustColors();
+    }
 
-        public EspSpectrumConfigForm(
-            IAppsettingsManager displayConfigManager,
-            IEspSpectrumServiceMonitor serviceMonitor,
-            ILogger<EspSpectrumConfigForm> logger)
+    private void AdjustColors()
+    {
+        DarkNet.Instance.SetWindowThemeForms(this, Theme.Dark);
+        this.BackColor = Color.FromArgb(255, 24, 32, 33);
+        this.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
+        statusStrip1.BackColor = Color.FromArgb(255, 24, 32, 33);
+        statusStrip1.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
+    }
+
+    private async void ColorButtonClicked(object? sender, EventArgs e)
+    {
+        var button = (Button)sender!;
+        var buttonColor = button.BackColor.GetInt8Hue();
+        var parentPanel = (TableLayoutPanel)button.Parent!;
+
+        if (parentPanel.Name.Contains("Low"))
         {
-            _displayConfigManager = displayConfigManager;
-            _serviceMonitor = serviceMonitor;
-            _logger = logger;
-            InitializeComponent();
-            AdjustColors();
-
+            await _displayConfigManager.UpdateConfig(c => c.LowHue = buttonColor);
+        }
+        else if (parentPanel.Name.Contains("Mid"))
+        {
+            await _displayConfigManager.UpdateConfig(c => c.MidHue = buttonColor);
+        }
+        else if (parentPanel.Name.Contains("High"))
+        {
+            await _displayConfigManager.UpdateConfig(c => c.HighHue = buttonColor);
         }
 
-        private void AdjustColors()
+        foreach (Control ctrl in parentPanel.Controls)
         {
-            DarkNet.Instance.SetWindowThemeForms(this, Theme.Dark);
-            this.BackColor = Color.FromArgb(255, 24, 32, 33);
-            this.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
-            statusStrip1.BackColor = Color.FromArgb(255, 24, 32, 33);
-            statusStrip1.ForeColor = Color.FromArgb(255, 255 - 24, 255 - 32, 255 - 33);
-        }
-
-        private async void ColorButtonClicked(object? sender, EventArgs e)
-        {
-            var button = (Button)sender!;
-            var buttonColor = button.BackColor.GetInt8Hue();
-            var parentPanel = (TableLayoutPanel)button.Parent!;
-
-            if (parentPanel.Name.Contains("Low"))
+            if (ctrl is Button btn)
             {
-                await _displayConfigManager.UpdateConfig(c => c.LowHue = buttonColor);
-            }
-            else if (parentPanel.Name.Contains("Mid"))
-            {
-                await _displayConfigManager.UpdateConfig(c => c.MidHue = buttonColor);
-            }
-            else if (parentPanel.Name.Contains("High"))
-            {
-                await _displayConfigManager.UpdateConfig(c => c.HighHue = buttonColor);
-            }
-
-            foreach (Control ctrl in parentPanel.Controls)
-            {
-                if (ctrl is Button btn)
-                {
-                    var baseColor = btn.BackColor;
-                    btn.BackColor = Color.FromArgb(110, baseColor.R, baseColor.G, baseColor.B);
-                    btn.Enabled = true;
-                }
-            }
-            button.Enabled = false;
-            var backColor = button.BackColor;
-            button.BackColor = Color.FromArgb(255, backColor.R, backColor.G, backColor.B);
-        }
-
-        private void FillColors(TableLayoutPanel panel, int offset)
-        {
-            Color[] colors = [
-                Color.FromArgb(110, 255, 0, 0),
-                Color.FromArgb(110, 255, 255, 0),
-                Color.FromArgb(110, 0, 255, 0),
-                Color.FromArgb(110, 0, 255, 255),
-                Color.FromArgb(110, 0, 0, 255),
-                Color.FromArgb(110, 255, 0, 255),
-                ];
-
-            // Add buttons to each column
-            for (int col = 0; col < 6; col++)
-            {
-                var color = colors[(col + offset) % 6];
-                Button btn = new Button
-                {
-                    Dock = DockStyle.Fill,
-                    BackColor = color,
-                    ForeColor = color,
-                    FlatStyle = FlatStyle.Flat,
-                    Margin = new Padding(2, 2, 2, 2),
-                };
-
-                btn.FlatAppearance.BorderSize = 0;
-
-                btn.Click += ColorButtonClicked;
-
-                panel.Controls.Add(btn, col, 0);
+                var baseColor = btn.BackColor;
+                btn.BackColor = Color.FromArgb(110, baseColor.R, baseColor.G, baseColor.B);
+                btn.Enabled = true;
             }
         }
+        button.Enabled = false;
+        var backColor = button.BackColor;
+        button.BackColor = Color.FromArgb(255, backColor.R, backColor.G, backColor.B);
+    }
 
-        private async void EspSpectrumConfigForm_Load(object sender, EventArgs e)
+    private void FillColors(TableLayoutPanel panel, int offset)
+    {
+        Color[] colors = [
+            Color.FromArgb(110, 255, 0, 0),
+            Color.FromArgb(110, 255, 255, 0),
+            Color.FromArgb(110, 0, 255, 0),
+            Color.FromArgb(110, 0, 255, 255),
+            Color.FromArgb(110, 0, 0, 255),
+            Color.FromArgb(110, 255, 0, 255),
+            ];
+
+        for (int col = 0; col < 6; col++)
         {
-            FillColors(panelHighColor, 0);
-            FillColors(panelMidColor, 1);
-            FillColors(panelLowColor, 2);
-
-            var initialConf = await _displayConfigManager.ReadConfig();
-            DisplayConfig.MinimumSendInterval = TimeSpan.FromMilliseconds(sendIntervalSlider.Minimum);
-            sendIntervalSlider.Value = (int)initialConf.SendInterval.TotalMilliseconds;
-            fadedFramesSlider.Value = initialConf.HistoLength;
-            brightnessSlider.Value = initialConf.Brightness;
-            amplificationSlider.Value = (int)(initialConf.Amplification * 100.0);
-
-            _ = Task.Run(async () =>
+            var color = colors[(col + offset) % 6];
+            Button btn = new Button
             {
-                var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
-                while (await timer.WaitForNextTickAsync())
-                {
-                    var status = _serviceMonitor.GetStatus();
-                    var statusColor = status.IsRunning ? Color.Green : Color.Red;
-                    serviceStatusLabel.ForeColor = statusColor;
-                    serviceStatusLabel.ToolTipText = status.ToString();
-                    notifyIcon.BalloonTipText = $"EspSpectrum - Config ({status})";
-                    notifyIconStatus.ForeColor = statusColor;
-                }
-            });
+                Dock = DockStyle.Fill,
+                BackColor = color,
+                ForeColor = color,
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(2, 2, 2, 2),
+            };
+
+            btn.FlatAppearance.BorderSize = 0;
+
+            btn.Click += ColorButtonClicked;
+
+            panel.Controls.Add(btn, col, 0);
         }
+    }
 
-        private async Task SafeUpdateConfig(Action<DisplayConfig> update)
+    private async void EspSpectrumConfigForm_Load(object sender, EventArgs e)
+    {
+        FillColors(panelHighColor, 0);
+        FillColors(panelMidColor, 1);
+        FillColors(panelLowColor, 2);
+
+        var initialConf = await _displayConfigManager.ReadConfig();
+        DisplayConfig.MinimumSendInterval = TimeSpan.FromMilliseconds(sendIntervalSlider.Minimum);
+        sendIntervalSlider.Value = (int)initialConf.SendInterval.TotalMilliseconds;
+        fadedFramesSlider.Value = initialConf.HistoLength;
+        brightnessSlider.Value = initialConf.Brightness;
+        amplificationSlider.Value = (int)(initialConf.Amplification * 100.0);
+
+        _ = Task.Run(async () =>
         {
-            try
+            var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+            while (await timer.WaitForNextTickAsync())
             {
-                await _displayConfigManager.UpdateConfig(update);
+                var status = _serviceMonitor.GetStatus();
+                var statusColor = status.IsRunning ? Color.Green : Color.Red;
+                serviceStatusLabel.ForeColor = statusColor;
+                serviceStatusLabel.ToolTipText = status.ToString();
+                notifyIcon.BalloonTipText = $"EspSpectrum - Config ({status})";
+                notifyIconStatus.ForeColor = statusColor;
             }
-            // Happens when values are changed too quickly
-            catch (IOException e)
-            {
-                _logger.LogError(e, $"Error updating configuration");
-            }
-            catch (InvalidConfigException e)
-            {
-                _logger.LogError(e, $"Invalid configuration");
-            }
-        }
+        });
+    }
 
-        private async void sendIntervalSlider_ValueChanged(object sender, EventArgs e)
+    private async Task SafeUpdateConfig(Action<DisplayConfig> update)
+    {
+        try
         {
-            var slider = (TrackBar)sender;
-            sendIntervalLabel.Text = $"Send interval {slider.Value}ms";
-            await SafeUpdateConfig(c => c.SendInterval = TimeSpan.FromMilliseconds(slider.Value));
+            await _displayConfigManager.UpdateConfig(update);
         }
+        // Happens when values are changed too quickly
+        catch (IOException e)
+        {
+            _logger.LogError(e, $"Error updating configuration");
+        }
+        catch (InvalidConfigException e)
+        {
+            _logger.LogError(e, $"Invalid configuration");
+        }
+    }
 
-        private async void fadedFramesSlider_ValueChanged(object sender, EventArgs e)
-        {
-            var slider = (TrackBar)sender;
-            fadedFramesLabel.Text = $"Faded frames: {slider.Value}";
-            await SafeUpdateConfig(c => c.HistoLength = slider.Value);
-        }
+    private async void sendIntervalSlider_ValueChanged(object sender, EventArgs e)
+    {
+        var slider = (TrackBar)sender;
+        sendIntervalLabel.Text = $"Send interval {slider.Value}ms";
+        await SafeUpdateConfig(c => c.SendInterval = TimeSpan.FromMilliseconds(slider.Value));
+    }
 
-        private async void brightnessSlider_ValueChanged(object sender, EventArgs e)
-        {
-            var slider = (TrackBar)sender;
-            brightnessLabel.Text = $"Brightness: {slider.Value}";
-            await SafeUpdateConfig(c => c.Brightness = slider.Value);
-        }
+    private async void fadedFramesSlider_ValueChanged(object sender, EventArgs e)
+    {
+        var slider = (TrackBar)sender;
+        fadedFramesLabel.Text = $"Faded frames: {slider.Value}";
+        await SafeUpdateConfig(c => c.HistoLength = slider.Value);
+    }
 
-        private async void amplificationSlider_ValueChanged(object sender, EventArgs e)
-        {
-            var slider = (TrackBar)sender;
-            amplificationLabel.Text = $"Amplification: {slider.Value / 100.0:n2}";
-            await SafeUpdateConfig(c => c.Amplification = slider.Value / 100.0);
-        }
+    private async void brightnessSlider_ValueChanged(object sender, EventArgs e)
+    {
+        var slider = (TrackBar)sender;
+        brightnessLabel.Text = $"Brightness: {slider.Value}";
+        await SafeUpdateConfig(c => c.Brightness = slider.Value);
+    }
 
-        private void restartMenuItem_Click(object sender, EventArgs e)
-        {
-            _serviceMonitor.Restart();
-        }
+    private async void amplificationSlider_ValueChanged(object sender, EventArgs e)
+    {
+        var slider = (TrackBar)sender;
+        amplificationLabel.Text = $"Amplification: {slider.Value / 100.0:n2}";
+        await SafeUpdateConfig(c => c.Amplification = slider.Value / 100.0);
+    }
 
-        private void stopMenuItem_Click(object sender, EventArgs e)
-        {
-            _serviceMonitor.Stop();
-        }
+    private void restartMenuItem_Click(object sender, EventArgs e)
+    {
+        _serviceMonitor.Restart();
+    }
 
-        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            Activate();
-        }
+    private void stopMenuItem_Click(object sender, EventArgs e)
+    {
+        _serviceMonitor.Stop();
+    }
 
-        private void notifyIconRestart_Click(object sender, EventArgs e)
-        {
-            _serviceMonitor.Restart();
-        }
+    private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+    {
+        Activate();
+    }
 
-        private void notifyIconStop_Click(object sender, EventArgs e)
-        {
-            _serviceMonitor.Stop();
-        }
+    private void notifyIconRestart_Click(object sender, EventArgs e)
+    {
+        _serviceMonitor.Restart();
+    }
+
+    private void notifyIconStop_Click(object sender, EventArgs e)
+    {
+        _serviceMonitor.Stop();
     }
 }
