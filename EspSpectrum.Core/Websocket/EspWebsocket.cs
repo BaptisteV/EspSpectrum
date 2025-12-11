@@ -12,7 +12,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
     private readonly WebsocketClient _wsSpectrum;
     private readonly WebsocketClient _wsDisplayConfig;
     private readonly ILogger<EspWebsocket> _logger;
-    private bool _starting = false;
+    private bool _connecting = false;
 
     public EspWebsocket(IWebsocketFactory wsFactory, ILogger<EspWebsocket> logger)
     {
@@ -37,17 +37,15 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         return packedData;
     }
 
-    private async ValueTask ConnectIfNeeded()
+    private bool IsConnected() => _wsSpectrum.IsRunning && !_connecting;
+
+    private async ValueTask Connect()
     {
-        _logger.LogInformation("ConnectIfNeeded");
-        if (!_wsSpectrum.IsRunning && !_starting)
-        {
-            _starting = true;
-            _logger.LogInformation("Connecting...");
-            await _wsSpectrum.Start();
-            _logger.LogInformation("Connected");
-            _starting = false;
-        }
+        _logger.LogInformation("Connecting...");
+        _connecting = true;
+        await _wsSpectrum.Start();
+        _logger.LogInformation("Connected");
+        _connecting = false;
     }
 
     public async ValueTask SendDisplayConfig(DisplayConfig displayConfig)
@@ -61,8 +59,8 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     public async ValueTask SendSpectrum(Spectrum spectrum)
     {
-        _logger.LogInformation("SendSpectrum");
-        await ConnectIfNeeded();
+        if (!IsConnected())
+            await Connect();
 
         var packedData = PackData([.. spectrum.Bands.Select(b => (int)Math.Round(b))]);
         try

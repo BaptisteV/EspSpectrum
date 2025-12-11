@@ -53,7 +53,8 @@ public class EspSpectrumRunner : IEspSpectrumRunner
 
         timingMonitor.NotifyTickDiff(delay);
 
-        return WaitIfNecessary(delay, cancellationToken);
+        // Pretty much no overrun with / 4
+        return WaitIfNecessary(delay / 4, cancellationToken);
     }
 
     private bool WaitIfNecessary(TimeSpan delay, CancellationToken cancellationToken)
@@ -62,7 +63,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         {
             try
             {
-                logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
+                logger.LogInformation("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
                 PreciseSleep.Wait(delay, cancellationToken);
             }
             catch (TaskCanceledException)
