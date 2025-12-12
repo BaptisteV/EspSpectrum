@@ -12,10 +12,11 @@ public class EspSpectrumRunner : IEspSpectrumRunner
 {
     private readonly TimeSpan _interval;
     private readonly Stopwatch _stopwatch;
-    private readonly ISyncSpectrumReader spectrumReader;
-    private readonly ISpectrumWebsocket ws;
-    private readonly ITickTimingMonitor timingMonitor;
-    private readonly ILogger<EspSpectrumRunner> logger;
+    private readonly ISyncSpectrumReader _spectrumReader;
+    private readonly ISpectrumWebsocket _ws;
+    private readonly ITickTimingMonitor _timingMonitor;
+    private readonly IPreciseSleep _sleep;
+    private readonly ILogger<EspSpectrumRunner> _logger;
     private TimeSpan _nextTickMilliseconds = TimeSpan.Zero;
     private bool _started = false;
 
@@ -24,20 +25,22 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         ISyncSpectrumReader spectrumReader,
         ISpectrumWebsocket ws,
         ITickTimingMonitor timingMonitor,
+        IPreciseSleep sleep,
         ILogger<EspSpectrumRunner> logger)
     {
-        this.spectrumReader = spectrumReader;
-        this.ws = ws;
-        this.timingMonitor = timingMonitor;
-        this._interval = displayConfigMonitor.CurrentValue.SendInterval;
-        this.logger = logger;
+        _spectrumReader = spectrumReader;
+        _ws = ws;
+        _timingMonitor = timingMonitor;
+        _sleep = sleep;
+        _interval = displayConfigMonitor.CurrentValue.SendInterval;
+        _logger = logger;
         _stopwatch = Stopwatch.StartNew();
     }
 
     public async ValueTask DoFftAndSend(CancellationToken cancellationToken)
     {
-        var spectrum = spectrumReader.GetLatestBlocking(cancellationToken);
-        await ws.SendSpectrum(spectrum);
+        var spectrum = _spectrumReader.GetLatestBlocking(cancellationToken);
+        await _ws.SendSpectrum(spectrum);
     }
 
     public bool WaitForNextTick(CancellationToken cancellationToken)
@@ -52,7 +55,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         var delay = _nextTickMilliseconds - _stopwatch.Elapsed;
         _nextTickMilliseconds += _interval;
 
-        timingMonitor.NotifyTickDiff(delay);
+        _timingMonitor.NotifyTickDiff(delay);
 
         // Pretty much no overrun with / 4
         return WaitIfNecessary(delay / 4, cancellationToken);
@@ -64,8 +67,8 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         {
             try
             {
-                logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
-                PreciseSleep.Wait(delay, cancellationToken);
+                _logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
+                _sleep.Wait(delay, cancellationToken);
             }
             catch (TaskCanceledException)
             {
@@ -74,7 +77,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         }
         else
         {
-            logger.LogInformation("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
+            _logger.LogInformation("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
             // Overrun: we are already late
             // Optionally log or handle
         }
@@ -83,8 +86,8 @@ public class EspSpectrumRunner : IEspSpectrumRunner
 
     public void Start()
     {
-        spectrumReader.Start();
-        timingMonitor.StartInBg();
+        _spectrumReader.Start();
+        _timingMonitor.StartInBg();
     }
 }
 

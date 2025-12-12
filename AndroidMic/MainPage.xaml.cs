@@ -7,7 +7,6 @@ namespace AndroidMic;
 
 public partial class MainPage : ContentPage
 {
-    private readonly MicrophoneVolumeAnalyzer _analyzer;
     private readonly ProgressBar[] _progressBars;
 
     private string[] To8Bands(double[] bands32)
@@ -23,14 +22,20 @@ public partial class MainPage : ContentPage
         return result.Select(f => f.ToString("N2")).ToArray();
     }
 
-    private readonly ISpectrumWebsocket _ws;
-    //private readonly IEspSpectrumRunner _stableSpectrumReader;
-    public MainPage(ISpectrumWebsocket ws/*, IEspSpectrumRunner stableSpectrumReader*/)
+    private readonly IEspSpectrumRunner _stableSpectrumReader; 
+    
+    private async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (_stableSpectrumReader.WaitForNextTick(stoppingToken))
+        {
+            await _stableSpectrumReader.DoFftAndSend(stoppingToken);
+            //await Task.Yield();
+        }
+    }
+    public MainPage(IEspSpectrumRunner stableSpectrumReader)
     {
         InitializeComponent();
-        _ws = ws;
-        //_stableSpectrumReader = stableSpectrumReader;
-
+        _stableSpectrumReader = stableSpectrumReader;
         _progressBars =
         [
             //FrequencyProgressBar1,
@@ -42,21 +47,6 @@ public partial class MainPage : ContentPage
             //FrequencyProgressBar7,
             //FrequencyProgressBar8,
         ];
-
-        _analyzer = new MicrophoneVolumeAnalyzer();
-
-        _analyzer.VolumeChanged += async (sender, e) =>
-        {
-            Console.WriteLine($"FFT {string.Join("\t", To8Bands(e.FFTSpectrum.Bands))}");
-            //UpdateFrequencyBars(e.FFTSpectrum.Bands);
-            await _ws.SendSpectrum(e.FFTSpectrum);
-            Console.WriteLine();
-
-            await MainThread.InvokeOnMainThreadAsync(() => {
-                VolumeLabel.Text = $"Volume: {e.NormalizedVolume:P0}";
-                VolumeProgressBar.Progress = e.NormalizedVolume;
-            });
-        };
     }
 
     private void UpdateFrequencyBars(double[] bands)
@@ -77,19 +67,13 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async void OnStartClicked(object sender, EventArgs e)
-    {
-        await _analyzer.Start();
-    }
-
-    private void StopRecording()
-    {
-        _analyzer.Stop();
-    }
-
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
         await RequestMicrophonePermission();
-        await _analyzer.Start();
+        _stableSpectrumReader.Start();
+         Task.Run(()=> ExecuteAsync(CancellationToken.None));
+        //await _analyzer.Start();
+        //_stableSpectrumReader.Start();
+        //ExecuteTask.Start();
     }
 }

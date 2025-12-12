@@ -2,9 +2,9 @@
 
 namespace EspSpectrum.Core.Recording;
 
-public static class PreciseSleep
+public class PreciseSleep : IPreciseSleep
 {
-    public static void Wait(TimeSpan waitFor, CancellationToken cancellationToken)
+    public void Wait(TimeSpan waitFor, CancellationToken cancellationToken)
     {
         var targetTicks = Stopwatch.Frequency * waitFor.TotalSeconds;
         var startTicks = Stopwatch.GetTimestamp();

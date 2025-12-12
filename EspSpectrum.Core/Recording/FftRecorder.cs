@@ -88,11 +88,12 @@ public sealed class FftRecorder : IFftRecorder
         return samplesSpan;
     }
 
-    public void Start()
+    public Task Start()
     {
         _waveIn.DataAvailable += OnDataAvailable;
         _waveIn.RecordingStopped += OnRecordingStopped;
         _waveIn.StartRecording();
+        return Task.CompletedTask;
     }
 
     public void Restart()

@@ -18,7 +18,7 @@ public interface IFftRecorder : IDisposable
     /// <summary>
     /// Starts the recording process and begins reading audio data.
     /// </summary>
-    void Start();
+    Task Start();
 
     /// <summary>
     /// Restarts the recording. Typically used when the audio input device changes.
