@@ -9,16 +9,14 @@ namespace EspSpectrum.Core.Websocket;
 
 public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 {
-    private readonly WebsocketClient _wsSpectrum;
-    private readonly WebsocketClient _wsDisplayConfig;
+    private readonly WebsocketClient _ws;
     private readonly ILogger<EspWebsocket> _logger;
     private bool _connecting = false;
 
     public EspWebsocket(IWebsocketFactory wsFactory, ILogger<EspWebsocket> logger)
     {
         _logger = logger;
-        _wsSpectrum = wsFactory.CreateClient(_logger);
-        _wsDisplayConfig = wsFactory.CreateClient(_logger);
+        _ws = wsFactory.CreateClient(_logger);
     }
 
     private static byte[] PackData(int[] bars)
@@ -37,24 +35,24 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         return packedData;
     }
 
-    private bool IsConnected() => _wsSpectrum.IsRunning && !_connecting;
+    private bool IsConnected() => _ws.IsRunning && !_connecting;
 
     private async ValueTask Connect()
     {
         _logger.LogInformation("Connecting...");
         _connecting = true;
-        await _wsSpectrum.Start();
+        await _ws.Start();
         _logger.LogInformation("Connected");
         _connecting = false;
     }
 
     public async ValueTask SendDisplayConfig(DisplayConfig displayConfig)
     {
-        _logger.LogInformation("SendDisplayConfig");
-        await _wsDisplayConfig.Start();
+        if (!IsConnected())
+            await Connect();
+
         var jsonString = JsonSerializer.Serialize(displayConfig);
-        await _wsDisplayConfig.SendInstant(jsonString);
-        await _wsDisplayConfig.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closed after sending display config");
+        await _ws.SendInstant(jsonString);
     }
 
     public async ValueTask SendSpectrum(Spectrum spectrum)
@@ -65,7 +63,7 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         var packedData = PackData([.. spectrum.Bands.Select(b => (int)Math.Round(b))]);
         try
         {
-            await _wsSpectrum.SendInstant(packedData);
+            await _ws.SendInstant(packedData);
         }
         catch (SocketException se)
         {
@@ -81,7 +79,6 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 
     public void Dispose()
     {
-        _wsDisplayConfig.Dispose();
-        _wsSpectrum.Dispose();
+        _ws.Dispose();
     }
 }
