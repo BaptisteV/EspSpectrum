@@ -7,7 +7,7 @@
     Title="AndroidMic">
 
     <ShellContent
-        Title="Home"
+        Title="AndroidMic"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 

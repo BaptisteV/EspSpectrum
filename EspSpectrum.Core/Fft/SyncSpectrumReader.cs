@@ -26,9 +26,10 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IOptions<SpectrumC
         return foundSpectrum;
     }
 
-    public void Start()
+    public Task Start()
     {
         _recorder.Start();
+        return Task.CompletedTask;
     }
 
     public void Dispose()

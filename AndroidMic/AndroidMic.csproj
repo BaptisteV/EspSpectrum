@@ -51,6 +51,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EspSpectrum.Core\EspSpectrum.Core.csproj" />
+  </ItemGroup>
+
   <!-- Optional: Add these packages for advanced audio analysis -->
   <!--
 	<ItemGroup>
@@ -63,7 +67,17 @@
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <AndroidUseAapt2>true</AndroidUseAapt2>
-    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <UseInterpreter>true</UseInterpreter>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AotAssemblies>True</AotAssemblies>
   </PropertyGroup>
 
 </Project>

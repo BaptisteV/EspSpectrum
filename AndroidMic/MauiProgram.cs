@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using EspSpectrum.Core;
+using EspSpectrum.Core.Recording;
+using EspSpectrum.Core.Websocket;
+using Microsoft.Extensions.Logging;
 
 namespace AndroidMic
 {
@@ -18,7 +21,8 @@ namespace AndroidMic
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
-
+            builder.Services.AddTransient<IWebsocketFactory, WebsocketFactory>();
+            builder.Services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
             return builder.Build();
         }
     }

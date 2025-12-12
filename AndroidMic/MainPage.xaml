@@ -2,47 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="AndroidMic.MainPage"
+             Loaded="ContentPage_Loaded"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
 
     <ScrollView>
         <VerticalStackLayout
             Spacing="25"
-            Padding="30,0"
-            VerticalOptions="Center">
-
-            <Image
-                Source="microphone.png"
-                SemanticProperties.Description="Microphone icon"
-                HeightRequest="100"
-                HorizontalOptions="Center" />
-
-            <Label
-                Text="Microphone Audio Capture"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="32"
-                HorizontalOptions="Center" />
-
-            <Label
-                x:Name="StatusLabel"
-                Text="Ready"
-                FontSize="18"
-                HorizontalOptions="Center"
-                TextColor="Gray" />
-
-            <Button
-                x:Name="StartButton"
-                Text="Start Recording"
-                SemanticProperties.Hint="Starts recording from microphone"
-                Clicked="OnStartClicked"
-                HorizontalOptions="Center"
-                WidthRequest="200" />
-
+            Padding="30,0">
             <Label
                 x:Name="VolumeLabel"
                 Text="Volume: 0%"
                 FontSize="16"
-                HorizontalOptions="Center"
-                Margin="0,20,0,10" />
+                HorizontalOptions="Center" />
 
             <ProgressBar
                 x:Name="VolumeProgressBar"
@@ -50,13 +21,14 @@
                 ProgressColor="Green"
                 HeightRequest="20" />
 
-            <Label
-                Text="Tip: Speak into the microphone to see the volume meter"
-                FontSize="12"
-                TextColor="Gray"
-                HorizontalOptions="Center"
-                Margin="0,20,0,0" />
+            <Border Stroke="Brown">
+                <Grid
+                BackgroundColor="LightGray">
 
+                <!-- Add your content here -->
+
+                </Grid>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 

@@ -8,7 +8,7 @@ public interface ISyncSpectrumReader
     /// <summary>
     /// Starts the recording.
     /// </summary>
-    public void Start();
+    public Task Start();
 
     /// <summary>
     /// Gets the latest spectrum data. This method blocks until data is available.
