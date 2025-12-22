@@ -1,7 +1,9 @@
 ﻿using Android.App;
 using Android.Runtime;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace AndroidMic
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 {
     [Application]
     public class MainApplication : MauiApplication

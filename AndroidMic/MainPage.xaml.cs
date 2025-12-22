@@ -16,7 +16,6 @@ public partial class MainPage : ContentPage
         _logger = logger;
         InitializeComponent();
         spectrumBoxes = new SpectrumBoxes(SlidersStackLayout);
-        DeviceDisplay.Current.MainDisplayInfoChanged += MainDisplayInfoChanged;
         ExecuteTask = new Task(async () => await ExecuteAsync(CancellationToken.None));
     }
 
@@ -56,11 +55,6 @@ public partial class MainPage : ContentPage
     private async void SlidersStackLayout_SizeChanged(object sender, EventArgs e)
     {
         await MainThread.InvokeOnMainThreadAsync(spectrumBoxes.OnSizeChanged);
-    }
-
-    private void MainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
-    {
-        _logger.LogDebug("Refresh rate: {RefreshRate:N2}", DeviceDisplay.Current.MainDisplayInfo.RefreshRate);
     }
 
     private void ContentPage_Unloaded(object sender, EventArgs e)

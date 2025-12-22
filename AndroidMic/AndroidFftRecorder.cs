@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AndroidMic;
 
-public class AndroidFftRecorder : IFftRecorder
+public sealed class AndroidFftRecorder : IFftRecorder
 {
     private AudioRecord? _audioRecord;
     private bool _isRecording;
@@ -42,7 +42,7 @@ public class AndroidFftRecorder : IFftRecorder
     public void Restart()
     {
         _isRecording = false;
-        _audioRecord.Stop();
+        _audioRecord!.Stop();
         _audioRecord.Dispose();
         Start();
     }
@@ -63,6 +63,7 @@ public class AndroidFftRecorder : IFftRecorder
         {
             throw new AndroidException("Failed to initialize AudioRecord");
         }
+
 
         _isRecording = true;
         _cts = new CancellationTokenSource();

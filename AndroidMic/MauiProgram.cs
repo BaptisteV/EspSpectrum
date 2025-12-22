@@ -27,20 +27,16 @@ namespace AndroidMic
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
 #if DEBUG
             builder.Logging.AddDebug();
-            builder.Logging.SetMinimumLevel(LogLevel.Information);
+            builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #endif
-            // builder.Logging.AddSimpleConsole(options =>
-            // {
-            //     options.SingleLine = true;
-            //     options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
-            //     options.IncludeScopes = false;
-            // });
             // Load embedded JSON config
             using var stream = Assembly
                 .GetExecutingAssembly()
-                .GetManifestResourceStream("AndroidMic.appsettings.json");
+                .GetManifestResourceStream("AndroidMic.appsettings.json")
+                    ?? throw new InvalidOperationException("Failed to load embedded configuration file.");
 
             var config = new ConfigurationBuilder()
                 .AddJsonStream(stream)
