@@ -1,5 +1,4 @@
-﻿using EspSpectrum.Core;
-using EspSpectrum.Core.Display;
+﻿using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Recording.TimingMonitoring;
@@ -17,6 +16,11 @@ namespace AndroidMic
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .ConfigureEssentials(
+                    essentials =>
+                    {
+                        essentials.UseVersionTracking();
+                    })
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -24,15 +28,15 @@ namespace AndroidMic
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
-            builder.Logging.SetMinimumLevel(LogLevel.Debug);
+            builder.Logging.AddDebug();
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
 #endif
-            builder.Logging.AddSimpleConsole(options =>
-            {
-                options.SingleLine = true;
-                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
-                options.IncludeScopes = false;
-            });
+            // builder.Logging.AddSimpleConsole(options =>
+            // {
+            //     options.SingleLine = true;
+            //     options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
+            //     options.IncludeScopes = false;
+            // });
             // Load embedded JSON config
             using var stream = Assembly
                 .GetExecutingAssembly()
@@ -48,13 +52,14 @@ namespace AndroidMic
             builder.Services.Configure<SpectrumConfig>(builder.Configuration);
 
             builder.Services.AddTransient<IWebsocketFactory, WebsocketFactory>();
-            builder.Services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
-            builder.Services.AddTransient<ITickTimingMonitor, TimingMonitor>();
+            builder.Services.AddSingleton<ISpectrumWebsocket, EspWebsocket>();
+            builder.Services.AddTransient<ITickTimingMonitor, AsyncTimingMonitor>();
             builder.Services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
-            builder.Services.AddTransient<IDataReader, PartialDataReader>();
-            builder.Services.AddTransient<IFftRecorder, AndroidFftRecorder>();
             builder.Services.AddTransient<IPreciseSleep, PreciseSleep>();
+            builder.Services.AddTransient<IDataReader, PartialDataReader>();
             builder.Services.AddTransient<IEspSpectrumRunner, EspSpectrumRunner>();
+
+            builder.Services.AddTransient<IFftRecorder, AndroidFftRecorder>();
 
             return builder.Build();
         }

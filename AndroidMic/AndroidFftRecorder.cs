@@ -1,14 +1,10 @@
 ﻿using Android.Media;
+using Android.Util;
 using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Fft;
 using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NAudio.Wave;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace AndroidMic;
 
@@ -19,12 +15,10 @@ public class AndroidFftRecorder : IFftRecorder
     private CancellationTokenSource? _cts;
     private const int SampleRate = 44100;
     private const ChannelIn ChannelConfig = ChannelIn.Mono;
-    private const Android.Media.Encoding AudioFormat = Android.Media.Encoding.Pcm16bit;
-    private const int FftSize = 4096; // Must be power of 2
-    private const int BandCount = 32;
-    private int _bufferSize;
+    private const Encoding AudioFormat = Encoding.Pcm16bit;
+    private readonly int _bufferSize;
     private readonly FftProcessor _fftProcessor = new(SampleRate);
-    private readonly IDataReader _buffReader; 
+    private readonly IDataReader _buffReader;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;
 
     private readonly ILogger<AndroidFftRecorder> _logger;
@@ -47,10 +41,13 @@ public class AndroidFftRecorder : IFftRecorder
 
     public void Restart()
     {
-        throw new NotImplementedException();
+        _isRecording = false;
+        _audioRecord.Stop();
+        _audioRecord.Dispose();
+        Start();
     }
 
-    public async Task Start()
+    public void Start()
     {
         if (_isRecording)
             return;
@@ -64,7 +61,7 @@ public class AndroidFftRecorder : IFftRecorder
 
         if (_audioRecord.State != State.Initialized)
         {
-            throw new Exception("Failed to initialize AudioRecord");
+            throw new AndroidException("Failed to initialize AudioRecord");
         }
 
         _isRecording = true;
@@ -72,7 +69,7 @@ public class AndroidFftRecorder : IFftRecorder
 
         _audioRecord.StartRecording();
 
-        await Task.Run(() => RecordLoop(_cts.Token));
+        Task.Run(() => RecordLoop(_cts.Token));
     }
 
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<short> buffer, int samplesRead)
@@ -95,7 +92,7 @@ public class AndroidFftRecorder : IFftRecorder
         return samplesSpan;
     }
 
-    private void RecordLoop(CancellationToken token)
+    private Task RecordLoop(CancellationToken token)
     {
         var buffer = new short[_bufferSize / 2];
 
@@ -107,32 +104,33 @@ public class AndroidFftRecorder : IFftRecorder
 
                 if (read > 0)
                 {
-                    ReadOnlySpan<float> newData = ReadAudioSpan(buffer, read);
+                    var newData = ReadAudioSpan(buffer, read);
                     _buffReader.AddData(newData);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading audio: {ex.Message}");
+                _logger.LogError(ex, "Error reading audio");
                 break;
             }
         }
+        return Task.CompletedTask;
     }
 
-    public bool TryReadSpectrum(out Spectrum spectrum, CancellationToken cancellationToken)
+    public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken)
     {
+        spectrum = default;
         if (_buffReader.Count() < FftProps.FftLength)
         {
-            _logger.LogTrace("Not enough data for a new Spectrum");
-            spectrum = null;
+            _logger.LogTrace("Not enough data for a new spectrum");
             return false;
         }
 
         Span<float> buffer = stackalloc float[FftProps.FftLength];
 
-        if(_buffReader.TryReadAudioFrame(buffer))
+        if (_buffReader.TryReadAudioFrame(buffer))
         {
-            _logger.LogDebug("Got new audio frame, computing FFT");
+            _logger.LogDebug("Got new spectrum, computing FFT");
             spectrum = _fftProcessor.ToFft(buffer);
             return true;
         }

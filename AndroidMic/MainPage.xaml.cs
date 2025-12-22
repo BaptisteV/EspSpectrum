@@ -1,60 +1,38 @@
-﻿using Android.Media;
-using EspSpectrum.Core.Fft;
-using EspSpectrum.Core.Recording;
-using EspSpectrum.Core.Websocket;
+﻿using EspSpectrum.Core.Recording;
+using Microsoft.Extensions.Logging;
 
 namespace AndroidMic;
 
 public partial class MainPage : ContentPage
 {
-    private readonly ProgressBar[] _progressBars;
+    private readonly SpectrumBoxes spectrumBoxes;
+    private readonly IEspSpectrumRunner _stableSpectrumReader;
+    private readonly Task ExecuteTask;
+    private readonly ILogger<MainPage> _logger;
 
-    private string[] To8Bands(double[] bands32)
+    public MainPage(IEspSpectrumRunner stableSpectrumReader, ILogger<MainPage> logger)
     {
-        var result = new double[8];
-        var iR = 0;
-        for (int i = 0; i < 32; i+=4)
-        {
-            // Average every 4 bands from the 32-band array
-            result[iR] = bands32[i];
-            iR++;
-        }
-        return result.Select(f => f.ToString("N2")).ToArray();
+        _stableSpectrumReader = stableSpectrumReader;
+        _logger = logger;
+        InitializeComponent();
+        spectrumBoxes = new SpectrumBoxes(SlidersStackLayout);
+        DeviceDisplay.Current.MainDisplayInfoChanged += MainDisplayInfoChanged;
+        ExecuteTask = new Task(async () => await ExecuteAsync(CancellationToken.None));
     }
 
-    private readonly IEspSpectrumRunner _stableSpectrumReader; 
-    
     private async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (_stableSpectrumReader.WaitForNextTick(stoppingToken))
+        try
         {
-            await _stableSpectrumReader.DoFftAndSend(stoppingToken);
-            //await Task.Yield();
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var spectrum = await _stableSpectrumReader.Loop(stoppingToken);
+                await MainThread.InvokeOnMainThreadAsync(() => spectrumBoxes.Update(spectrum.Bands));
+            }
         }
-    }
-    public MainPage(IEspSpectrumRunner stableSpectrumReader)
-    {
-        InitializeComponent();
-        _stableSpectrumReader = stableSpectrumReader;
-        _progressBars =
-        [
-            //FrequencyProgressBar1,
-            //FrequencyProgressBar2,
-            //FrequencyProgressBar3,
-            //FrequencyProgressBar4,
-            //FrequencyProgressBar5,
-            //FrequencyProgressBar6,
-            //FrequencyProgressBar7,
-            //FrequencyProgressBar8,
-        ];
-    }
-
-    private void UpdateFrequencyBars(double[] bands)
-    {
-        for (int i = 0; i < Math.Min(bands.Length, _progressBars.Length); i++)
+        catch (Exception ex)
         {
-            var normalizedValue = Math.Clamp(bands[i] / 200.0, 0.0, 1.0);
-            _progressBars[i].Progress = normalizedValue;
+            _logger.LogError(ex, "Error in spectrum reading loop");
         }
     }
 
@@ -63,17 +41,30 @@ public partial class MainPage : ContentPage
         var status = await Permissions.RequestAsync<Permissions.Microphone>();
         if (status != PermissionStatus.Granted)
         {
-            await DisplayAlert("Permission Denied", "Microphone permission is required", "OK");
+            await DisplayAlertAsync("Permission Denied", "Microphone permission is required", "OK");
         }
     }
 
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
         await RequestMicrophonePermission();
-        _stableSpectrumReader.Start();
-         Task.Run(()=> ExecuteAsync(CancellationToken.None));
-        //await _analyzer.Start();
-        //_stableSpectrumReader.Start();
-        //ExecuteTask.Start();
+        spectrumBoxes.Setup();
+        await _stableSpectrumReader.Start();
+        ExecuteTask.Start();
+    }
+
+    private async void SlidersStackLayout_SizeChanged(object sender, EventArgs e)
+    {
+        await MainThread.InvokeOnMainThreadAsync(spectrumBoxes.OnSizeChanged);
+    }
+
+    private void MainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+    {
+        _logger.LogDebug("Refresh rate: {RefreshRate:N2}", DeviceDisplay.Current.MainDisplayInfo.RefreshRate);
+    }
+
+    private void ContentPage_Unloaded(object sender, EventArgs e)
+    {
+        spectrumBoxes.Clear();
     }
 }

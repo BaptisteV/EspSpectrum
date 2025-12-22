@@ -8,12 +8,12 @@ public interface ISyncSpectrumReader
     /// <summary>
     /// Starts the recording.
     /// </summary>
-    public Task Start();
+    void Start();
 
     /// <summary>
     /// Gets the latest spectrum data. This method blocks until data is available.
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Spectrum GetLatestBlocking(CancellationToken cancellationToken);
+    Task<Spectrum> GetLatestBlocking(CancellationToken cancellationToken);
 }

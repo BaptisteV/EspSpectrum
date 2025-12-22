@@ -20,4 +20,13 @@ public sealed class FakeEspWebsocket : IDisplayConfigWebsocket, ISpectrumWebsock
     {
     }
 
+    public Task<bool> TryConnectInBg()
+    {
+        return Task.FromResult(true);
+    }
+
+    public bool IsConnected()
+    {
+        return true;
+    }
 }

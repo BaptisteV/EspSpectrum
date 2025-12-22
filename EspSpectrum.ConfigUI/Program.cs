@@ -1,7 +1,6 @@
 using EspSpectrum.Core.Display;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
 
 namespace EspSpectrum.ConfigUI;
 

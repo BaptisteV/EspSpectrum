@@ -2,7 +2,5 @@
 
 public class TimingSummary
 {
-    public Timing OnTime { get; set; } = new();
-
-    public Timing Late { get; set; } = new();
+    public Timing Summary { get; set; } = new();
 }

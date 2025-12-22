@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace AndroidMic
+﻿namespace AndroidMic
 {
     public partial class App : Application
     {

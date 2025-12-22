@@ -10,15 +10,13 @@ namespace EspSpectrum.Core.Recording;
 
 public class EspSpectrumRunner : IEspSpectrumRunner
 {
-    private readonly TimeSpan _interval;
-    private readonly Stopwatch _stopwatch;
+    private readonly TimeSpan _sendInterval;
+    private readonly Stopwatch _stopwatch = new();
     private readonly ISyncSpectrumReader _spectrumReader;
     private readonly ISpectrumWebsocket _ws;
     private readonly ITickTimingMonitor _timingMonitor;
     private readonly IPreciseSleep _sleep;
     private readonly ILogger<EspSpectrumRunner> _logger;
-    private TimeSpan _nextTickMilliseconds = TimeSpan.Zero;
-    private bool _started = false;
 
     public EspSpectrumRunner(
         IOptionsMonitor<DisplayConfig> displayConfigMonitor,
@@ -32,62 +30,57 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         _ws = ws;
         _timingMonitor = timingMonitor;
         _sleep = sleep;
-        _interval = displayConfigMonitor.CurrentValue.SendInterval;
+        _sendInterval = displayConfigMonitor.CurrentValue.SendInterval;
         _logger = logger;
-        _stopwatch = Stopwatch.StartNew();
     }
 
-    public async ValueTask DoFftAndSend(CancellationToken cancellationToken)
+    public async ValueTask<Spectrum> DoFftAndSend(CancellationToken cancellationToken)
     {
-        var spectrum = _spectrumReader.GetLatestBlocking(cancellationToken);
+        var spectrum = await _spectrumReader.GetLatestBlocking(cancellationToken);
         await _ws.SendSpectrum(spectrum);
+        return spectrum;
     }
 
-    public bool WaitForNextTick(CancellationToken cancellationToken)
+    public async Task Start()
     {
-        if (_started)
-        {
-            _nextTickMilliseconds = _stopwatch.Elapsed + _interval;
-            _started = false;
-            return true; // immediate first tick
-        }
+        _spectrumReader.Start();
 
-        var delay = _nextTickMilliseconds - _stopwatch.Elapsed;
-        _nextTickMilliseconds += _interval;
-
-        _timingMonitor.NotifyTickDiff(delay);
-
-        // Pretty much no overrun with / 4
-        return WaitIfNecessary(delay / 4, cancellationToken);
+        await _timingMonitor.StartInBg();
+        await _ws.TryConnectInBg();
+        _stopwatch.Start();
     }
 
-    private bool WaitIfNecessary(TimeSpan delay, CancellationToken cancellationToken)
+    public async Task<Spectrum> Loop(CancellationToken cancellationToken)
     {
-        if (delay > TimeSpan.FromMilliseconds(0.1))
+        //var gcLocked = GC.TryStartNoGCRegion(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 10);
+        //if (!gcLocked)
+        //{
+        //    _logger.LogWarning("Could not enter No GC Region");
+        //}
+
+        var spectrum = await ProcessFftAndSend(cancellationToken);
+        //GC.EndNoGCRegion();
+
+        return spectrum;
+    }
+
+    private async Task<Spectrum> ProcessFftAndSend(CancellationToken cancellationToken)
+    {
+        _stopwatch.Restart();
+        var spectrum = await DoFftAndSend(cancellationToken);
+        _timingMonitor.NotifyFFTSent(DateTimeOffset.UtcNow);
+
+        var elapsed = _stopwatch.Elapsed;
+        if (elapsed > _sendInterval)
         {
-            try
-            {
-                _logger.LogTrace("Waiting for: {Delay:n2}ms", delay.TotalMilliseconds);
-                _sleep.Wait(delay, cancellationToken);
-            }
-            catch (TaskCanceledException)
-            {
-                return false;
-            }
+            _logger.LogWarning("Processing took longer ({Elapsed}ms) than the send interval ({SendInterval}ms)", elapsed.TotalMilliseconds, _sendInterval.TotalMilliseconds);
         }
         else
         {
-            _logger.LogInformation("Overrun: {Delay:n2}ms", delay.TotalMilliseconds);
-            // Overrun: we are already late
-            // Optionally log or handle
+            _logger.LogTrace("Processing took {Elapsed}ms, sleeping for {Sleep}ms", elapsed.TotalMilliseconds, (_sendInterval - elapsed).TotalMilliseconds);
+            await _sleep.Wait(_sendInterval - elapsed, cancellationToken);
         }
-        return !cancellationToken.IsCancellationRequested;
-    }
-
-    public void Start()
-    {
-        _spectrumReader.Start();
-        _timingMonitor.StartInBg();
+        return spectrum;
     }
 }
 

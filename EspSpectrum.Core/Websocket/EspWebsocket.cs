@@ -11,12 +11,13 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
 {
     private readonly WebsocketClient _ws;
     private readonly ILogger<EspWebsocket> _logger;
-    private bool _connecting = false;
+    private readonly Task LoopConnectTask;
 
     public EspWebsocket(IWebsocketFactory wsFactory, ILogger<EspWebsocket> logger)
     {
         _logger = logger;
         _ws = wsFactory.CreateClient(_logger);
+        LoopConnectTask = new Task(async () => await LoopConnect());
     }
 
     private static byte[] PackData(int[] bars)
@@ -35,31 +36,14 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
         return packedData;
     }
 
-    private bool IsConnected() => _ws.IsRunning && !_connecting;
-
-    private async ValueTask Connect()
-    {
-        _logger.LogInformation("Connecting...");
-        _connecting = true;
-        await _ws.Start();
-        _logger.LogInformation("Connected");
-        _connecting = false;
-    }
-
     public async ValueTask SendDisplayConfig(DisplayConfig displayConfig)
     {
-        if (!IsConnected())
-            await Connect();
-
         var jsonString = JsonSerializer.Serialize(displayConfig);
         await _ws.SendInstant(jsonString);
     }
 
     public async ValueTask SendSpectrum(Spectrum spectrum)
     {
-        if (!IsConnected())
-            await Connect();
-
         var packedData = PackData([.. spectrum.Bands.Select(b => (int)Math.Round(b))]);
         try
         {
@@ -81,4 +65,41 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
     {
         _ws.Dispose();
     }
+
+    private async Task LoopConnect()
+    {
+        var periodicTimer = new PeriodicTimer(_ws.ConnectTimeout + TimeSpan.FromSeconds(1));
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            if (!IsConnected())
+            {
+                await Connect();
+            }
+        }
+    }
+
+    public async Task<bool> TryConnectInBg()
+    {
+        if (LoopConnectTask.Status != TaskStatus.Running)
+        {
+            LoopConnectTask.Start();
+        }
+
+        if (IsConnected())
+            return true;
+        await Connect();
+
+        return IsConnected();
+    }
+
+    private async Task<bool> Connect()
+    {
+        _logger.LogInformation("Connecting...");
+        await _ws.Start();
+        var connected = IsConnected();
+        _logger.LogInformation(connected ? "Connected" : "Failed to connect");
+        return connected;
+    }
+
+    public bool IsConnected() => _ws.IsRunning;
 }

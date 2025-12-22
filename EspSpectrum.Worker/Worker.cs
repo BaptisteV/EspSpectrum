@@ -11,7 +11,7 @@ public class Worker : BackgroundService
     private readonly IDisplayConfigWebsocket _wsDisplay;
     private DisplayConfig _conf;
     private readonly IOptionsMonitor<DisplayConfig> _confMonitor;
-    private readonly IEspSpectrumRunner _stableSpectrumReader;
+    private readonly IEspSpectrumRunner _stableSpectrumRunner;
 
     public Worker(
         ILogger<Worker> logger,
@@ -34,7 +34,7 @@ public class Worker : BackgroundService
             }
         });
 
-        _stableSpectrumReader = stableSpectrumReader;
+        _stableSpectrumRunner = stableSpectrumReader;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -43,16 +43,16 @@ public class Worker : BackgroundService
 
         await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
 
-        _stableSpectrumReader.Start();
+        await _stableSpectrumRunner.Start();
 
         await ExecuteAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (_stableSpectrumReader.WaitForNextTick(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
-            await _stableSpectrumReader.DoFftAndSend(stoppingToken);
+            await _stableSpectrumRunner.Loop(stoppingToken);
         }
     }
 }

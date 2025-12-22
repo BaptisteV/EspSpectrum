@@ -2,7 +2,6 @@
 
 public interface ITickTimingMonitor
 {
-    void StartInBg();
-    void NotifyTickDiff(TimeSpan diff);
-    TimingSummary Summary();
+    Task StartInBg();
+    void NotifyFFTSent(DateTimeOffset dt);
 }

@@ -10,12 +10,12 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IPreciseSleep slee
     private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
     private readonly IPreciseSleep _sleep = sleep;
 
-    public Spectrum GetLatestBlocking(CancellationToken cancellationToken)
+    public async Task<Spectrum> GetLatestBlocking(CancellationToken cancellationToken)
     {
         Spectrum? nullableSpectrum;
         while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
         {
-            _sleep.Wait(TryInterval, cancellationToken);
+            await _sleep.Wait(TryInterval, cancellationToken);
         }
 
         Spectrum foundSpectrum = nullableSpectrum ?? throw new InvalidOperationException($"{nameof(nullableSpectrum)} should never be null here");
@@ -27,10 +27,9 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IPreciseSleep slee
         return foundSpectrum;
     }
 
-    public Task Start()
+    public void Start()
     {
         _recorder.Start();
-        return Task.CompletedTask;
     }
 
     public void Dispose()

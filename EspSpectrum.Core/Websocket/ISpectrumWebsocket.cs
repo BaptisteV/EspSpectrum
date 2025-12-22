@@ -5,7 +5,7 @@ namespace EspSpectrum.Core.Websocket;
 /// <summary>
 /// Sends the spectrum data to the ESP device.
 /// </summary>
-public interface ISpectrumWebsocket : IDisposable
+public interface ISpectrumWebsocket : IEspWebsocket, IDisposable
 {
     /// <summary>
     /// Sends the spectrum data to the ESP device.

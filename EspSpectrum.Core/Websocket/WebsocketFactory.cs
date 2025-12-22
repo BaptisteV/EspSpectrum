@@ -12,6 +12,7 @@ public class WebsocketFactory(IOptions<EspConfig> config) : IWebsocketFactory
     {
         var client = new WebsocketClient(new Uri(_config.Value.EspIp))
         {
+            //ConnectTimeout = TimeSpan.FromMilliseconds(500),
             ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
             ReconnectTimeout = null,
         };
@@ -20,7 +21,7 @@ public class WebsocketFactory(IOptions<EspConfig> config) : IWebsocketFactory
         {
             if (disconnectInfo.CloseStatus != System.Net.WebSockets.WebSocketCloseStatus.NormalClosure)
             {
-                logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType}", disconnectInfo.Type);
+                logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType} {Message}", disconnectInfo.Type, disconnectInfo.Exception);
             }
         });
 

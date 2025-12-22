@@ -24,13 +24,17 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
     services.AddHostedService<Worker>();
 }).ConfigureLogging(logging =>
 {
+    logging.ClearProviders();
+#if DEBUG
     logging.SetMinimumLevel(LogLevel.Debug);
+    logging.AddDebug();
     logging.AddSimpleConsole(options =>
     {
         options.SingleLine = true;
         options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
         options.IncludeScopes = false;
     });
+#endif
 });
 
 var host = builder.Build();

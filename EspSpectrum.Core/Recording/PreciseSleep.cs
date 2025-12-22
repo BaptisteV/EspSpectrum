@@ -4,7 +4,7 @@ namespace EspSpectrum.Core.Recording;
 
 public class PreciseSleep : IPreciseSleep
 {
-    public void Wait(TimeSpan waitFor, CancellationToken cancellationToken)
+    public ValueTask Wait(TimeSpan waitFor, CancellationToken cancellationToken)
     {
         var targetTicks = Stopwatch.Frequency * waitFor.TotalSeconds;
         var startTicks = Stopwatch.GetTimestamp();
@@ -18,5 +18,6 @@ public class PreciseSleep : IPreciseSleep
             if (getRemainingMs() > 0.1) // Yield seulement si il reste un peu de temps
                 Thread.Yield();
         }
+        return ValueTask.CompletedTask;
     }
 }

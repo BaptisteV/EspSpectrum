@@ -26,14 +26,14 @@ public static class ServiceCollectionExtensions
         services.Configure<SpectrumConfig>(configuration);
 
         services.AddTransient<IWebsocketFactory, WebsocketFactory>();
-        services.AddTransient<ISpectrumWebsocket, EspWebsocket>();
-        services.AddTransient<IDisplayConfigWebsocket, EspWebsocket>();
+        services.AddSingleton<ISpectrumWebsocket, EspWebsocket>();
+        services.AddSingleton<IDisplayConfigWebsocket, EspWebsocket>();
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IDataReader, PartialDataReader>();
         services.AddTransient<IFftRecorder, FftRecorder>();
         services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
         services.AddTransient<IPreciseSleep, PreciseSleep>();
-        services.AddTransient<ITickTimingMonitor, TimingMonitor>();
+        services.AddTransient<ITickTimingMonitor, AsyncTimingMonitor>();
         services.AddTransient<IEspSpectrumRunner, EspSpectrumRunner>();
     }
 }

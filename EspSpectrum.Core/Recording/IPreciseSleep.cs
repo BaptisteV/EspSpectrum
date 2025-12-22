@@ -2,5 +2,5 @@
 
 public interface IPreciseSleep
 {
-    void Wait(TimeSpan waitFor, CancellationToken cancellationToken);
+    ValueTask Wait(TimeSpan waitFor, CancellationToken cancellationToken);
 }

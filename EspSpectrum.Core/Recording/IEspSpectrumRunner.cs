@@ -1,4 +1,5 @@
-﻿
+﻿using EspSpectrum.Core.Fft;
+
 namespace EspSpectrum.Core.Recording;
 
 /// <summary>
@@ -10,14 +11,10 @@ public interface IEspSpectrumRunner
     /// <summary>
     /// Starts the recording.
     /// </summary>
-    void Start();
+    Task Start();
 
     /// <summary>
     /// Runs the main loop of the application, processing audio data and sending it to the ESP device.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    bool WaitForNextTick(CancellationToken cancellationToken);
-
-    ValueTask DoFftAndSend(CancellationToken cancellationToken);
+    Task<Spectrum> Loop(CancellationToken cancellationToken);
 }
