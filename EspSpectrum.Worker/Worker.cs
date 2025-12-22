@@ -2,6 +2,7 @@ using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Options;
+using System.Runtime;
 
 namespace EspSpectrum.Worker;
 
@@ -40,6 +41,8 @@ public class Worker : BackgroundService
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting service");
+
+        GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
         await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
 

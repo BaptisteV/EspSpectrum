@@ -25,9 +25,10 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
 }).ConfigureLogging(logging =>
 {
     logging.ClearProviders();
+    logging.SetMinimumLevel(LogLevel.Information);
+    logging.AddDebug();
 #if DEBUG
     logging.SetMinimumLevel(LogLevel.Debug);
-    logging.AddDebug();
     logging.AddSimpleConsole(options =>
     {
         options.SingleLine = true;
