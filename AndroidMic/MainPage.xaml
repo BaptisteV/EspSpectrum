@@ -3,24 +3,46 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="AndroidMic.MainPage"
              Loaded="ContentPage_Loaded"
-             Unloaded="ContentPage_Unloaded"             
              BackgroundColor="{DynamicResource PageBackgroundColor}">
+    <ScrollView Orientation="Vertical">
 
-        <VerticalStackLayout Margin="20,20,20,20" Spacing="20">
-            <Label
-                x:Name="VolumeLabel"
-                Text="Volume: 0%"
-                FontSize="16"
-                HorizontalOptions="Center" />
+        <VerticalStackLayout Margin="20,20,20,20"
+                             Spacing="20">
 
-        <Border Stroke="BlueViolet">
-        <HorizontalStackLayout
-            HeightRequest="200"
-            SizeChanged="SlidersStackLayout_SizeChanged"
-            x:Name="SlidersStackLayout"
-            HorizontalOptions="Center">
-            </HorizontalStackLayout>
-        </Border>
-    </VerticalStackLayout>
+            <Border Stroke="Red">
+                <HorizontalStackLayout Spacing="20">
+                    <Button x:Name="ConnectButton"
+                            WidthRequest="150"
+                            HeightRequest="25"
+                            Text="Connect"
+                            Clicked="ConnectButton_Clicked">
+                    </Button>
+                    <Border x:Name="ConnectionStateBadge"
+                            WidthRequest="25"
+                            HeightRequest="25"
+                            Stroke="DarkSlateGray"
+                            StrokeThickness="2.5"
+                            Background="DarkRed"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                    </Border>
+                </HorizontalStackLayout>
+            </Border>
+            <Label x:Name="VolumeLabel"
+                   Text="Volume: 0%"
+                   FontSize="16"
+                   HorizontalOptions="Center" />
+
+            <Border Stroke="BlueViolet">
+                <HorizontalStackLayout HeightRequest="200"
+                                       SizeChanged="SlidersStackLayout_SizeChanged"
+                                       x:Name="SlidersStackLayout"
+                                       HorizontalOptions="Center">
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>

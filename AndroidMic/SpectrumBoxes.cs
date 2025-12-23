@@ -48,6 +48,10 @@ public class SpectrumBoxes
 
     public void Setup()
     {
+        if (_boxes.Length > 0)
+            return;
+        _hContainer.Children.Clear();
+        _boxes = [];
         GenerateSliders();
         UpdateBoxeSizes();
     }
@@ -69,11 +73,5 @@ public class SpectrumBoxes
     public void OnSizeChanged()
     {
         UpdateBoxeSizes();
-    }
-
-    public void Clear()
-    {
-        _hContainer.Children.Clear();
-        _boxes = [];
     }
 }

@@ -12,7 +12,7 @@ public class WebsocketFactory(IOptions<EspConfig> config) : IWebsocketFactory
     {
         var client = new WebsocketClient(new Uri(_config.Value.EspIp))
         {
-            //ConnectTimeout = TimeSpan.FromMilliseconds(500),
+            ConnectTimeout = TimeSpan.FromMilliseconds(5000),
             ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
             ReconnectTimeout = null,
         };

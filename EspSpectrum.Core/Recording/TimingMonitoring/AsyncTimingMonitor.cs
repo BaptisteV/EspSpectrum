@@ -77,17 +77,17 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
         CleanupOldMeasurements();
     }
 
-    public async Task StartInBg()
+    public Task LogSummaryLoop()
     {
-        _sw.Start();
         _ = Task.Run(async () =>
         {
             var periodicTimer = new PeriodicTimer(LogInterval);
-            while (await periodicTimer.WaitForNextTickAsync(_cts.Token))
+            while (await periodicTimer.WaitForNextTickAsync())
             {
                 LogSummary();
             }
-        }, _cts.Token);
+        });
+        return Task.CompletedTask;
     }
 
     public void Dispose()

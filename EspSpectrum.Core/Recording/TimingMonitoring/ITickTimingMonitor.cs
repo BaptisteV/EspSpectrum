@@ -2,6 +2,6 @@
 
 public interface ITickTimingMonitor
 {
-    Task StartInBg();
+    Task LogSummaryLoop();
     void NotifyFFTSent(DateTimeOffset dt);
 }

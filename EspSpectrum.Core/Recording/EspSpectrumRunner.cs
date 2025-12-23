@@ -40,26 +40,26 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         await _ws.SendSpectrum(spectrum);
         return spectrum;
     }
-
+    private bool _started = false;
     public async Task Start()
     {
+        if (_started)
+            return;
+        _started = true;
         _spectrumReader.Start();
-
-        await _timingMonitor.StartInBg();
-        await _ws.TryConnectInBg();
+        var connected = await _ws.Connect();
+        if (!connected)
+        {
+            _logger.LogWarning("Could not connect to ESP WebSocket at start");
+        }
+        await _ws.TryConnectLoop();
+        await _timingMonitor.LogSummaryLoop();
         _stopwatch.Start();
     }
 
     public async Task<Spectrum> Loop(CancellationToken cancellationToken)
     {
-        //var gcLocked = GC.TryStartNoGCRegion(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 10);
-        //if (!gcLocked)
-        //{
-        //    _logger.LogWarning("Could not enter No GC Region");
-        //}
-
         var spectrum = await ProcessFftAndSend(cancellationToken);
-        //GC.EndNoGCRegion();
 
         return spectrum;
     }
