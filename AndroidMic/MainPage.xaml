@@ -9,27 +9,30 @@
         <VerticalStackLayout Margin="20,20,20,20"
                              Spacing="20">
 
-            <Border Stroke="Red">
-                <HorizontalStackLayout Spacing="20">
-                    <Button x:Name="ConnectButton"
-                            WidthRequest="150"
-                            HeightRequest="25"
-                            Text="Connect"
-                            Clicked="ConnectButton_Clicked">
-                    </Button>
-                    <Border x:Name="ConnectionStateBadge"
-                            WidthRequest="25"
-                            HeightRequest="25"
-                            Stroke="DarkSlateGray"
-                            StrokeThickness="2.5"
-                            Background="DarkRed"
-                            VerticalOptions="Center">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="10" />
-                        </Border.StrokeShape>
-                    </Border>
-                </HorizontalStackLayout>
-            </Border>
+            <Grid HeightRequest="50"
+                  ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="25" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        x:Name="ConnectButton"
+                        Text="Connect"
+                        Clicked="ConnectButton_Clicked">
+                </Button>
+                <Border Grid.Column="1"
+                        x:Name="ConnectionStateBadge"
+                        WidthRequest="25"
+                        HeightRequest="25"
+                        Stroke="DarkSlateGray"
+                        StrokeThickness="2.5"
+                        Background="DarkRed"
+                        HorizontalOptions="End">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                </Border>
+            </Grid>
             <Label x:Name="VolumeLabel"
                    Text="Volume: 0%"
                    FontSize="16"

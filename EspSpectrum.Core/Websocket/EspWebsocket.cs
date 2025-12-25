@@ -73,14 +73,14 @@ public sealed class EspWebsocket : ISpectrumWebsocket, IDisplayConfigWebsocket
             {
                 if (!IsConnected())
                 {
-                    await Connect();
+                    await TryConnect();
                 }
             }
         });
         return Task.CompletedTask;
     }
 
-    public async Task<bool> Connect()
+    public async Task<bool> TryConnect()
     {
         if (IsConnected())
             return true;

@@ -44,7 +44,7 @@ public class FftProcessor(int sampleRate)
 
     private readonly Complex[] fftBuffer = new Complex[FftProps.FftLength];
 
-    public Spectrum ToFft(ReadOnlySpan<float> sample)
+    private double[] ProcessFFTBands(ReadOnlySpan<float> sample)
     {
         for (var i = 0; i < FftProps.FftLength; i++)
         {
@@ -55,7 +55,47 @@ public class FftProcessor(int sampleRate)
         FastFourierTransform.FFT(true, FftPow, fftBuffer);
 
         var bands = CalculateBands(fftBuffer, _sampleRate);
+        return bands;
+    }
 
-        return new Spectrum() { Bands = bands };
+    public Spectrum ToFft(ReadOnlySpan<float> sample)
+    {
+        var bands = ProcessFFTBands(sample);
+        var volume = GetVolume(sample);
+        return new Spectrum
+        {
+            Bands = bands,
+            Volume = volume,
+        };
+    }
+
+    private double CalculateAmplitude(ReadOnlySpan<float> buffer, int length)
+    {
+        var sum = 0.0;
+
+        for (int i = 0; i < length; i++)
+        {
+            sum += MathF.Abs(buffer[i]);
+        }
+
+        return sum / length;
+    }
+
+    private double AmplitudeToDecibels(double amplitude)
+    {
+        if (amplitude <= 0)
+            return -160; // Minimum practical dB value
+
+        // Reference amplitude for 16-bit audio
+        const double reference = 32768.0;
+        return 20 * Math.Log10(amplitude / reference);
+    }
+
+    private double GetVolume(ReadOnlySpan<float> sample)
+    {
+        var amplitude = CalculateAmplitude(sample, sample.Length);
+        var db = AmplitudeToDecibels(amplitude);
+
+        return db;
     }
 }

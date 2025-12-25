@@ -10,6 +10,7 @@
 
   <!-- Microphone permission -->
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.INTERNET" />
 
   <!-- Optional: for older Android versions -->
   <uses-feature

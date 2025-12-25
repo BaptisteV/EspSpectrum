@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace EspSpectrum.Core.Recording;
 
-public sealed class FftRecorder : IFftRecorder
+public class FftRecorder : IFftRecorder
 {
     private IWaveIn _waveIn;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;

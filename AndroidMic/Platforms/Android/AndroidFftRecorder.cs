@@ -6,7 +6,7 @@ using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace AndroidMic;
+namespace AndroidMic.Platforms;
 
 public sealed class AndroidFftRecorder : IFftRecorder
 {
@@ -131,7 +131,6 @@ public sealed class AndroidFftRecorder : IFftRecorder
 
         if (_buffReader.TryReadAudioFrame(buffer))
         {
-            _logger.LogDebug("Got new spectrum, computing FFT");
             spectrum = _fftProcessor.ToFft(buffer);
             return true;
         }

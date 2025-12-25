@@ -6,36 +6,33 @@ namespace AndroidMic;
 
 public partial class MainPage : ContentPage
 {
-    private readonly SpectrumBoxes spectrumBoxes;
+    private readonly SpectrumBoxes _spectrumBoxes;
     private readonly IEspSpectrumRunner _stableSpectrumReader;
-    private readonly ISpectrumWebsocket wsSpectrum;
+    private readonly ISpectrumWebsocket _wsSpectrum;
     private Task ExecuteTask;
     private readonly ILogger<MainPage> _logger;
-
     public MainPage(IEspSpectrumRunner stableSpectrumReader, ISpectrumWebsocket wsSpectrum, ILogger<MainPage> logger)
     {
         _stableSpectrumReader = stableSpectrumReader;
-        this.wsSpectrum = wsSpectrum;
+        _wsSpectrum = wsSpectrum;
         _logger = logger;
         InitializeComponent();
-        spectrumBoxes = new SpectrumBoxes(SlidersStackLayout);
+        _spectrumBoxes = new SpectrumBoxes(SlidersStackLayout);
+        _spectrumBoxes.Setup();
         ExecuteTask = new Task(async () => await ExecuteAsync(CancellationToken.None), TaskCreationOptions.LongRunning);
     }
 
     private async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            var spectrum = await _stableSpectrumReader.Loop(stoppingToken);
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                var spectrum = await _stableSpectrumReader.Loop(stoppingToken);
-                await MainThread.InvokeOnMainThreadAsync(() => spectrumBoxes.Update(spectrum.Bands));
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in spectrum reading loop");
-            throw;
+                VolumeLabel.Text = $"Volume: {spectrum.Volume:F2}";
+                _spectrumBoxes.Update(spectrum.Bands);
+                UpdateConnectionBadge();
+            });
         }
     }
 
@@ -51,20 +48,26 @@ public partial class MainPage : ContentPage
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
         await RequestMicrophonePermission();
-        spectrumBoxes.Setup();
         await _stableSpectrumReader.Start();
+        UpdateConnectionBadge();
+
         if (ExecuteTask.Status != TaskStatus.Running && ExecuteTask.Status != TaskStatus.RanToCompletion)
             ExecuteTask.Start();
     }
 
     private async void SlidersStackLayout_SizeChanged(object sender, EventArgs e)
     {
-        await MainThread.InvokeOnMainThreadAsync(spectrumBoxes.OnSizeChanged);
+        await MainThread.InvokeOnMainThreadAsync(_spectrumBoxes.OnSizeChanged);
     }
 
     private async void ConnectButton_Clicked(object sender, EventArgs e)
     {
-        var connected = await wsSpectrum.Connect();
+        await _wsSpectrum.TryConnect();
+    }
+
+    private void UpdateConnectionBadge()
+    {
+        var connected = _wsSpectrum.IsConnected();
         if (connected)
         {
             ConnectionStateBadge.Background = Colors.DarkGreen;

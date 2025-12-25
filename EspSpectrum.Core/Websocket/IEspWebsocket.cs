@@ -2,7 +2,7 @@
 
 public interface IEspWebsocket
 {
-    Task<bool> Connect();
+    Task<bool> TryConnect();
     Task TryConnectLoop();
     bool IsConnected();
 }

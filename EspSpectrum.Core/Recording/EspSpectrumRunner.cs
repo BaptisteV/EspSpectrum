@@ -46,14 +46,25 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         if (_started)
             return;
         _started = true;
-        _spectrumReader.Start();
-        var connected = await _ws.Connect();
+
+        var connected = false;
+        try
+        {
+            connected = await _ws.TryConnect();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error connecting to ESP WebSocket at start");
+            connected = false;
+        }
+
         if (!connected)
         {
             _logger.LogWarning("Could not connect to ESP WebSocket at start");
         }
         await _ws.TryConnectLoop();
         await _timingMonitor.LogSummaryLoop();
+        _spectrumReader.Start();
         _stopwatch.Start();
     }
 

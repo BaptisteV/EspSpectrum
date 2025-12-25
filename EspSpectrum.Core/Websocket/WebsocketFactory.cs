@@ -12,16 +12,21 @@ public class WebsocketFactory(IOptions<EspConfig> config) : IWebsocketFactory
     {
         var client = new WebsocketClient(new Uri(_config.Value.EspIp))
         {
-            ConnectTimeout = TimeSpan.FromMilliseconds(5000),
-            ErrorReconnectTimeout = TimeSpan.FromMilliseconds(500),
+            //ConnectTimeout = TimeSpan.FromMilliseconds(1000),
+            ErrorReconnectTimeout = TimeSpan.FromMilliseconds(1000),
+            IsReconnectionEnabled = false,
             ReconnectTimeout = null,
         };
 
         client.DisconnectionHappened.Subscribe((disconnectInfo) =>
         {
-            if (disconnectInfo.CloseStatus != System.Net.WebSockets.WebSocketCloseStatus.NormalClosure)
+            if (disconnectInfo.CloseStatus == System.Net.WebSockets.WebSocketCloseStatus.NormalClosure)
             {
-                logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType} {Message}", disconnectInfo.Type, disconnectInfo.Exception);
+                logger.LogInformation("Esp websocket disconnected normally.");
+            }
+            else
+            {
+                logger.LogWarning("Esp websocket disconnected. Reason: {DisconnectType} {Message}", disconnectInfo.Type.ToString(), disconnectInfo.Exception?.ToString());
             }
         });
 

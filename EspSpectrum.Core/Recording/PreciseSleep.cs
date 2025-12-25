@@ -14,7 +14,7 @@ public class PreciseSleep : IPreciseSleep
         while (Stopwatch.GetTimestamp() - startTicks < targetTicks && !cancellationToken.IsCancellationRequested)
         {
             // Alternance entre SpinWait et Yield pour éviter la monopolisation du CPU
-            Thread.SpinWait(10);
+            Thread.SpinWait(100); // 100 spins is about 0.01ms on a good CPU
             if (getRemainingMs() > 0.1) // Yield seulement si il reste un peu de temps
                 Thread.Yield();
         }

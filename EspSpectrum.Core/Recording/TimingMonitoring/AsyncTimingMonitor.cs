@@ -34,7 +34,8 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
             Summary = l.Count == 0 ? new Timing() :
                 new Timing()
                 {
-                    Average = TimeSpan.FromTicks((long)diffs.Select(t => t.Ticks).Average()),
+                    // Remove outliers > 1sec
+                    Average = TimeSpan.FromTicks((long)diffs.Where(t => t.TotalSeconds < 1).Select(t => t.Ticks).Average()),
                     Min = diffs.Min(),
                     Max = diffs.Max(),
                     Count = diffs.Count,
@@ -65,7 +66,7 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
     public void NotifyFFTSent(DateTimeOffset dt)
     {
         var sentAfter = dt - lastDt;
-        _logger.LogDebug("FFT Sent after {FFTTime:n2}ms", sentAfter.TotalMilliseconds);
+        _logger.LogTrace("FFT Sent after {FFTTime:n2}ms", sentAfter.TotalMilliseconds);
         lastDt = dt;
 
         _mesurements.Enqueue(new TimingMesurement

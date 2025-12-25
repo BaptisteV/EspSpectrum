@@ -25,7 +25,7 @@ public sealed class FakeEspWebsocket : IDisplayConfigWebsocket, ISpectrumWebsock
         return Task.CompletedTask;
     }
 
-    public Task<bool> Connect()
+    public Task<bool> TryConnect()
     {
         return Task.FromResult(true);
     }
