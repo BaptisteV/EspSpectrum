@@ -8,11 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace AndroidMic.Platforms;
 
-public sealed class AndroidFftRecorder : IFftRecorder
+public sealed class PlatformFftRecorder : IFftRecorder
 {
     private AudioRecord? _audioRecord;
     private bool _isRecording;
-    private CancellationTokenSource? _cts;
+    private readonly CancellationTokenSource _cts;
     private const int SampleRate = 44100;
     private const ChannelIn ChannelConfig = ChannelIn.Mono;
     private const Encoding AudioFormat = Encoding.Pcm16bit;
@@ -21,17 +21,21 @@ public sealed class AndroidFftRecorder : IFftRecorder
     private readonly IDataReader _buffReader;
     private readonly IOptionsMonitor<DisplayConfig> _optionsMonitor;
 
-    private readonly ILogger<AndroidFftRecorder> _logger;
-    public AndroidFftRecorder(IDataReader dr, IOptionsMonitor<DisplayConfig> optionsMonitor, ILogger<AndroidFftRecorder> logger)
+    private readonly ILogger<PlatformFftRecorder> _logger;
+
+    // To avoid allocating too much
+    private readonly float[] _floatBuffer;
+
+    public PlatformFftRecorder(IDataReader dr, IOptionsMonitor<DisplayConfig> optionsMonitor, ILogger<PlatformFftRecorder> logger)
     {
         _buffReader = dr;
         _optionsMonitor = optionsMonitor;
         _logger = logger;
+        _cts = new CancellationTokenSource();
 
         _bufferSize = AudioRecord.GetMinBufferSize(SampleRate, ChannelConfig, AudioFormat);
-
-        // Increase buffer size for better performance
         _bufferSize *= 2;
+        _floatBuffer = new float[_bufferSize / 2];
     }
 
     public void Dispose()
@@ -46,7 +50,7 @@ public sealed class AndroidFftRecorder : IFftRecorder
         _audioRecord.Dispose();
         Start();
     }
-
+    private Thread? _recordThread;
     public void Start()
     {
         if (_isRecording)
@@ -64,36 +68,31 @@ public sealed class AndroidFftRecorder : IFftRecorder
             throw new AndroidException("Failed to initialize AudioRecord");
         }
 
-
         _isRecording = true;
-        _cts = new CancellationTokenSource();
 
         _audioRecord.StartRecording();
 
-        Task.Run(() => RecordLoop(_cts.Token));
+        _recordThread = new Thread(() => RecordLoop(_cts.Token))
+        {
+            IsBackground = true,
+            Priority = ThreadPriority.Highest
+        };
+        _recordThread.Start();
+        //Task.Run(() => RecordLoop(_cts.Token));
     }
 
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<short> buffer, int samplesRead)
     {
-        // Get amplification from config
         var amplification = (float)_optionsMonitor.CurrentValue.Amplification;
+        var target = _floatBuffer.AsSpan(0, samplesRead);
 
-        // Allocate float array for converted samples
-        var samplesSpan = new float[samplesRead];
+        for (int i = 0; i < samplesRead; i++)
+            target[i] = (buffer[i] / 32768f) * amplification;
 
-        // Convert short samples to float and apply amplification
-        // Android AudioRecord with Pcm16bit and Mono gives us direct short samples
-        // Range: -32768 to 32767 -> normalize to -1.0 to 1.0
-        for (var i = 0; i < samplesRead; i++)
-        {
-            // Normalize int16 to float range [-1.0, 1.0] and apply amplification
-            samplesSpan[i] = (buffer[i] / 32768.0f) * amplification;
-        }
-
-        return samplesSpan;
+        return target;
     }
 
-    private Task RecordLoop(CancellationToken token)
+    private void RecordLoop(CancellationToken token)
     {
         var buffer = new short[_bufferSize / 2];
 
@@ -115,7 +114,6 @@ public sealed class AndroidFftRecorder : IFftRecorder
                 break;
             }
         }
-        return Task.CompletedTask;
     }
 
     public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken)

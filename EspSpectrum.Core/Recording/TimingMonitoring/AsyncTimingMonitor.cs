@@ -1,16 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using static EspSpectrum.Core.Recording.TimingMonitoring.TimingMonitor;
 
 namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
-public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
+public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
 {
     private static readonly int HISTO_SIZE = 500;
     private readonly ConcurrentQueue<TimingMesurement> _mesurements = new();
     private static readonly TimeSpan LogInterval = TimeSpan.FromSeconds(2);
-    private readonly Stopwatch _sw = new();
 
     private readonly CancellationTokenSource _cts;
     private readonly ILogger<AsyncTimingMonitor> _logger;
@@ -21,7 +19,7 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
         _logger = logger;
     }
 
-    private TimingSummary ComputeSummary()
+    private Timing ComputeSummary()
     {
         var l = _mesurements.ToList();
         var diffs = new List<TimeSpan>();
@@ -29,29 +27,29 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
         {
             diffs.Add(l[i + 1].TimeStamp - l[i].TimeStamp);
         }
-        var summary = new TimingSummary()
+
+        // Remove outliers > 1sec
+        var sampleForAverage = diffs.Where(t => t.TotalSeconds < 1).Select(t => t.Ticks);
+        var average = sampleForAverage.Any() ? TimeSpan.FromTicks((long)sampleForAverage.Average()) : TimeSpan.Zero;
+
+        return new Timing()
         {
-            Summary = l.Count == 0 ? new Timing() :
-                new Timing()
-                {
-                    // Remove outliers > 1sec
-                    Average = TimeSpan.FromTicks((long)diffs.Where(t => t.TotalSeconds < 1).Select(t => t.Ticks).Average()),
-                    Min = diffs.Min(),
-                    Max = diffs.Max(),
-                    Count = diffs.Count,
-                },
+            Average = average,
+            Min = diffs.Min(),
+            Max = diffs.Max(),
+            Count = diffs.Count,
+            StandardDeviation = diffs.Select(d => d.Ticks).StandardDeviation(),
         };
-        return summary;
     }
 
     private void LogSummary()
     {
+        // Need at least 2 measurements to compute diffs
+        if (_mesurements.Count <= 1)
+            return;
+
         var summary = ComputeSummary();
-        _logger.LogInformation("Timing Summary - OnTime: Count={OnTimeCount}, Avg={OnTimeAvg:n2}ms, Min={OnTimeMin:n2}ms, Max={OnTimeMax:n2}ms",
-            summary.Summary.Count,
-            summary.Summary.Average.TotalMilliseconds,
-            summary.Summary.Min.TotalMilliseconds,
-            summary.Summary.Max.TotalMilliseconds);
+        _logger.LogInformation("Timing Summary: {TimingSummary}", summary);
     }
 
     private void CleanupOldMeasurements()
@@ -95,5 +93,14 @@ public class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
     {
         _cts.Cancel();
         _cts.Dispose();
+    }
+}
+
+public static class Extend
+{
+    public static double StandardDeviation(this IEnumerable<long> values)
+    {
+        var avg = values.Average();
+        return Math.Sqrt(values.Average(v => Math.Pow(v - avg, 2)));
     }
 }

@@ -70,6 +70,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
 
     public async Task<Spectrum> Loop(CancellationToken cancellationToken)
     {
+        // var spectrum = await ProcessFftAndSend(cancellationToken);
         var spectrum = await ProcessFftAndSend(cancellationToken);
 
         return spectrum;

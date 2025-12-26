@@ -44,7 +44,7 @@ public class EspSpectrumRunnerTests
     [Benchmark]
     public async Task EspSpectrumTick()
     {
-        _spectrumRunner.Start();
+        await _spectrumRunner.Start();
         _fakeLoopbackWaveIn.RecordSingleSine();
         await _spectrumRunner.Loop(CancellationToken.None);
     }

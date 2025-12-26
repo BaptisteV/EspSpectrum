@@ -9,7 +9,9 @@
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
   </Folder>
-  <Project Path="AndroidMic/AndroidMic.csproj" />
+  <Project Path="AndroidMic/AndroidMic.csproj">
+    <Deploy Solution="Debug|Any CPU" />
+  </Project>
   <Project Path="EspSpectrum.ConfigUI/EspSpectrum.ConfigUI.csproj">
     <Build Solution="Release|Any CPU" Project="false" />
   </Project>

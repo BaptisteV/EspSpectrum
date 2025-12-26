@@ -29,9 +29,9 @@ namespace AndroidMic
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            builder.Logging.AddDebug();
             builder.Logging.SetMinimumLevel(LogLevel.Information);
 #if DEBUG
-            builder.Logging.AddDebug();
             builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #endif
             // Load embedded JSON config
@@ -49,16 +49,18 @@ namespace AndroidMic
             builder.Services.Configure<DisplayConfig>(builder.Configuration);
             builder.Services.Configure<SpectrumConfig>(builder.Configuration);
 
-            // builder.Services.AddTransient<IWebsocketFactory, WebsocketFactory>();
+            //builder.Services.AddTransient<IWebsocketFactory, WebsocketFactory>();
+            //builder.Services.AddSingleton<ISpectrumWebsocket, EspWebsocket>();
             builder.Services.AddSingleton<ISpectrumWebsocket, EspWebsocketNet>();
+
             builder.Services.AddTransient<ITickTimingMonitor, AsyncTimingMonitor>();
             builder.Services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
             builder.Services.AddTransient<IPreciseSleep, PreciseSleep>();
-            builder.Services.AddTransient<IDataReader, PartialDataReader>();
+            builder.Services.AddTransient<IDataReader, SpanRingBuffer>();
             builder.Services.AddTransient<IEspSpectrumRunner, EspSpectrumRunner>();
 
             builder.Services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
-            builder.Services.AddTransient<IFftRecorder, AndroidFftRecorder>();
+            builder.Services.AddTransient<IFftRecorder, PlatformFftRecorder>();
             return builder.Build();
         }
     }

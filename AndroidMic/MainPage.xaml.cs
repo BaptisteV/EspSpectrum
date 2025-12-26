@@ -1,6 +1,8 @@
-﻿using EspSpectrum.Core.Recording;
+﻿using EspSpectrum.Core.Fft;
+using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging;
+using System.Timers;
 
 namespace AndroidMic;
 
@@ -10,7 +12,11 @@ public partial class MainPage : ContentPage
     private readonly IEspSpectrumRunner _stableSpectrumReader;
     private readonly ISpectrumWebsocket _wsSpectrum;
     private Task ExecuteTask;
+    private readonly CancellationTokenSource _cts;
+
     private readonly ILogger<MainPage> _logger;
+    private System.Timers.Timer _uiUpdateTimer;
+    private Spectrum? _latestData;
     public MainPage(IEspSpectrumRunner stableSpectrumReader, ISpectrumWebsocket wsSpectrum, ILogger<MainPage> logger)
     {
         _stableSpectrumReader = stableSpectrumReader;
@@ -19,7 +25,23 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         _spectrumBoxes = new SpectrumBoxes(SlidersStackLayout);
         _spectrumBoxes.Setup();
-        ExecuteTask = new Task(async () => await ExecuteAsync(CancellationToken.None), TaskCreationOptions.LongRunning);
+
+        _cts = new CancellationTokenSource();
+        ExecuteTask = new Task(async () => await ExecuteAsync(_cts.Token), TaskCreationOptions.LongRunning);
+        _uiUpdateTimer = new System.Timers.Timer(33);
+        _uiUpdateTimer.Elapsed += OnTimerElapsed;
+        _uiUpdateTimer.Start();
+    }
+    private async void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            if (_latestData == null)
+                return;
+            VolumeLabel.Text = $"Volume: {_latestData.Volume:F2}";
+            _spectrumBoxes.Update(_latestData.Bands);
+            UpdateConnectionBadge();
+        });
     }
 
     private async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,12 +49,7 @@ public partial class MainPage : ContentPage
         while (!stoppingToken.IsCancellationRequested)
         {
             var spectrum = await _stableSpectrumReader.Loop(stoppingToken);
-            await MainThread.InvokeOnMainThreadAsync(() =>
-            {
-                VolumeLabel.Text = $"Volume: {spectrum.Volume:F2}";
-                _spectrumBoxes.Update(spectrum.Bands);
-                UpdateConnectionBadge();
-            });
+            _latestData = spectrum;
         }
     }
 
@@ -50,6 +67,8 @@ public partial class MainPage : ContentPage
         await RequestMicrophonePermission();
         await _stableSpectrumReader.Start();
         UpdateConnectionBadge();
+
+        _cts.TryReset();
 
         if (ExecuteTask.Status != TaskStatus.Running && ExecuteTask.Status != TaskStatus.RanToCompletion)
             ExecuteTask.Start();
@@ -76,5 +95,10 @@ public partial class MainPage : ContentPage
         {
             ConnectionStateBadge.Background = Colors.DarkRed;
         }
+    }
+
+    private void ContentPage_Unloaded(object sender, EventArgs e)
+    {
+        _cts.Cancel();
     }
 }

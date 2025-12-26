@@ -6,9 +6,10 @@ public class Timing
     public TimeSpan Min { get; set; }
     public TimeSpan Max { get; set; }
     public int Count { get; set; }
+    public double StandardDeviation { get; set; }
 
     public override string ToString()
     {
-        return $"Average: {Average.TotalMilliseconds:n2}\tMin: {Min.TotalMilliseconds:n2}\tMax: {Max.TotalMilliseconds}\tCount: {Count}";
+        return $"Count={Count}\tAverage={Average.TotalMilliseconds:n2}\tMin={Min.TotalMilliseconds:n2}\tMax={Max.TotalMilliseconds}\tStandard deviation={StandardDeviation:n2}";
     }
 }
