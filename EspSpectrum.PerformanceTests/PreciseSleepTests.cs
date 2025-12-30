@@ -7,6 +7,7 @@ namespace EspSpectrum.PerformanceTests;
 [MemoryDiagnoser]
 [ThreadingDiagnoser]
 [ExceptionDiagnoser]
+[DisassemblyDiagnoser]
 public class PreciseSleepTests
 {
     private PreciseSleep sleep;

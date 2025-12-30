@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace EspSpectrum.Core.Recording;
 
-public class EspSpectrumRunner : IEspSpectrumRunner
+public sealed class EspSpectrumRunner : IEspSpectrumRunner
 {
     private readonly TimeSpan _sendInterval;
     private readonly Stopwatch _stopwatch = new();
@@ -18,6 +18,7 @@ public class EspSpectrumRunner : IEspSpectrumRunner
     private readonly IPreciseSleep _sleep;
     private readonly ILogger<EspSpectrumRunner> _logger;
 
+    private readonly CancellationTokenSource _cts = new();
     public EspSpectrumRunner(
         IOptionsMonitor<DisplayConfig> displayConfigMonitor,
         ISyncSpectrumReader spectrumReader,
@@ -32,15 +33,17 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         _sleep = sleep;
         _sendInterval = displayConfigMonitor.CurrentValue.SendInterval;
         _logger = logger;
+
     }
 
-    public async ValueTask<Spectrum> DoFftAndSend(CancellationToken cancellationToken)
+    public async ValueTask DoFftAndSend(CancellationToken cancellationToken)
     {
         var spectrum = await _spectrumReader.GetLatestBlocking(cancellationToken);
         await _ws.SendSpectrum(spectrum);
-        return spectrum;
     }
+
     private bool _started = false;
+
     public async Task Start()
     {
         if (_started)
@@ -64,22 +67,23 @@ public class EspSpectrumRunner : IEspSpectrumRunner
         }
         await _ws.TryConnectLoop();
         await _timingMonitor.LogSummaryLoop();
-        _spectrumReader.Start();
+
         _stopwatch.Start();
+        _spectrumReader.Start();
+
+        _ = Task.Run(async () =>
+        {
+            while (!_cts.IsCancellationRequested)
+            {
+                await Loop(_cts.Token);
+            }
+        }, _cts.Token);
     }
 
-    public async Task<Spectrum> Loop(CancellationToken cancellationToken)
-    {
-        // var spectrum = await ProcessFftAndSend(cancellationToken);
-        var spectrum = await ProcessFftAndSend(cancellationToken);
-
-        return spectrum;
-    }
-
-    private async Task<Spectrum> ProcessFftAndSend(CancellationToken cancellationToken)
+    public async Task Loop(CancellationToken cancellationToken)
     {
         _stopwatch.Restart();
-        var spectrum = await DoFftAndSend(cancellationToken);
+        await DoFftAndSend(cancellationToken);
         _timingMonitor.NotifyFFTSent(DateTimeOffset.UtcNow);
 
         var elapsed = _stopwatch.Elapsed;
@@ -92,7 +96,21 @@ public class EspSpectrumRunner : IEspSpectrumRunner
             _logger.LogTrace("Processing took {Elapsed}ms, sleeping for {Sleep}ms", elapsed.TotalMilliseconds, (_sendInterval - elapsed).TotalMilliseconds);
             await _sleep.Wait(_sendInterval - elapsed, cancellationToken);
         }
-        return spectrum;
+    }
+
+    public void Subscribe(SpectrumObserver observer)
+    {
+        _spectrumReader.Subscribe(observer);
+    }
+
+    public async Task Stop()
+    {
+        await _cts.CancelAsync();
+    }
+
+    public void Dispose()
+    {
+        _cts.Dispose();
     }
 }
 

@@ -115,6 +115,7 @@ namespace EspSpectrum.Core.Websocket
             try
             {
                 _cts.Cancel();
+                _cts.Dispose();
                 _ws?.Dispose();
             }
             catch { }

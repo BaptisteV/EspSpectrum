@@ -6,7 +6,7 @@ namespace EspSpectrum.Core.Recording;
 /// Main runner of the ESP spectrum application.
 /// Call WaitForNextTick on a tight loop.
 /// </summary>
-public interface IEspSpectrumRunner
+public interface IEspSpectrumRunner : ISpectrumObservable, IDisposable
 {
     /// <summary>
     /// Starts the recording.
@@ -14,7 +14,13 @@ public interface IEspSpectrumRunner
     Task Start();
 
     /// <summary>
+    /// Stops the recording.
+    /// </summary>
+    /// <returns></returns>
+    Task Stop();
+
+    /// <summary>
     /// Runs the main loop of the application, processing audio data and sending it to the ESP device.
     /// </summary>
-    Task<Spectrum> Loop(CancellationToken cancellationToken);
+    Task Loop(CancellationToken cancellationToken);
 }

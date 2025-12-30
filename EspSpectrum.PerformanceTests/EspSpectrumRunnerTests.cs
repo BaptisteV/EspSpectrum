@@ -2,6 +2,7 @@
 using EspSpectrum.Core;
 using EspSpectrum.Core.Display;
 using EspSpectrum.Core.Recording;
+using EspSpectrum.Core.Websocket;
 using EspSpectrum.UnitTests.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace EspSpectrum.PerformanceTests;
 [MemoryDiagnoser]
 [ThreadingDiagnoser]
 [ExceptionDiagnoser]
+[DisassemblyDiagnoser]
 public class EspSpectrumRunnerTests
 {
     private IEspSpectrumRunner _spectrumRunner = null!;
@@ -36,7 +38,8 @@ public class EspSpectrumRunnerTests
         {
             c.SendInterval = TimeSpan.FromMilliseconds(TickInterval);
         });
-
+        services.AddSingleton<IDisplayConfigWebsocket, FakeEspWebsocket>();
+        services.AddSingleton<ISpectrumWebsocket, FakeEspWebsocket>();
         var sp = services.BuildServiceProvider();
         _spectrumRunner = sp.GetRequiredService<IEspSpectrumRunner>();
     }

@@ -56,11 +56,13 @@ namespace AndroidMic
             builder.Services.AddTransient<ITickTimingMonitor, AsyncTimingMonitor>();
             builder.Services.AddTransient<ISyncSpectrumReader, SyncSpectrumReader>();
             builder.Services.AddTransient<IPreciseSleep, PreciseSleep>();
-            builder.Services.AddTransient<IDataReader, SpanRingBuffer>();
+            builder.Services.AddTransient<IDataReader, PartialDataReader>();
             builder.Services.AddTransient<IEspSpectrumRunner, EspSpectrumRunner>();
 
             builder.Services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
             builder.Services.AddTransient<IFftRecorder, PlatformFftRecorder>();
+
+
             return builder.Build();
         }
     }

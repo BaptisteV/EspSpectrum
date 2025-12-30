@@ -5,10 +5,6 @@ using EspSpectrum.UnitTests.Utils;
 
 namespace EspSpectrum.PerformanceTests;
 
-
-[MemoryDiagnoser]
-[ThreadingDiagnoser]
-[ExceptionDiagnoser]
 public class PartialDataReaderTests
 {
     private PartialDataReader _dr = null!;
@@ -20,19 +16,10 @@ public class PartialDataReaderTests
     }
 
     [Benchmark(Baseline = true)]
-    public void PartialDataReaderTestArray()
-    {
-        _dr.AddData(Sine440.Buffer);
-        var datar = new float[FftProps.FftLength];
-#pragma warning disable S108 // Nested blocks of code should not be left empty
-        while (_dr.TryReadAudioFrame(datar)) { }
-#pragma warning restore S108 // Nested blocks of code should not be left empty
-    }
-
-    [Benchmark]
 
     public void PartialDataReaderTestSpan()
     {
+        var a = sizeof(float) * Sine440.Buffer.Length;
         _dr.AddData(Sine440.Buffer);
         var buffer = new float[FftProps.FftLength];
 #pragma warning disable S108 // Nested blocks of code should not be left empty

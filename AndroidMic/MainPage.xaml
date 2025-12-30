@@ -39,8 +39,7 @@
     </ContentPage.MenuBarItems>
     <ScrollView Orientation="Vertical">
 
-        <VerticalStackLayout Margin="20,20,20,20"
-                             Spacing="20">
+        <VerticalStackLayout Margin="8,8,8,8" Spacing="8">
 
             <Grid HeightRequest="50"
                   ColumnSpacing="20">
@@ -71,13 +70,53 @@
                    FontSize="16"
                    HorizontalOptions="Center" />
 
-            <Border Stroke="BlueViolet">
-                <HorizontalStackLayout HeightRequest="200"
-                                       SizeChanged="SlidersStackLayout_SizeChanged"
-                                       x:Name="SlidersStackLayout"
-                                       HorizontalOptions="Center">
-                </HorizontalStackLayout>
-            </Border>
+            <Grid HeightRequest="250"
+                  x:Name="GridContainer">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 

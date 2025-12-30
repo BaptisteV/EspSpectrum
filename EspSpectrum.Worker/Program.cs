@@ -27,7 +27,7 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
     logging.ClearProviders();
     logging.SetMinimumLevel(LogLevel.Information);
     logging.AddDebug();
-#if DEBUG
+    //#if DEBUG
     logging.SetMinimumLevel(LogLevel.Debug);
     logging.AddSimpleConsole(options =>
     {
@@ -35,7 +35,7 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
         options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
         options.IncludeScopes = false;
     });
-#endif
+    //#endif
 });
 
 var host = builder.Build();

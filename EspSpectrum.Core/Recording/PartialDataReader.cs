@@ -70,7 +70,15 @@ public class PartialDataReader(
             return false;
         }
 
-        _queue.Take(_sampleSize).ToArray().AsSpan().CopyTo(data);
+        int index = 0;
+        foreach (var sample in _queue)
+        {
+            if (index >= _sampleSize)
+            {
+                break;
+            }
+            data[index++] = sample;
+        }
 
         Dequeue(_destructiveReadLength);
         return true;

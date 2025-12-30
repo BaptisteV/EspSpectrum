@@ -16,4 +16,5 @@ public interface ISyncSpectrumReader
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<Spectrum> GetLatestBlocking(CancellationToken cancellationToken);
+    void Subscribe(SpectrumObserver observer);
 }

@@ -44,9 +44,9 @@ public class Worker : BackgroundService
 
         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
-        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
-
         await _stableSpectrumRunner.Start();
+
+        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
 
         await ExecuteAsync(cancellationToken);
     }
@@ -55,7 +55,8 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await _stableSpectrumRunner.Loop(stoppingToken);
+            await Task.Delay(50);
+            //await _stableSpectrumRunner.Loop(stoppingToken);
         }
     }
 }

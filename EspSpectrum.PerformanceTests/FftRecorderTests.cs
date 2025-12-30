@@ -12,6 +12,7 @@ namespace EspSpectrum.PerformanceTests;
 [MemoryDiagnoser]
 [ThreadingDiagnoser]
 [ExceptionDiagnoser]
+[DisassemblyDiagnoser]
 public class FftRecorderTests
 {
     IServiceProvider _serviceProvider = null!;
@@ -46,7 +47,7 @@ public class FftRecorderTests
         }
     }
 
-    //[Benchmark(Baseline = true)]
+    [Benchmark]
     public void ReadSingleSineFullBufferBigOverflow()
     {
         var audio = new FakeLoopbackWaveIn();
@@ -63,7 +64,7 @@ public class FftRecorderTests
         }
     }
 
-    //[Benchmark(Baseline = true)]
+    [Benchmark]
     public void ReadSingleSineFullBuffer()
     {
         var audio = new FakeLoopbackWaveIn();
@@ -80,7 +81,7 @@ public class FftRecorderTests
         }
     }
 
-    //[Benchmark]
+    [Benchmark]
     public void ReadTwoHalves()
     {
         var audio = new FakeLoopbackWaveIn();
@@ -91,7 +92,7 @@ public class FftRecorderTests
         _ = recorder.TryReadSpectrum(out _, CancellationToken.None);
     }
 
-    //[Benchmark]
+    [Benchmark]
     public void ReadTwice()
     {
         var audio = new FakeLoopbackWaveIn();

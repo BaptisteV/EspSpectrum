@@ -72,13 +72,13 @@ public sealed class PlatformFftRecorder : IFftRecorder
 
         _audioRecord.StartRecording();
 
-        _recordThread = new Thread(() => RecordLoop(_cts.Token))
+        /*_recordThread = new Thread(() => RecordLoop(_cts.Token))
         {
-            IsBackground = true,
+            IsBackground = false,
             Priority = ThreadPriority.Highest
         };
-        _recordThread.Start();
-        //Task.Run(() => RecordLoop(_cts.Token));
+        _recordThread.Start();*/
+        Task.Run(() => RecordLoop(_cts.Token));
     }
 
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<short> buffer, int samplesRead)

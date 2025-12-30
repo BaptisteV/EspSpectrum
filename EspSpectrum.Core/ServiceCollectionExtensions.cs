@@ -5,6 +5,8 @@ using EspSpectrum.Core.Recording.TimingMonitoring;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NAudio.Wave;
 
 namespace EspSpectrum.Core;
@@ -28,6 +30,12 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IWebsocketFactory, WebsocketFactory>();
         services.AddSingleton<ISpectrumWebsocket, EspWebsocket>();
         services.AddSingleton<IDisplayConfigWebsocket, EspWebsocket>();
+
+        //services.AddTransient<IWebsocketFactory, WebsocketFactory>();
+        services.AddSingleton<IDisplayConfigWebsocket, EspWebsocketNet>();
+        services.AddSingleton<ISpectrumWebsocket>(o => new EspWebsocketNet(o.GetRequiredService<IOptions<EspConfig>>()!, o.GetRequiredService<ILogger<EspWebsocketNet>>()));
+        services.AddSingleton<IDisplayConfigWebsocket, EspWebsocket>();
+
         services.AddTransient<IWaveIn, WasapiLoopbackCapture>();
         services.AddTransient<IDataReader, PartialDataReader>();
         services.AddTransient<IFftRecorder, FftRecorder>();
