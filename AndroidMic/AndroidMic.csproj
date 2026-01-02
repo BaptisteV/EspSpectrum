@@ -76,7 +76,7 @@
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidPackageFormat>aab</AndroidPackageFormat>
     <!-- Optional for maximum performance, but very slow builds: -->
-    <AndroidEnableLLVM>false</AndroidEnableLLVM>
+    <AndroidEnableLLVM>true</AndroidEnableLLVM>
   </PropertyGroup>
 
 </Project>

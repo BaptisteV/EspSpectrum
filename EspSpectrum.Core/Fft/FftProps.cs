@@ -2,7 +2,7 @@
 
 public static class FftProps
 {
-    public const int ReadLength = 4096 / 7;
+    public const int ReadLength = 4096 / 8;
 
     public const int FftLength = 4096;
 

@@ -4,9 +4,35 @@ public class SpectrumGrid
 {
     private BoxView[][] _boxes = [];
     private readonly Grid _grid;
+
+    private readonly Color HighSpectrumColor;
+    private readonly Color MidSpectrumColor;
+    private readonly Color LowSpectrumColor;
+    private readonly Color NoSpectrumColor;
     public SpectrumGrid(Grid grid)
     {
         _grid = grid;
+        if (App.Current!.Resources.TryGetValue("HighSpectrumColor", out var highSpectrumColor))
+            HighSpectrumColor = (Color)highSpectrumColor;
+        if (App.Current!.Resources.TryGetValue("MidSpectrumColor", out var midSpectrumColor))
+            MidSpectrumColor = (Color)midSpectrumColor;
+        if (App.Current!.Resources.TryGetValue("LowSpectrumColor", out var lowSpectrumColor))
+            LowSpectrumColor = (Color)lowSpectrumColor;
+        NoSpectrumColor = Colors.Transparent;
+    }
+
+    private Color GetCellColor(double barValue, int y)
+    {
+        if (y >= barValue)
+            return NoSpectrumColor;
+
+        if (y <= 4)
+            return LowSpectrumColor;
+
+        if (y > 4 && y < 7)
+            return MidSpectrumColor;
+
+        return HighSpectrumColor;
     }
 
     private void FillBoxes()
@@ -20,7 +46,7 @@ public class SpectrumGrid
             {
                 var box = new BoxView
                 {
-                    BackgroundColor = Colors.DarkViolet,
+                    BackgroundColor = NoSpectrumColor,
                     HorizontalOptions = LayoutOptions.Fill,
                     VerticalOptions = LayoutOptions.Fill,
                     Opacity = 0.8,
@@ -56,11 +82,7 @@ public class SpectrumGrid
             for (int row = 0; row < 8; row++)
             {
                 int invert = 7 - row;  // invert row index (0 = bottom)
-                bool active = row < bandValue - 1;
-
-                _boxes[col][invert].BackgroundColor = active
-                    ? Colors.DarkViolet
-                    : Colors.Navy;
+                _boxes[col][invert].BackgroundColor = GetCellColor(bandValue - 1, row);
             }
         }
         _grid.BatchCommit();

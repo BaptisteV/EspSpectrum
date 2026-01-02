@@ -35,7 +35,7 @@ public partial class MainPage : ContentPage
     private async void ContentPage_Loaded(object sender, EventArgs e)
     {
         _spectrumGrid.Setup();
-        Task.Run(async () => await _runner.Start());
+        await _runner.Start();
         UpdateConnectionBadge();
     }
 
