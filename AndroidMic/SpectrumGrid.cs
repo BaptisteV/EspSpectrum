@@ -1,4 +1,6 @@
-﻿namespace AndroidMic;
+﻿using EspSpectrum.Core.Fft;
+
+namespace AndroidMic;
 
 public class SpectrumGrid
 {
@@ -38,11 +40,11 @@ public class SpectrumGrid
     private void FillBoxes()
     {
         _grid.BatchBegin();
-        _boxes = new BoxView[32][];
-        for (var i = 0; i < 32; i++)
+        _boxes = new BoxView[FftProps.NBands][];
+        for (var i = 0; i < _boxes.Length; i++)
         {
-            _boxes[i] = new BoxView[8];
-            for (var j = 0; j < 8; j++)
+            _boxes[i] = new BoxView[FftProps.BandHeigth];
+            for (var j = 0; j < _boxes[i].Length; j++)
             {
                 var box = new BoxView
                 {
@@ -75,11 +77,10 @@ public class SpectrumGrid
     public void Update(double[] bands)
     {
         _grid.BatchBegin();
-        for (int col = 0; col < 32; col++)
+        for (int col = 0; col < _boxes.Length; col++)
         {
             double bandValue = bands[col];
-
-            for (int row = 0; row < 8; row++)
+            for (int row = 0; row < FftProps.BandHeigth; row++)
             {
                 int invert = 7 - row;  // invert row index (0 = bottom)
                 _boxes[col][invert].BackgroundColor = GetCellColor(bandValue - 1, row);
