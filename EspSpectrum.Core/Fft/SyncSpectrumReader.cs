@@ -1,21 +1,28 @@
-﻿using EspSpectrum.Core.Recording;
+﻿using EspSpectrum.Core.Display;
+using EspSpectrum.Core.Recording;
 using Microsoft.Extensions.Options;
 
 namespace EspSpectrum.Core.Fft;
 
-public sealed class SyncSpectrumReader(IFftRecorder recorder, IPreciseSleep sleep, IOptions<SpectrumConfig> spectrumConfig) : ISyncSpectrumReader, IDisposable
+public sealed class SyncSpectrumReader(
+    IFftRecorder recorder,
+    IPreciseSleep sleep,
+    IOptions<SpectrumConfig> spectrumConfig,
+    IOptionsMonitor<DisplayConfig> displayConfigMonitor) : ISyncSpectrumReader, IDisposable
 {
-    private readonly TimeSpan TryInterval = TimeSpan.FromMilliseconds(0.5);
+    private readonly TimeSpan TryInterval = displayConfigMonitor.CurrentValue.SendInterval / 2;
     private readonly IFftRecorder _recorder = recorder;
     private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
     private readonly IPreciseSleep _sleep = sleep;
 
-    public async Task<Spectrum> GetLatestBlocking(CancellationToken cancellationToken)
+    public async Task<Spectrum> GetLatestBlockingAndNotifyObservers(CancellationToken cancellationToken)
     {
         Spectrum? nullableSpectrum;
         while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
         {
-            await _sleep.Wait(TryInterval, cancellationToken);
+            //
+            //await _sleep.Wait(TryInterval, cancellationToken);
+            Thread.Sleep(1);
         }
 
         Spectrum foundSpectrum = nullableSpectrum ?? throw new InvalidOperationException($"{nameof(nullableSpectrum)} should never be null here");
@@ -24,10 +31,12 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IPreciseSleep slee
             foundSpectrum.Bands = SpectrumCompressor.Compress(foundSpectrum.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
         }
 
-        foreach (var observer in _observers)
-        {
-            await observer.OnNext(foundSpectrum);
-        }
+        var nextTasks = _observers.Select(observer => observer.OnNext(foundSpectrum).AsTask());
+        await Task.WhenAll(nextTasks);
+        //foreach (var observer in _observers)
+        //{
+        //    await observer.OnNext(foundSpectrum);
+        //}
         return foundSpectrum;
     }
 
@@ -45,15 +54,6 @@ public sealed class SyncSpectrumReader(IFftRecorder recorder, IPreciseSleep slee
 
     public void Subscribe(SpectrumObserver observer)
     {
-        // Check whether observer is already registered. If not, add it.
-        if (_observers.Add(observer))
-        {
-            // Provide observer with existing data.
-            //foreach (Spectrum item in _flights)
-            //{
-            // observer.OnNext(item);
-            //}
-        }
+        _ = _observers.Add(observer);
     }
-
 }

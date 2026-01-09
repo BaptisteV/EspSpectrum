@@ -82,7 +82,7 @@ public class SpectrumGrid
             double bandValue = bands[col];
             for (int row = 0; row < FftProps.BandHeigth; row++)
             {
-                int invert = 7 - row;  // invert row index (0 = bottom)
+                int invert = FftProps.BandHeigth - 1 - row;  // invert row index (0 = bottom)
                 _boxes[col][invert].BackgroundColor = GetCellColor(bandValue - 1, row);
             }
         }

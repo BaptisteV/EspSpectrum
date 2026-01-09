@@ -25,17 +25,23 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
 }).ConfigureLogging(logging =>
 {
     logging.ClearProviders();
-    logging.SetMinimumLevel(LogLevel.Information);
     logging.AddDebug();
-    //#if DEBUG
+    logging.SetMinimumLevel(LogLevel.Information);
+#if DEBUG
     logging.SetMinimumLevel(LogLevel.Debug);
+#endif
     logging.AddSimpleConsole(options =>
     {
         options.SingleLine = true;
         options.TimestampFormat = "yyyy-MM-dd HH:mm:ss:fff ";
         options.IncludeScopes = false;
     });
-    //#endif
+});
+
+builder.UseDefaultServiceProvider((context, options) =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
 });
 
 var host = builder.Build();

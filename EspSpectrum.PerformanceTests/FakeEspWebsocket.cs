@@ -6,12 +6,12 @@ namespace EspSpectrum.PerformanceTests;
 
 public sealed class FakeEspWebsocket : IDisplayConfigWebsocket, ISpectrumWebsocket
 {
-    public ValueTask SendDisplayConfig(DisplayConfig displayConfig)
+    public ValueTask SendDisplayConfig(DisplayConfig displayConfig, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask SendSpectrum(Spectrum spectrum)
+    public ValueTask SendSpectrum(Spectrum spectrum, CancellationToken cancellationToken)
     {
         return ValueTask.CompletedTask;
     }
@@ -20,12 +20,12 @@ public sealed class FakeEspWebsocket : IDisplayConfigWebsocket, ISpectrumWebsock
     {
     }
 
-    public Task TryConnectLoop()
+    public Task ReconnectLoop(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
 
-    public Task<bool> TryConnect()
+    public Task<bool> TryConnect(CancellationToken cancellationToken)
     {
         return Task.FromResult(true);
     }

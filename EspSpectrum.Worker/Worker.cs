@@ -3,6 +3,7 @@ using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Options;
 using System.Runtime;
+using static EspSpectrum.Core.Recording.IEspSpectrumRunner;
 
 namespace EspSpectrum.Worker;
 
@@ -30,7 +31,7 @@ public class Worker : BackgroundService
             if (newConf != _conf)
             {
                 _logger.LogInformation("Updating display config");
-                await _wsDisplay.SendDisplayConfig(newConf);
+                await _wsDisplay.SendDisplayConfig(newConf, CancellationToken.None);
                 _conf = newConf;
             }
         });
@@ -43,20 +44,42 @@ public class Worker : BackgroundService
         _logger.LogInformation("Starting service");
 
         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
-
-        await _stableSpectrumRunner.Start();
-
-        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue);
-
-        await ExecuteAsync(cancellationToken);
+        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue, cancellationToken);
+        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Executing service...");
+
+        _logger.LogInformation("First connection attempt...");
+        var firstConnect = await _stableSpectrumRunner.TryConnectEsp(stoppingToken);
+        _logger.LogInformation("First connection attempt done. {Status}", firstConnect ? "connected" : "NOT connected");
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(50);
-            //await _stableSpectrumRunner.Loop(stoppingToken);
+            var loopResult = await _stableSpectrumRunner.Loop(stoppingToken);
+
+            await HandleLoopResult(loopResult, stoppingToken);
+        }
+    }
+
+    private async ValueTask HandleLoopResult(RunnerState loopResult, CancellationToken stoppingToken)
+    {
+        //_logger.LogInformation("Handling loop result: {Result}", loopResult);
+        if (loopResult.HasFlag(RunnerState.ConnectedToEsp) && loopResult.HasFlag(RunnerState.LoopAudioCapture))
+            return;
+
+        if (!loopResult.HasFlag(RunnerState.ConnectedToEsp))
+        {
+            while (!await _stableSpectrumRunner.TryConnectEsp(stoppingToken))
+            {
+                _logger.LogWarning("Not connected to ESP device, retrying...");
+            }
+        }
+
+        if (!loopResult.HasFlag(RunnerState.LoopAudioCapture))
+        {
+            await _stableSpectrumRunner.StartAudio(stoppingToken);
         }
     }
 }

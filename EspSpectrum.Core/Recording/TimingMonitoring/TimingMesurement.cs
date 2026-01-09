@@ -1,10 +1,7 @@
 ﻿namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
-public sealed partial class TimingMonitor
+public struct TimingMesurement
 {
-    public class TimingMesurement
-    {
-        public TimeSpan TimeLeft { get; set; }
-        public DateTimeOffset TimeStamp { get; set; }
-    }
+    public required TimeSpan TimeLeft { get; set; }
+    public required DateTimeOffset TimeStamp { get; set; }
 }

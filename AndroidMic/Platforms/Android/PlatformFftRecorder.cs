@@ -25,6 +25,7 @@ public sealed class PlatformFftRecorder : IFftRecorder
 
     // To avoid allocating too much
     private readonly float[] _floatBuffer;
+    private readonly short[] _shortBuffer;
 
     public PlatformFftRecorder(IDataReader dr, IOptionsMonitor<DisplayConfig> optionsMonitor, ILogger<PlatformFftRecorder> logger)
     {
@@ -36,11 +37,14 @@ public sealed class PlatformFftRecorder : IFftRecorder
         _bufferSize = AudioRecord.GetMinBufferSize(SampleRate, ChannelConfig, AudioFormat);
         _bufferSize *= 2;
         _floatBuffer = new float[_bufferSize / 2];
+        _shortBuffer = new short[_bufferSize / 2];
     }
 
     public void Dispose()
     {
-        _cts?.Dispose();
+        _cts.Cancel();
+        _cts.Dispose();
+        _audioRecord?.Dispose();
     }
 
     public void Restart()
@@ -50,7 +54,7 @@ public sealed class PlatformFftRecorder : IFftRecorder
         _audioRecord.Dispose();
         Start();
     }
-    private Thread? _recordThread;
+
     public void Start()
     {
         if (_isRecording)
@@ -72,13 +76,13 @@ public sealed class PlatformFftRecorder : IFftRecorder
 
         _audioRecord.StartRecording();
 
-        /*_recordThread = new Thread(() => RecordLoop(_cts.Token))
+        _ = Task.Factory.StartNew(() =>
         {
-            IsBackground = false,
-            Priority = ThreadPriority.Highest
-        };
-        _recordThread.Start();*/
-        Task.Run(() => RecordLoop(_cts.Token));
+            RecordLoop(CancellationToken.None);
+            // Long-running CPU work
+        }, TaskCreationOptions.LongRunning).ConfigureAwait(false);
+
+        //_ = Task.Run(() => RecordLoop(CancellationToken.None)).ConfigureAwait(false);
     }
 
     private ReadOnlySpan<float> ReadAudioSpan(ReadOnlySpan<short> buffer, int samplesRead)
@@ -86,25 +90,24 @@ public sealed class PlatformFftRecorder : IFftRecorder
         var amplification = (float)_optionsMonitor.CurrentValue.Amplification;
         var target = _floatBuffer.AsSpan(0, samplesRead);
 
+        const float additionalGain = 8.0f; // Should not be needed, but added to vaguely match results from Windows platform
         for (int i = 0; i < samplesRead; i++)
-            target[i] = (buffer[i] / 32768f) * amplification;
+            target[i] = (buffer[i] / 32768f) * amplification * additionalGain;
 
         return target;
     }
 
     private void RecordLoop(CancellationToken token)
     {
-        var buffer = new short[_bufferSize / 2];
-
         while (_isRecording && !token.IsCancellationRequested)
         {
             try
             {
-                var read = _audioRecord?.Read(buffer, 0, buffer.Length) ?? 0;
+                var read = _audioRecord?.Read(_shortBuffer, 0, _shortBuffer.Length) ?? 0;
 
                 if (read > 0)
                 {
-                    var newData = ReadAudioSpan(buffer, read);
+                    var newData = ReadAudioSpan(_shortBuffer, read);
                     _buffReader.AddData(newData);
                 }
             }
@@ -118,25 +121,23 @@ public sealed class PlatformFftRecorder : IFftRecorder
 
     public bool TryReadSpectrum(out Spectrum? spectrum, CancellationToken cancellationToken)
     {
-        spectrum = default;
         if (_buffReader.Count() < FftProps.FftLength)
         {
-            _logger.LogTrace("Not enough data for a new spectrum");
+            _logger.LogTrace("Not enough data for a new Spectrum");
+            spectrum = default;
             return false;
         }
 
         Span<float> buffer = stackalloc float[FftProps.FftLength];
-
-        if (_buffReader.TryReadAudioFrame(buffer))
-        {
-            spectrum = _fftProcessor.ToFft(buffer);
-            return true;
-        }
-        else
+        var didRead = _buffReader.TryReadAudioFrame(buffer);
+        if (!didRead)
         {
             _logger.LogDebug("No spectrum available");
-            spectrum = null;
+            spectrum = default;
             return false;
         }
+
+        spectrum = _fftProcessor.ToFft(buffer);
+        return didRead;
     }
 }

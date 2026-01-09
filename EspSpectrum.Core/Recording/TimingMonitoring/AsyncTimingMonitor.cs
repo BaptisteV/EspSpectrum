@@ -1,12 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using static EspSpectrum.Core.Recording.TimingMonitoring.TimingMonitor;
 
 namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
 public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
 {
-    private static readonly int HISTO_SIZE = 500;
+    private static readonly int HISTO_SIZE = 200;
     private readonly ConcurrentQueue<TimingMesurement> _mesurements = new();
     private static readonly TimeSpan LogInterval = TimeSpan.FromSeconds(2);
 
@@ -54,16 +53,20 @@ public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
 
     private void CleanupOldMeasurements()
     {
-        while (_mesurements.Count > HISTO_SIZE)
+        var dequeueCount = 0;
+        var nDequeue = _mesurements.Count - HISTO_SIZE - 1;
+        while (dequeueCount < nDequeue)
         {
-            _mesurements.TryDequeue(out var _);
+            if (_mesurements.TryDequeue(out var _))
+                dequeueCount++;
         }
     }
 
     private DateTimeOffset lastDt = DateTimeOffset.MinValue;
+
     public void NotifyFFTSent(DateTimeOffset dt)
     {
-        var sentAfter = dt - lastDt;
+        var sentAfter = TimeSpan.FromTicks(Math.Abs(dt.Ticks - lastDt.Ticks));
         _logger.LogTrace("FFT Sent after {FFTTime:n2}ms", sentAfter.TotalMilliseconds);
         lastDt = dt;
 
@@ -76,21 +79,23 @@ public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
         CleanupOldMeasurements();
     }
 
+    private readonly PeriodicTimer _logTimer = new(LogInterval);
+
     public Task LogSummaryLoop()
     {
         _ = Task.Run(async () =>
         {
-            var periodicTimer = new PeriodicTimer(LogInterval);
-            while (await periodicTimer.WaitForNextTickAsync())
+            while (await _logTimer.WaitForNextTickAsync())
             {
                 LogSummary();
             }
-        });
+        }).ConfigureAwait(false);
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
+        _logTimer.Dispose();
         _cts.Cancel();
         _cts.Dispose();
     }

@@ -5,20 +5,21 @@ using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
+using static EspSpectrum.Core.Recording.IEspSpectrumRunner;
 
 namespace EspSpectrum.Core.Recording;
 
+
 public sealed class EspSpectrumRunner : IEspSpectrumRunner
 {
+    private RunnerState _state;
     private readonly TimeSpan _sendInterval;
-    private readonly Stopwatch _stopwatch = new();
     private readonly ISyncSpectrumReader _spectrumReader;
     private readonly ISpectrumWebsocket _ws;
     private readonly ITickTimingMonitor _timingMonitor;
     private readonly IPreciseSleep _sleep;
     private readonly ILogger<EspSpectrumRunner> _logger;
 
-    private readonly CancellationTokenSource _cts = new();
     public EspSpectrumRunner(
         IOptionsMonitor<DisplayConfig> displayConfigMonitor,
         ISyncSpectrumReader spectrumReader,
@@ -33,69 +34,101 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
         _sleep = sleep;
         _sendInterval = displayConfigMonitor.CurrentValue.SendInterval;
         _logger = logger;
-
     }
 
-    public async ValueTask DoFftAndSend(CancellationToken cancellationToken)
+    public async Task StartAudio(CancellationToken cancellationToken)
     {
-        var spectrum = await _spectrumReader.GetLatestBlocking(cancellationToken);
-        await _ws.SendSpectrum(spectrum);
+        StartAudioCapture(cancellationToken);
+
+        Subscribe(new SpectrumObserver(_logger, async spectrum =>
+        {
+            await _ws.SendSpectrum(spectrum, cancellationToken);
+            _timingMonitor.NotifyFFTSent(DateTimeOffset.UtcNow);
+        }));
+        await _timingMonitor.LogSummaryLoop();
     }
 
-    private bool _started = false;
-
-    public async Task Start()
+    public async Task<bool> TryConnectEsp(CancellationToken cancellationToken)
     {
-        if (_started)
-            return;
-        _started = true;
+        var connected = await _ws.TryConnect(cancellationToken);
+        if (connected)
+        {
+            _state |= RunnerState.ConnectedToEsp;
+        }
+        else
+        {
+            _state &= ~RunnerState.ConnectedToEsp;
+        }
+        return connected;
+    }
 
-        var connected = false;
+    private async Task StartReconnectLoop(CancellationToken cancellationToken)
+    {
+        await _ws.ReconnectLoop(cancellationToken);
+        _state |= RunnerState.ConnectedToEsp;
+    }
+    /*
+    private async Task ConnectStart()
+    {
         try
         {
-            connected = await _ws.TryConnect();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error connecting to ESP WebSocket at start");
-            connected = false;
-        }
-
-        if (!connected)
-        {
-            _logger.LogWarning("Could not connect to ESP WebSocket at start");
-        }
-        await _ws.TryConnectLoop();
-        await _timingMonitor.LogSummaryLoop();
-
-        _stopwatch.Start();
-        _spectrumReader.Start();
-
-        _ = Task.Run(async () =>
-        {
-            while (!_cts.IsCancellationRequested)
+            _startCts = new();
+            _startCts.CancelAfter(TimeSpan.FromSeconds(5));
+            var connected = await _ws.TryConnect(_startCts.Token);
+            if (connected)
             {
-                await Loop(_cts.Token);
+                _state |= RunnerState.ConnectedToEsp;
             }
-        }, _cts.Token);
+            else
+            {
+                _logger.LogWarning("Could not connect to ESP WebSocket at start");
+                _state &= ~RunnerState.ConnectedToEsp;
+            }
+        }
+        catch (WebsocketException wsException)
+        {
+            _logger.LogError(wsException, "Error connecting to ESP WebSocket at start");
+            _state &= ~RunnerState.ConnectedToEsp;
+        }
+        catch (OperationCanceledException canceledException)
+        {
+            _logger.LogError(canceledException, "Timeout connecting to ESP WebSocket at start");
+            _state &= ~RunnerState.ConnectedToEsp;
+        }
+        finally
+        {
+            _startCts?.Dispose();
+        }
+    }*/
+
+    private void StartAudioCapture(CancellationToken cancellationToken)
+    {
+        _spectrumReader.Start();
+        _state |= RunnerState.LoopAudioCapture;
     }
 
-    public async Task Loop(CancellationToken cancellationToken)
-    {
-        _stopwatch.Restart();
-        await DoFftAndSend(cancellationToken);
-        _timingMonitor.NotifyFFTSent(DateTimeOffset.UtcNow);
+    private readonly Stopwatch _sw = new();
 
-        var elapsed = _stopwatch.Elapsed;
+    public async Task<RunnerState> Loop(CancellationToken cancellationToken)
+    {
+        if (!_state.HasFlag(RunnerState.LoopAudioCapture))
+            return _state;
+
+        _sw.Restart();
+        await _spectrumReader.GetLatestBlockingAndNotifyObservers(cancellationToken);
+
+        var elapsed = _sw.Elapsed;
         if (elapsed > _sendInterval)
         {
-            _logger.LogWarning("Processing took longer ({Elapsed}ms) than the send interval ({SendInterval}ms)", elapsed.TotalMilliseconds, _sendInterval.TotalMilliseconds);
+            _logger.LogTrace("Processing took longer ({Elapsed}ms) than the send interval ({SendInterval}ms)", elapsed.TotalMilliseconds, _sendInterval.TotalMilliseconds);
         }
         else
         {
             _logger.LogTrace("Processing took {Elapsed}ms, sleeping for {Sleep}ms", elapsed.TotalMilliseconds, (_sendInterval - elapsed).TotalMilliseconds);
             await _sleep.Wait(_sendInterval - elapsed, cancellationToken);
         }
+
+        return _state;
     }
 
     public void Subscribe(SpectrumObserver observer)
@@ -103,14 +136,9 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
         _spectrumReader.Subscribe(observer);
     }
 
-    public async Task Stop()
+    public Task Stop()
     {
-        await _cts.CancelAsync();
-    }
-
-    public void Dispose()
-    {
-        _cts.Dispose();
+        return Task.CompletedTask;
     }
 }
 

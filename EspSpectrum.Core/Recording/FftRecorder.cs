@@ -125,7 +125,6 @@ public class FftRecorder : IFftRecorder
 
         spectrum = _fftProcessor.ToFft(buffer);
         return didRead;
-
     }
 
     public void Dispose()
