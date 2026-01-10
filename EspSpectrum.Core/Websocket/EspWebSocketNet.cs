@@ -69,6 +69,10 @@ public sealed class EspWebsocketNet : ISpectrumWebsocket, IDisplayConfigWebsocke
         {
             _logger.LogError(ex, "Send canceled: ESP reset?");
         }
+        catch (WebSocketException wsException)
+        {
+            _logger.LogError(wsException, "WebSocket error when sending spectrum");
+        }
     }
 
     public bool IsConnected() =>

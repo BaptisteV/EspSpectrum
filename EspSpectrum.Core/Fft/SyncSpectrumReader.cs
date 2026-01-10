@@ -15,12 +15,11 @@ public sealed class SyncSpectrumReader(
     private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
     private readonly IPreciseSleep _sleep = sleep;
 
-    public async Task<Spectrum> GetLatestBlockingAndNotifyObservers(CancellationToken cancellationToken)
+    public async Task<Spectrum> ReadBlocking(CancellationToken cancellationToken)
     {
         Spectrum? nullableSpectrum;
         while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
         {
-            //
             //await _sleep.Wait(TryInterval, cancellationToken);
             Thread.Sleep(1);
         }
@@ -31,12 +30,6 @@ public sealed class SyncSpectrumReader(
             foundSpectrum.Bands = SpectrumCompressor.Compress(foundSpectrum.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
         }
 
-        var nextTasks = _observers.Select(observer => observer.OnNext(foundSpectrum).AsTask());
-        await Task.WhenAll(nextTasks);
-        //foreach (var observer in _observers)
-        //{
-        //    await observer.OnNext(foundSpectrum);
-        //}
         return foundSpectrum;
     }
 
@@ -48,12 +41,5 @@ public sealed class SyncSpectrumReader(
     public void Dispose()
     {
         _recorder.Dispose();
-    }
-
-    private readonly HashSet<SpectrumObserver> _observers = new();
-
-    public void Subscribe(SpectrumObserver observer)
-    {
-        _ = _observers.Add(observer);
     }
 }

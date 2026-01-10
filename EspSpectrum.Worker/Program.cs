@@ -28,7 +28,7 @@ builder.ConfigureAppConfiguration((hostingContext, config) =>
     logging.AddDebug();
     logging.SetMinimumLevel(LogLevel.Information);
 #if DEBUG
-    logging.SetMinimumLevel(LogLevel.Debug);
+    logging.SetMinimumLevel(LogLevel.Trace);
 #endif
     logging.AddSimpleConsole(options =>
     {

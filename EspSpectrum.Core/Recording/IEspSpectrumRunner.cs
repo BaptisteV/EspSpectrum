@@ -8,15 +8,6 @@ namespace EspSpectrum.Core.Recording;
 /// </summary>
 public interface IEspSpectrumRunner : ISpectrumObservable
 {
-    [Flags]
-    public enum RunnerState
-    {
-        None = 0,
-        LoopAudioCapture = 1,
-        ConnectedToEsp = 2,
-        LoopReconnect = 4,
-    }
-
     /// <summary>
     /// Starts the recording.
     /// </summary>

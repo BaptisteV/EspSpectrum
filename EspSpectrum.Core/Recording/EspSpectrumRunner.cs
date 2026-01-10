@@ -5,7 +5,6 @@ using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
-using static EspSpectrum.Core.Recording.IEspSpectrumRunner;
 
 namespace EspSpectrum.Core.Recording;
 
@@ -18,6 +17,7 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
     private readonly ISpectrumWebsocket _ws;
     private readonly ITickTimingMonitor _timingMonitor;
     private readonly IPreciseSleep _sleep;
+    private readonly HashSet<SpectrumObserver> _observers = [];
     private readonly ILogger<EspSpectrumRunner> _logger;
 
     public EspSpectrumRunner(
@@ -62,45 +62,6 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
         return connected;
     }
 
-    private async Task StartReconnectLoop(CancellationToken cancellationToken)
-    {
-        await _ws.ReconnectLoop(cancellationToken);
-        _state |= RunnerState.ConnectedToEsp;
-    }
-    /*
-    private async Task ConnectStart()
-    {
-        try
-        {
-            _startCts = new();
-            _startCts.CancelAfter(TimeSpan.FromSeconds(5));
-            var connected = await _ws.TryConnect(_startCts.Token);
-            if (connected)
-            {
-                _state |= RunnerState.ConnectedToEsp;
-            }
-            else
-            {
-                _logger.LogWarning("Could not connect to ESP WebSocket at start");
-                _state &= ~RunnerState.ConnectedToEsp;
-            }
-        }
-        catch (WebsocketException wsException)
-        {
-            _logger.LogError(wsException, "Error connecting to ESP WebSocket at start");
-            _state &= ~RunnerState.ConnectedToEsp;
-        }
-        catch (OperationCanceledException canceledException)
-        {
-            _logger.LogError(canceledException, "Timeout connecting to ESP WebSocket at start");
-            _state &= ~RunnerState.ConnectedToEsp;
-        }
-        finally
-        {
-            _startCts?.Dispose();
-        }
-    }*/
-
     private void StartAudioCapture(CancellationToken cancellationToken)
     {
         _spectrumReader.Start();
@@ -115,8 +76,8 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
             return _state;
 
         _sw.Restart();
-        await _spectrumReader.GetLatestBlockingAndNotifyObservers(cancellationToken);
-
+        var spectrum = await _spectrumReader.ReadBlocking(cancellationToken);
+        await Task.WhenAll(_observers.Select(observer => observer.OnNext(spectrum).AsTask()));
         var elapsed = _sw.Elapsed;
         if (elapsed > _sendInterval)
         {
@@ -133,7 +94,11 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
 
     public void Subscribe(SpectrumObserver observer)
     {
-        _spectrumReader.Subscribe(observer);
+        var added = _observers.Add(observer);
+        if (!added)
+        {
+            throw new InvalidOperationException("Observer already subscribed");
+        }
     }
 
     public Task Stop()

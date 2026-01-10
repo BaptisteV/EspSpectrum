@@ -17,12 +17,3 @@ public interface ISpectrumObservable
 {
     void Subscribe(SpectrumObserver observer);
 }
-
-public class SpectrumObservable(ISyncSpectrumReader spectrumReader) : ISpectrumObservable
-{
-    private readonly ISyncSpectrumReader _spectrumReader = spectrumReader;
-    public void Subscribe(SpectrumObserver observer)
-    {
-        _spectrumReader.Subscribe(observer);
-    }
-}

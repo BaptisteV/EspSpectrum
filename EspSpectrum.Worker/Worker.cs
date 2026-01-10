@@ -3,7 +3,6 @@ using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Options;
 using System.Runtime;
-using static EspSpectrum.Core.Recording.IEspSpectrumRunner;
 
 namespace EspSpectrum.Worker;
 
@@ -65,7 +64,6 @@ public class Worker : BackgroundService
 
     private async ValueTask HandleLoopResult(RunnerState loopResult, CancellationToken stoppingToken)
     {
-        //_logger.LogInformation("Handling loop result: {Result}", loopResult);
         if (loopResult.HasFlag(RunnerState.ConnectedToEsp) && loopResult.HasFlag(RunnerState.LoopAudioCapture))
             return;
 
@@ -73,7 +71,9 @@ public class Worker : BackgroundService
         {
             while (!await _stableSpectrumRunner.TryConnectEsp(stoppingToken))
             {
-                _logger.LogWarning("Not connected to ESP device, retrying...");
+                var retryInterval = TimeSpan.FromSeconds(1);
+                _logger.LogWarning("Not connected to ESP device, retrying in {RetryInterval}s ...", retryInterval.TotalSeconds);
+                await Task.Delay(retryInterval, stoppingToken);
             }
         }
 
