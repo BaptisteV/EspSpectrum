@@ -3,5 +3,5 @@
 public interface ITickTimingMonitor
 {
     Task LogSummaryLoop();
-    void NotifyFFTSent(DateTimeOffset dt);
+    void NotifyLoopDone(DateTimeOffset dt);
 }

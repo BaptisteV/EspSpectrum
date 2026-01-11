@@ -68,10 +68,12 @@ public sealed class EspWebsocketNet : ISpectrumWebsocket, IDisplayConfigWebsocke
         catch (OperationCanceledException ex)
         {
             _logger.LogError(ex, "Send canceled: ESP reset?");
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
         }
         catch (WebSocketException wsException)
         {
             _logger.LogError(wsException, "WebSocket error when sending spectrum");
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
         }
     }
 

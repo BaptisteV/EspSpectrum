@@ -16,6 +16,7 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
     private readonly ISyncSpectrumReader _spectrumReader;
     private readonly ISpectrumWebsocket _ws;
     private readonly ITickTimingMonitor _timingMonitor;
+    private readonly ExecutionMonitor _execMonitor;
     private readonly IPreciseSleep _sleep;
     private readonly HashSet<SpectrumObserver> _observers = [];
     private readonly ILogger<EspSpectrumRunner> _logger;
@@ -34,18 +35,20 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
         _sleep = sleep;
         _sendInterval = displayConfigMonitor.CurrentValue.SendInterval;
         _logger = logger;
+        _execMonitor = new(_logger);
     }
 
     public async Task StartAudio(CancellationToken cancellationToken)
     {
         StartAudioCapture(cancellationToken);
-
+        /*
         Subscribe(new SpectrumObserver(_logger, async spectrum =>
         {
-            await _ws.SendSpectrum(spectrum, cancellationToken);
             _timingMonitor.NotifyFFTSent(DateTimeOffset.UtcNow);
         }));
-        await _timingMonitor.LogSummaryLoop();
+        */
+        //await _timingMonitor.LogSummaryLoop();
+        _execMonitor.StartLogLoop();
     }
 
     public async Task<bool> TryConnectEsp(CancellationToken cancellationToken)
@@ -68,26 +71,55 @@ public sealed class EspSpectrumRunner : IEspSpectrumRunner
         _state |= RunnerState.LoopAudioCapture;
     }
 
-    private readonly Stopwatch _sw = new();
-
+    private readonly Stopwatch _sw2 = new();
+    private readonly Stopwatch _swSleep = new();
     public async Task<RunnerState> Loop(CancellationToken cancellationToken)
     {
         if (!_state.HasFlag(RunnerState.LoopAudioCapture))
             return _state;
 
-        _sw.Restart();
-        var spectrum = await _spectrumReader.ReadBlocking(cancellationToken);
-        await Task.WhenAll(_observers.Select(observer => observer.OnNext(spectrum).AsTask()));
-        var elapsed = _sw.Elapsed;
+        if (!_sw2.IsRunning)
+            _sw2.Start();
+
+        var spectrum = _spectrumReader.ReadBlockingSync(cancellationToken);
+        await _ws.SendSpectrum(spectrum, cancellationToken);
+        Parallel.ForEach(_observers, o =>
+        {
+            o.OnNext(spectrum);
+        });
+        var elapsed = _sw2.Elapsed;
         if (elapsed > _sendInterval)
         {
-            _logger.LogTrace("Processing took longer ({Elapsed}ms) than the send interval ({SendInterval}ms)", elapsed.TotalMilliseconds, _sendInterval.TotalMilliseconds);
+            _logger.LogTrace("Processing took longer ({Elapsed:n2}ms) than the send interval ({SendInterval:n2}ms)", elapsed.TotalMilliseconds, _sendInterval.TotalMilliseconds);
         }
         else
         {
             _logger.LogTrace("Processing took {Elapsed}ms, sleeping for {Sleep}ms", elapsed.TotalMilliseconds, (_sendInterval - elapsed).TotalMilliseconds);
-            await _sleep.Wait(_sendInterval - elapsed, cancellationToken);
+            _swSleep.Restart();
+            var sleepFor = _sendInterval - elapsed;
+            await _sleep.Wait(sleepFor, cancellationToken);
+            var actualSleep = _swSleep.Elapsed;
+            var diff = actualSleep - sleepFor;
+            var diffSign = diff > TimeSpan.Zero ? "Sleep too long  by"
+                                                : "Sleep too short by";
+            if (diff.Duration() >= TimeSpan.FromMilliseconds(1))
+            {
+                _logger.LogDebug("{DiffSign} {SleepDiff:n2}ms. Slept for: {SleepDuration:n2}ms, expected {ExpectedSleep:n2}ms",
+                    diffSign, diff.TotalMilliseconds, actualSleep.TotalMilliseconds, sleepFor.TotalMilliseconds);
+            }
+            else
+            {
+                _logger.LogDebug("{DiffSign} {SleepDiff:n2}ms. Slept for: {SleepDuration:n2}ms, expected {ExpectedSleep:n2}ms",
+                    diffSign, diff.TotalMilliseconds, actualSleep.TotalMilliseconds, sleepFor.TotalMilliseconds);
+            }
         }
+
+        var executedIn = _sw2.Elapsed.TotalMilliseconds;
+
+        _sw2.Restart();
+
+        _execMonitor.NotifytLoopDone(executedIn);
+        _logger.LogTrace("LoopDone after {FFTTime:n2}ms", executedIn);
 
         return _state;
     }

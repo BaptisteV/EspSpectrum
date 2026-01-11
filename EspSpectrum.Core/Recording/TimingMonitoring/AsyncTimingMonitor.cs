@@ -5,7 +5,7 @@ namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
 public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
 {
-    private static readonly int HISTO_SIZE = 200;
+    private static readonly int HISTO_SIZE = 500;
     private readonly ConcurrentQueue<TimingMesurement> _mesurements = new();
     private static readonly TimeSpan LogInterval = TimeSpan.FromSeconds(2);
 
@@ -64,7 +64,7 @@ public sealed class AsyncTimingMonitor : ITickTimingMonitor, IDisposable
 
     private DateTimeOffset lastDt = DateTimeOffset.MinValue;
 
-    public void NotifyFFTSent(DateTimeOffset dt)
+    public void NotifyLoopDone(DateTimeOffset dt)
     {
         var sentAfter = TimeSpan.FromTicks(Math.Abs(dt.Ticks - lastDt.Ticks));
         _logger.LogTrace("FFT Sent after {FFTTime:n2}ms", sentAfter.TotalMilliseconds);
@@ -106,6 +106,12 @@ public static class Extend
     public static double StandardDeviation(this IEnumerable<long> values)
     {
         var avg = values.Average();
-        return Math.Sqrt(values.Average(v => Math.Pow(v - avg, 2)));
+        return Math.Sqrt(values.Average(v => Math.Pow(v - avg, 2.0)));
+    }
+
+    public static double StandardDeviation(this double[] values)
+    {
+        var avg = values.Average();
+        return Math.Sqrt(values.Average(v => Math.Pow(v - avg, 2.0)));
     }
 }

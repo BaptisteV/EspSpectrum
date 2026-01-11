@@ -43,7 +43,9 @@ public class Worker : BackgroundService
         _logger.LogInformation("Starting service");
 
         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
-        await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue, cancellationToken);
+        //await _wsDisplay.SendDisplayConfig(_confMonitor.CurrentValue, cancellationToken);
+        await _stableSpectrumRunner.StartAudio(cancellationToken);
+
         await base.StartAsync(cancellationToken);
     }
 

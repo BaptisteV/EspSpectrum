@@ -15,12 +15,29 @@ public sealed class SyncSpectrumReader(
     private readonly SpectrumConfig _spectrumConfig = spectrumConfig.Value;
     private readonly IPreciseSleep _sleep = sleep;
 
-    public async Task<Spectrum> ReadBlocking(CancellationToken cancellationToken)
+    public async Task<Spectrum> ReadBlockingAsync(CancellationToken cancellationToken)
     {
         Spectrum? nullableSpectrum;
         while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
         {
-            //await _sleep.Wait(TryInterval, cancellationToken);
+            await _sleep.Wait(TimeSpan.FromMilliseconds(1), cancellationToken);
+            //Thread.Sleep(1);
+        }
+
+        Spectrum foundSpectrum = nullableSpectrum ?? throw new InvalidOperationException($"{nameof(nullableSpectrum)} should never be null here");
+        if (_spectrumConfig.ApplyCompression)
+        {
+            foundSpectrum.Bands = SpectrumCompressor.Compress(foundSpectrum.Bands, _spectrumConfig.Compression.Threshold, _spectrumConfig.Compression.Ratio);
+        }
+
+        return foundSpectrum;
+    }
+
+    public Spectrum ReadBlockingSync(CancellationToken cancellationToken)
+    {
+        Spectrum? nullableSpectrum;
+        while (!_recorder.TryReadSpectrum(out nullableSpectrum, cancellationToken))
+        {
             Thread.Sleep(1);
         }
 

@@ -11,30 +11,35 @@ public class SpectrumGrid
     private readonly Color MidSpectrumColor;
     private readonly Color LowSpectrumColor;
     private readonly Color NoSpectrumColor;
+
+    private static Color ColorInResource(string colorName)
+    {
+        if (App.Current!.Resources.TryGetValue(colorName, out var color))
+            return (Color)color;
+        throw new InvalidOperationException($"{colorName} not found in resources");
+    }
+
     public SpectrumGrid(Grid grid)
     {
         _grid = grid;
-        if (App.Current!.Resources.TryGetValue("HighSpectrumColor", out var highSpectrumColor))
-            HighSpectrumColor = (Color)highSpectrumColor;
-        if (App.Current!.Resources.TryGetValue("MidSpectrumColor", out var midSpectrumColor))
-            MidSpectrumColor = (Color)midSpectrumColor;
-        if (App.Current!.Resources.TryGetValue("LowSpectrumColor", out var lowSpectrumColor))
-            LowSpectrumColor = (Color)lowSpectrumColor;
+        HighSpectrumColor = ColorInResource("HighSpectrumColor");
+        MidSpectrumColor = ColorInResource("MidSpectrumColor");
+        LowSpectrumColor = ColorInResource("LowSpectrumColor");
         NoSpectrumColor = Colors.Transparent;
     }
 
-    private Color GetCellColor(double barValue, int y)
+    private Color GetCellColor(int barValue, int y)
     {
-        if (y >= barValue)
+        if (barValue <= y)
             return NoSpectrumColor;
 
         if (y <= 4)
             return LowSpectrumColor;
-
-        if (y > 4 && y < 7)
+        if (y < 7)
             return MidSpectrumColor;
-
-        return HighSpectrumColor;
+        if (y >= 8)
+            return HighSpectrumColor;
+        return NoSpectrumColor;
     }
 
     private void FillBoxes()
@@ -77,13 +82,13 @@ public class SpectrumGrid
     public void Update(double[] bands)
     {
         _grid.BatchBegin();
-        for (int col = 0; col < _boxes.Length; col++)
+        for (int x = 0; x < _boxes.Length; x++)
         {
-            double bandValue = bands[col];
-            for (int row = 0; row < FftProps.BandHeigth; row++)
+            var bandValue = (int)Math.Round(bands[x]);
+            for (int y = 0; y < FftProps.BandHeigth; y++)
             {
-                int invert = FftProps.BandHeigth - 1 - row;  // invert row index (0 = bottom)
-                _boxes[col][invert].BackgroundColor = GetCellColor(bandValue - 1, row);
+                int invert = FftProps.BandHeigth - y;  // invert row index (0 = bottom)
+                _boxes[x][invert - 1].BackgroundColor = GetCellColor(bandValue, y);
             }
         }
         _grid.BatchCommit();

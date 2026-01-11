@@ -15,5 +15,12 @@ public interface ISyncSpectrumReader
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Spectrum> ReadBlocking(CancellationToken cancellationToken);
+    Task<Spectrum> ReadBlockingAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets the latest spectrum data. This method blocks until data is available.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Spectrum ReadBlockingSync(CancellationToken cancellationToken);
 }

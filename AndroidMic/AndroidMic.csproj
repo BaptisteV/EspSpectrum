@@ -18,7 +18,7 @@
     <ApplicationTitle>AndroidMic</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.androidmic</ApplicationId>
+    <ApplicationId>com.bvi.androidmic</ApplicationId>
     <ApplicationIdGuid>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</ApplicationIdGuid>
 
     <!-- Versions -->
@@ -64,10 +64,13 @@
 
   <!-- Android specific settings -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
+    <AotAssemblies>true</AotAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Debug'">
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <AotAssemblies>false</AotAssemblies>
     <AndroidLinkMode>None</AndroidLinkMode>
     <EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
     <!-- Fast builds, easier debugging -->
@@ -75,11 +78,17 @@
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <AndroidLinkMode>Full</AndroidLinkMode>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidPackageFormat>aab</AndroidPackageFormat>
     <!-- Optional for maximum performance, but very slow builds: -->
-    <AndroidEnableLLVM>false</AndroidEnableLLVM>
+    <AndroidEnableLLVM>true</AndroidEnableLLVM>
+
+    <!-- Signature avec clé UPLOAD -->
+    <AndroidSigningKeyStore>upload-keystore.jks</AndroidSigningKeyStore>
+    <AndroidSigningStorePass>$(ANDROID_KEYSTORE_PASSWORD)</AndroidSigningStorePass>
+    <AndroidSigningKeyAlias>upload</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>$(ANDROID_KEY_PASSWORD)</AndroidSigningKeyPass>
   </PropertyGroup>
 
 </Project>

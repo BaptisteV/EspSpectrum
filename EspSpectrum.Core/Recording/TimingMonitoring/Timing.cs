@@ -1,6 +1,6 @@
 ﻿namespace EspSpectrum.Core.Recording.TimingMonitoring;
 
-public class Timing
+public struct Timing
 {
     public TimeSpan Average { get; set; }
     public TimeSpan Min { get; set; }
@@ -10,6 +10,6 @@ public class Timing
 
     public override string ToString()
     {
-        return $"Count={Count}\tAverage={Average.TotalMilliseconds:n2}\tMin={Min.TotalMilliseconds:n2}\tMax={Max.TotalMilliseconds}\tStandard deviation={StandardDeviation:n2}";
+        return $"Count={Count}\tAverage={Average.TotalMilliseconds:n2}\tMin={Min.TotalMilliseconds:n2}\tMax={Max.TotalMilliseconds:n2}\tStandard deviation={StandardDeviation:n2}";
     }
 }

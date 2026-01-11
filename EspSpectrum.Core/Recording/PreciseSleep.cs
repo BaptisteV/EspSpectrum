@@ -1,17 +1,17 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace EspSpectrum.Core.Recording;
 
-public class PreciseSleep : IPreciseSleep
+public class PreciseSleep(ILogger<PreciseSleep> logger) : IPreciseSleep
 {
-    private TimeSpan TaskDelayOverheadTicks { get; } = TimeSpan.FromMilliseconds(5);
-
+    private TimeSpan TaskDelayOverheadTicks { get; } = TimeSpan.FromMilliseconds(8);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public async ValueTask Wait(TimeSpan waitFor, CancellationToken cancellationToken)
     {
-        var targetTicks = Stopwatch.Frequency * (waitFor - TimeSpan.FromMilliseconds(1)).TotalSeconds;
+        var targetTicks = Stopwatch.Frequency * waitFor.TotalSeconds;
         var startTicks = Stopwatch.GetTimestamp();
 
         void getRemaining(out TimeSpan t) => t = TimeSpan.FromMilliseconds((targetTicks - (Stopwatch.GetTimestamp() - startTicks)) * 1000.0 / Stopwatch.Frequency);
@@ -20,10 +20,34 @@ public class PreciseSleep : IPreciseSleep
         while (remaining >= TimeSpan.Zero && !cancellationToken.IsCancellationRequested)
         {
             if (remaining - TaskDelayOverheadTicks >= TimeSpan.Zero) // Delay seulement si le temps restant + overhead
+            {
                 await Task.Delay(remaining - TaskDelayOverheadTicks, cancellationToken);
+                logger.LogTrace("Used task.delay");
+            }
             //Thread.Sleep((remaining - TaskDelayOverheadTicks) ?? TimeSpan.FromMilliseconds(0));
             else
+            {
                 Thread.SpinWait(1000); // 100 spins is about 0.01ms on a good CPU
+                Thread.Yield();
+            }
+
+            getRemaining(out remaining);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    public void WaitSync(TimeSpan waitFor)
+    {
+        var targetTicks = Stopwatch.Frequency * waitFor.TotalSeconds;
+        var startTicks = Stopwatch.GetTimestamp();
+
+        void getRemaining(out TimeSpan t) => t = TimeSpan.FromMilliseconds((targetTicks - (Stopwatch.GetTimestamp() - startTicks)) * 1000.0 / Stopwatch.Frequency);
+
+        getRemaining(out var remaining);
+        while (remaining >= TimeSpan.Zero)
+        {
+            Thread.SpinWait(1000); // 100 spins is about 0.01ms on a good CPU
+
             getRemaining(out remaining);
         }
     }

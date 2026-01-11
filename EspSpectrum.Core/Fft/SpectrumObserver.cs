@@ -2,14 +2,14 @@
 
 namespace EspSpectrum.Core.Fft;
 
-public class SpectrumObserver(ILogger logger, Func<Spectrum, ValueTask> updateUi)
+public class SpectrumObserver(ILogger logger, Action<Spectrum> updateUi)
 {
     private readonly ILogger _logger = logger;
-    private readonly Func<Spectrum, ValueTask> updateUi = updateUi;
+    private readonly Action<Spectrum> updateUi = updateUi;
 
-    public async ValueTask OnNext(Spectrum value)
+    public void OnNext(Spectrum value)
     {
-        await updateUi(value);
+        updateUi(value);
     }
 }
 

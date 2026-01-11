@@ -2,7 +2,7 @@
 using EspSpectrum.Core.Recording;
 using EspSpectrum.Core.Websocket;
 using Microsoft.Extensions.Logging;
-using static EspSpectrum.Core.Recording.IEspSpectrumRunner;
+using System.Diagnostics;
 
 namespace AndroidMic;
 
@@ -15,6 +15,10 @@ public partial class MainPage : ContentPage
 
     private readonly CancellationTokenSource _cts = new();
 
+    private readonly Stopwatch swUi = new();
+
+    private readonly RateThrottle thro = new(TimeSpan.FromMilliseconds(33));
+
     public MainPage(IEspSpectrumRunner runner, ISpectrumWebsocket wsSpectrum, ILogger<MainPage> logger)
     {
         _runner = runner;
@@ -23,14 +27,26 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         _spectrumGrid = new SpectrumGrid(GridContainer);
 
-        _runner.Subscribe(new SpectrumObserver(_logger, async (s) =>
+        _runner.Subscribe(new SpectrumObserver(_logger, (s) =>
         {
-            await MainThread.InvokeOnMainThreadAsync(() =>
+            if (!swUi.IsRunning)
+                swUi.Start();
+
+            if (thro.TryExecute(() =>
             {
-                VolumeLabel.Text = $"Volume: {s.Volume:F2}";
-                _spectrumGrid.Update(s.Bands);
-                UpdateConnectionBadge();
-            });
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    VolumeLabel.Text = $"Volume: {s.Volume:F2}";
+
+                    _spectrumGrid.Update(s.Bands);
+                    UpdateConnectionBadge();
+                });
+            }))
+            {
+                var uiElapsed = swUi.Elapsed;
+                _logger.LogInformation("Updated ui in {UpdateElapsed:n2}ms", uiElapsed.TotalMilliseconds);
+                swUi.Restart();
+            }
         }));
     }
 

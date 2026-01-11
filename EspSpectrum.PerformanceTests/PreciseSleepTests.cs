@@ -1,5 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using EspSpectrum.Core.Recording;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace EspSpectrum.PerformanceTests;
@@ -15,7 +17,9 @@ public class PreciseSleepTests
     [GlobalSetup]
     public void GlobalSetup()
     {
-        sleep = new();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        sleep = new(services.BuildServiceProvider().GetRequiredService<ILogger<PreciseSleep>>());
     }
 
     [Params(0.5, 1.0, 5.0, 10.0, 20.0, 50.0, 100.0)]
